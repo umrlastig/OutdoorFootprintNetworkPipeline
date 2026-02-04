@@ -24,6 +24,7 @@ You need to install the following libraries:
 
 - Tracklib
 - Netmatcher
+- Plugin QGis "SciPy Filters"
 
 
 ## How to Run the Code
