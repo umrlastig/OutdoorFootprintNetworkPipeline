@@ -5,11 +5,12 @@ Source code for creating a mobility network for hikers, representing the human f
 <p align="center">
 <table style="border:none;border:0;width:60%"><tr>
   <td align="center" style="width:30%">
-  	<img width="200px" src="https://github.com/IntForOut/HikersFootprint/blob/main/doc/source/img/input.png" />
+  	<img width="200px" src="https://github.com/IntForOut/HikersFootprint/blob/main/img/input.png" />
   	<label>Raw</label>
   </td>
   <td style="padding:16px;">
-  	<label>Tracklib</label>
+  	<img width="200px" src="https://github.com/IntForOut/HikersFootprint/blob/main/img/output.png" />
+  	<label>Mobility Network</label>
   </td>
 </tr></table>
 </p>
