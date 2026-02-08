@@ -17,27 +17,18 @@ from tracklib.util.qgis import QGIS, LineStyle, PointStyle
 
 # =============================================================================
 
-# On supprime toutes les couches du projet
-QgsProject.instance().removeAllMapLayers()
-
-
 G1_SIZE = 2
 G2_SIZE = 50
-num_version = 1
 SEUIL = 15
 
-z2path = r'/home/md_vandamme/4_RESEAU/V1/zone3/data/zone3-walk.csv'
-pathres = r'/home/md_vandamme/4_RESEAU/V2/zone1/'
+resampledtracespath = r'/home/md_vandamme/4_RESEAU/ExampleTest/resample/'
+respath             = r'/home/md_vandamme/4_RESEAU/ExampleTest/densite/'
 
 
 # =============================================================================
 
-def plotRaster(pathres, title):
 
-    layerGrid = QgsRasterLayer(pathres, title, "gdal")
-    layerGrid.setCrs(QgsCoordinateReferenceSystem("EPSG:2154"))
-    QgsProject.instance().addMapLayer(layerGrid)
-
+def styleTurbo(layerGrid):
     style = QgsStyle().defaultStyle()
     ramp = style.colorRamp("Turbo")
 
@@ -64,7 +55,18 @@ def plotRaster(pathres, title):
     renderer.setClassificationMax(stats.maximumValue)
 
     layerGrid.setRenderer(renderer)
-    layerGrid.triggerRepaint()
+
+
+def plotRaster(pathres, title, style=None):
+
+    layerGrid = QgsRasterLayer(pathres, title, "gdal")
+    layerGrid.setCrs(QgsCoordinateReferenceSystem("EPSG:2154"))
+    QgsProject.instance().addMapLayer(layerGrid)
+
+    if style is not None and style == 'Turbo':
+        styleTurbo(layerGrid)
+        layerGrid.triggerRepaint()
+
 
 
 # =============================================================================
@@ -72,29 +74,33 @@ def plotRaster(pathres, title):
 #  Ici elles sont mises dans un fichier CSV dont la géométrie de la trace est
 #  dans le format WKT
 
-fmt = tkl.TrackFormat({'ext': 'WKT',
+fmt = tkl.TrackFormat({'ext': 'CSV',
                        'srid': 'ENU',
-                       'id_wkt': 0,
+                       'id_E': 1,'id_N': 0, 'id_U': 3,'id_T': 2,
                        'separator': ';',
                        'header': 1})
 
-
-collection = tkl.TrackReader.readFromFile(z2path, fmt)
-
-cpt = 1
+cptId = 1
+collection = tkl.TrackReader.readFromFile(resampledtracespath, fmt)
 for trace in collection:
-    trace.uid = cpt
-    trace.tid = cpt
-    cpt += 1
-print ('Number of tracks in zone1: ' + str(collection.size()))
+    trace.uid = cptId
+    trace.tid = cptId
+    cptId += 1
+print ('Number of tracks : ', collection.size())
 
+
+
+QGIS.plotTracks(collection, type='POINT',
+                style=PointStyle.circleYellow,
+                title='Zone3-walk points')
 QGIS.plotTracks(collection, type='LINE',
-                style=LineStyle.simpleBlue, title='Zone3-walk')
+                style=LineStyle.simpleLightOrange,
+                title='Zone3-walk line')
 
 
 
 # =============================================================================
-#       Chargement des traces GPS
+#       Calcul des densités des traces GPS
 
 
 af_algos = ['uid']
@@ -111,14 +117,13 @@ for i in range(grilleG1.raster.nrow):
     for j in range(grilleG1.raster.ncol):
         grilleG1.grid[i][j] = grilleG1.grid[i][j] / (G1_SIZE*G1_SIZE)
 
-pathG1 = pathres + r'zone1_G1_V' + str(num_version) + '.asc'
+pathG1 = respath + 'G1.asc'
 tkl.RasterWriter.writeMapToAscFile(pathG1, grilleG1)
 
-plotRaster(pathG1, "G1")
+plotRaster(pathG1, "G1", "Turbo")
 
 # Combien de cellules de chaque côté pour la petite résolution ?
 nb = math.floor(G2_SIZE / G1_SIZE)
-print (nb)
 
 
 
@@ -158,10 +163,10 @@ for i in range(rasterK.nrow):
 
 grilleK = rasterK.getAFMap(0)
 
-pathK = pathres + r'zone1_K_V' + str(num_version) + '.asc'
+pathK = respath + 'K.asc'
 tkl.RasterWriter.writeMapToAscFile(pathK, grilleK)
 
-plotRaster(pathK, "K")
+plotRaster(pathK, "K", "Turbo")
 
 
 
@@ -184,7 +189,7 @@ for i in range(raster.nrow):
         else:
             raster.getAFMap(0).grid[i][j] = 0
 
-pathB = pathres + r'zone1_B_V' + str(num_version) + '.asc'
+pathB = respath + 'B.asc'
 tkl.RasterWriter.writeMapToAscFile(pathB, raster.getAFMap(0))
 
 plotRaster(pathB, "B")
@@ -193,8 +198,11 @@ plotRaster(pathB, "B")
 # =============================================================================
 
 
+print ("Fin des calculs des cartes de densités, de constraste et binaire.")
 
-print ('FIN')
+
+print ("END SCRIPT 2.")
+
 
 
 
