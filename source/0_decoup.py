@@ -36,11 +36,7 @@ tracespathsource = r'/home/md_vandamme/5_GPS/OV/BAUGES/walk/'
 # Paramètre 4: Coordonnées de la zone d'étude sur laquelle on construit le réseau
 #                           Polygone sous la forme d'un tableau de X et de Y
 
-# traces de la zone 1 (10km x 10km)
-#X = [945878, 956330, 955879, 954402, 952511, 950389, 948774, 945857, 945878]
-#Y = [6516870, 6516805, 6508417, 6506849, 6506503, 6505649, 6504150, 6503762, 6516870]
-
-# traces de la zone 2 (1km x 1km)
+# traces de la zone 1 (1km x 1km)
 X = [949798, 950234, 951228, 951259, 950326, 950120, 950298, 949766, 949329, 949138, 949145, 949340, 949397, 949457, 949798]
 Y = [6513065, 6513079, 6512862, 6512504, 6512529, 6512224, 6511908, 6511248, 6510989, 6511152, 6511415, 6511794, 6512337, 6513104, 6513065]
 
@@ -49,8 +45,8 @@ Y = [6513065, 6513079, 6512862, 6512504, 6512529, 6512224, 6511908, 6511248, 651
 # Paramètre 5 : répertoire créé, où les données en sortie vont être enregistrées
 #               ce sera l'entrée du prochain script
 #
-#tracespath = r'/home/md_vandamme/4_RESEAU/ExampleRunning/raw_walk_ze1/'
-tracespath = r'/home/md_vandamme/4_RESEAU/ExampleTest/raw_walk_ze2/'
+
+tracespath = r'/home/md_vandamme/4_RESEAU/ExampleTest/decoup/'
 
 
 
@@ -118,8 +114,6 @@ for trace in collection2:
 
 print ('    Nombre de traces après découpage : ' + str(collection.size()))
 print ('Fin découpage 2/3.')
-
-
 
 
 
