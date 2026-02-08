@@ -16,8 +16,14 @@ from tracklib.util.qgis import QGIS, LineStyle, PointStyle
 tolerance = 0.1    # 0.05
 seuil_doublon = 0.1
 
+# Longueur des petits arcs à supprimer
+DIST_MIN_ARC = 30     # 20
+
+
 squelettepath = r'/home/md_vandamme/4_RESEAU/ExampleTest/densite/squelette.shp'
 netwokpath    = r'/home/md_vandamme/4_RESEAU/ExampleTest/network/reseau.csv'
+
+
 
 
 # =============================================================================
@@ -135,7 +141,7 @@ print ('Fin fusion des arcs simples 4/5.')
 #          SUPPRIME LES PETITS ARCS
 #
 
-DIST_MIN_ARC = 30     # 20
+
 
 cpt = 0
 nb = 1000
