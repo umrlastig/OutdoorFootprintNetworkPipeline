@@ -7,7 +7,7 @@ import tracklib as tkl
 '''
     
     Travail sur l'image
-    - Filtre morphologique : dilatation puis erosion 
+    - Filtre morphologique : erosion 
     - Vectorisation
     - Squeletisation : center line dans Postgis
 
