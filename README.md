@@ -23,7 +23,7 @@ Source code for creating an outdoor activity footprint network from GNSS traject
 You need to install the following libraries:
 
 - Tracklib
-- Netmatcher
+- GeoNetLib
 - Plugin QGis "SciPy Filters"
 
 
