@@ -2,6 +2,7 @@
 
 
 import psycopg2
+import tracklib as tkl
 
 '''
     
@@ -15,9 +16,6 @@ import psycopg2
 '''
 
 
-# On supprime toutes les couches du projet
-QgsProject.instance().removeAllMapLayers()
-
 SEUIL_SURFACE = 5000 # m2
 
 HOST     = 'localhost'
@@ -26,22 +24,28 @@ DATABASE = 'test'
 USER     = 'test'
 PASSWD   = 'test'
 
-ascpath      = r'/home/md_vandamme/4_RESEAU/V2/zone1/zone1_B_V1.asc'
-closingpath  = r'/home/md_vandamme/4_RESEAU/V2/zone1/b_fermeture.tif'
-roadsurfpath = r'/home/md_vandamme/4_RESEAU/V2/zone1/road_surface.shp'
+respath  = r'/home/md_vandamme/4_RESEAU/ExampleTest/densite/'
+
+pathB = respath + 'B.asc'
+
+patherosion     = respath + 'erosion.tif'
+roadsurfpath    = respath + 'road_surface.shp'
+squelettepath   = respath + 'squelette.shp'
+
 
 try:
     os.remove(roadsurfpath)
-    print(f"File '{roadsurfpath}' deleted successfully.")
+    os.remove(patherosion)
+    os.remove(squelettepath)
+    print(f"Files '{roadsurfpath}', '{patherosion}' and '{squelettepath}' deleted successfully.")
 except FileNotFoundError:
-    print(f"File '{roadsurfpath}' not found.")
+    print(f"File '{roadsurfpath}', '{patherosion}' or '{squelettepath}' not found.")
 
 
 
 # =============================================================================
 
 def plotRaster(pathres, title):
-
     layerGrid = QgsRasterLayer(pathres, title, "gdal")
     layerGrid.setCrs(QgsCoordinateReferenceSystem("EPSG:2154"))
     QgsProject.instance().addMapLayer(layerGrid)
@@ -51,10 +55,9 @@ def plotRaster(pathres, title):
 # =============================================================================
 #   On charge le binaire
 
-rasterB = tkl.RasterReader.readFromAscFile(ascpath, name='B', separator='\t')
+rasterB = tkl.RasterReader.readFromAscFile(pathB, name='B', separator='\t')
 grille = rasterB.getAFMap('B')
-
-plotRaster(ascpath, "B")
+# plotRaster(pathB, "B")
 
 
 # =============================================================================
@@ -68,23 +71,20 @@ ALGORITHM :
 '''
 
 param = {
-    'INPUT': ascpath,
+    'INPUT': pathB,
     'DIMENSION': 0,
-    'ALGORITHM': 0, # fermeture
+    'ALGORITHM': 1,
     'STRUCTURE':'[[0, 1, 0],\n[1, 1, 1],\n[0, 1, 0]]',
-    # [[1, 1, 1],\n[1, 1, 1],\n[1, 1, 1]]
-    #'STRUCTURE':'[[0, 0, 1, 0, 0],\n[0, 1, 1, 1, 0],\n[1, 1, 1, 1, 1],\n[0, 1, 1, 1, 0],\n[0, 0, 1, 0, 0]]',
     'ORIGIN': '0, 0',
     'BANDSTATS': True,
     'DTYPE': 0,
-    'OUTPUT':closingpath,
+    'OUTPUT' : patherosion,
     'ITERATIONS': 1,
     'BORDERVALUE': 0,
     'MASK': None
 }
 resultat = processing.run("scipy_filters:binary_morphology", param)
-# pathRasterFermeture = resultat['OUTPUT']
-plotRaster(closingpath, "Fermeture")
+plotRaster(patherosion, "erosion")
 
 
 
@@ -92,7 +92,7 @@ plotRaster(closingpath, "Fermeture")
 #   Vectorisation
 
 param = {
-    'INPUT':closingpath,
+    'INPUT':patherosion,
     'BAND':1,
     'FIELD':'DN',
     'EIGHT_CONNECTEDNESS':False,
@@ -101,7 +101,7 @@ param = {
 }
 
 resultat = processing.run("gdal:polygonize", param)
-layerRoadSurface = QgsVectorLayer(roadsurfpath, "Réseau mobilité surface vectorielle", "ogr")
+layerRoadSurface = QgsVectorLayer(roadsurfpath, "Road surface", "ogr")
 layerRoadSurface.setCrs(QgsCoordinateReferenceSystem("EPSG:2154"))
 QgsProject.instance().addMapLayer(layerRoadSurface)
 
@@ -145,6 +145,10 @@ with edit(layerRoadSurface):
 #   Squeletisation : center line dans Postgis
 
 
+layerSqueletteBrut = QgsVectorLayer("LineString?crs=epsg:2154", "Squelette brut", "memory")
+pr = layerSqueletteBrut.dataProvider()
+layerSqueletteBrut.startEditing()
+
 connection = psycopg2.connect(host=HOST, port = PORT,
                         database=DATABASE, user=USER, password=PASSWD)
 
@@ -153,14 +157,42 @@ for feat in layerRoadSurface.getFeatures():
     if surf > SEUIL_SURFACE:
         wkt = feat.geometry().asWkt()
         cursor = connection.cursor()
-        sql = "SELECT ST_ASText(ST_ApproximateMedialAxis(ST_GeomFromText('" + wkt + "'))) as ligne "
+        sql = " SELECT ST_ASText(ST_ApproximateMedialAxis(ST_BUFFER(ST_GeomFromText('" + wkt + "'), 0.25))) as ligne "
         cursor.execute(sql)
         record = cursor.fetchone()
         mlwkt = record[0]
-        # lines = wkt.loads(mlwkt)
-        print ('---')
+
+        ligne = QgsGeometry.fromWkt(mlwkt)
+
+        newFeature = QgsFeature()
+        newFeature.setGeometry(ligne)
+        pr.addFeature(newFeature)
 
 connection.close()
+layerSqueletteBrut.commitChanges()
+QgsProject.instance().addMapLayer(layerSqueletteBrut)
+
+save_options = QgsVectorFileWriter.SaveVectorOptions()
+save_options.driverName = "ESRI Shapefile"
+save_options.fileEncoding = "UTF-8"
+
+error = QgsVectorFileWriter.writeAsVectorFormatV3(layerSqueletteBrut,
+                                                  squelettepath,
+                                                  QgsProject.instance().transformContext(),
+                                                  save_options)
+
+
+
+
+
+
+# =============================================================================
+
+
+print ("Fin des calculs des cartes de densités, de constraste et binaire.")
+
+
+print ("END SCRIPT 3.")
 
 
 
