@@ -57,7 +57,7 @@ def plotRaster(pathres, title):
 
 rasterB = tkl.RasterReader.readFromAscFile(pathB, name='B', separator='\t')
 grille = rasterB.getAFMap('B')
-# plotRaster(pathB, "B")
+plotRaster(pathB, "B")
 
 
 # =============================================================================
