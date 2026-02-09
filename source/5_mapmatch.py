@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 '''
-        - 
+    Recalage des points sur le réseau
 '''
 
 import sys
@@ -24,7 +24,8 @@ resampledtracespath = r'/home/md_vandamme/4_RESEAU/ExampleTest/resample/'
 
 
 # =============================================================================
-
+#    Lecture du réseau
+#
 fmt = tkl.NetworkFormat({
        "pos_edge_id": 0,
        "pos_source": 1,
@@ -86,6 +87,8 @@ QgsProject.instance().addMapLayer(layerNodes)
 
 
 # =============================================================================
+#   Lecture des traces découpées et ré-échantillonnées.
+#
 fmt = tkl.TrackFormat({'ext': 'CSV',
                        'srid': 'ENU',
                        'id_E': 1,'id_N': 0, 'id_U': 3,'id_T': 2,
@@ -267,6 +270,10 @@ for i in range(collection.size()):
         ide = str(track["hmm_inference", j][1])
         ds = float(track["hmm_inference", j][2])
         dt = float(track["hmm_inference", j][3])
+
+        e1 = track["hmm_inference", k][1]
+        e = network.EDGES[network.getEdgeId(e1)]
+
         if ide != "-1" and ds > 0.01 and dt > 0.01:
             if ide not in MM:
                 MM[ide] = {}
@@ -274,14 +281,14 @@ for i in range(collection.size()):
                 MM[ide][pkid] = []
             MM[ide][pkid].append(pb)
         elif ds < 0.01:
-            idnode = network.getEdge(ide).source.id
+            idnode = e.source.id
             if idnode not in MMN:
                 MMN[idnode] = {}
             if pkid not in MMN[idnode].keys():
                 MMN[idnode][pkid] = []
             MMN[idnode][pkid].append(pb)
         elif dt < 0.01:
-            idnode = network.getEdge(ide).target.id
+            idnode = e.target.id
             if idnode not in MMN:
                 MMN[idnode] = {}
             if pkid not in MMN[idnode].keys():
@@ -304,115 +311,11 @@ layerEdges.setSubsetString("")
 plotMM(collection)
 
 
-# =============================================================================
-#     Fusion
-#
-
-'''
-cellsize = min(network.spatial_index.csize, network.spatial_index.lsize)
-newunit = math.ceil(25 / cellsize)
-
-# Aggregation with DTW distance
-
-layer = QgsVectorLayer("Point?crs=epsg:2154", "PourFusion", "memory")
-pr = layer.dataProvider()
-pr.addAttributes([QgsField("idedge", QVariant.String)])
-pr.addAttributes([QgsField("idtrace", QVariant.String)])
-pr.addAttributes([QgsField("idobs", QVariant.Int)])
-layer.updateFields()
-
-N = len(MM)
-print ('N = ', N)
-fusions = tkl.TrackCollection()
-for edgeid in MM:
-    #if edgeid not in ['701', '703']:
-    #    continue
-    #print (edgeid)
-
-    traces = MM[edgeid]
-
-    TRACES = []
-    for traceid in traces:
-        t = tkl.Track()
-        coords = traces[traceid]
-        for (k, p) in enumerate(coords):
-            t.addObs(tkl.Obs(p))
-
-            fet = QgsFeature()
-            fet.setAttributes([edgeid, traceid, k])
-            x = float(p.getX())
-            y = float(p.getY())
-            pt1 = QgsPointXY(x, y)
-            fet.setGeometry(QgsGeometry.fromPointXY(pt1))
-            fet.setAttributes([str(edgeid), traceid, k])
-            pr.addFeature(fet)
-
-        if t.size() > 2:
-            TRACES.append(t)
-
-    candidatsMultiSens = tkl.TrackCollection(TRACES)
-    if candidatsMultiSens.size() <= 0:
-        continue
-
-    candidats = tkl.TrackCollection()
-    TREF = candidatsMultiSens[0]
-    for t in candidatsMultiSens:
-        d1 = tkl.compare(TREF, t, verbose=False, mode=tkl.MODE_COMPARISON_DTW, p=1)
-        d2 = tkl.compare(TREF, t.reverse(), verbose=False, mode=tkl.MODE_COMPARISON_DTW, p=1)
-        # A l'envers
-        if (d2 < d1):
-            t = t.reverse()
-            candidats.addTrack(t)
-        else:
-            candidats.addTrack(t)
-
-    if candidats.size() > 1:
-        NB = candidats.size()
-        if NB <= 20:
-            candidats20 = candidats
-        else:
-            candidats20 = candidats.randNTracks(20)
-
-        centralDTW = tkl.fusion(candidats20,
-                             master=tkl.MODE_MASTER_MEDIAN_LEN,
-                             dim=2,
-                             mode=tkl.MODE_MATCHING_DTW,
-                             p=2,
-                             represent_method=tkl.MODE_REP_BARYCENTRE,
-                             agg_method=tkl.MODE_AGG_MEDIAN,
-                             constraint=False,
-                             verbose=False,
-                             iter_max=25)
-        # print (candidats20.size(), ' fusions', edgeid)
-        fusions.addTrack(centralDTW)
-    elif candidats.size() == 1:
-        centralDTW = candidats.getTrack(0)
-        # print ('une fusion', edgeid)
-        fusions.addTrack(centralDTW)
-    #else:
-    #    print ('Pas de fusion')
-
-    N = N - 1
-    if N%10 == 0:
-        print ('N=', N)
-
-
-layer.updateExtents()
-QgsProject.instance().addMapLayer(layer)
-print ('Fin fusion')
-
-print ('Number of aggregations: ', fusions.size())
-
-QGIS.plotTracks(fusions, type='LINE', style=LineStyle.simpleVert1, title='Fusions')
-'''
-
 
 
 # =============================================================================
 
 
-print ("Fin de la fusion.")
-
-
+print ("Fin du recalage.")
 print ("END SCRIPT 5.")
 
