@@ -1,6 +1,10 @@
 # OutdoorFootprintNetworkPipeline (ONFP)
 
+is an open source (MIT) Python library w
 Source code for creating an outdoor activity footprint network from GNSS trajectories, representing the human footprint (e.g., hiking or running).
+
+
+# 
 
 <p align="center">
 <table style="border:none;border:0;width:60%"><tr>
@@ -14,6 +18,15 @@ Source code for creating an outdoor activity footprint network from GNSS traject
   </td>
 </tr></table>
 </p>
+
+
+```mermaid
+graph LR
+A[Square Rect] -- Link text --> B((Circle))
+A --> C(Round Rect)
+B --> D{Rhombus}
+C --> D
+```
 
 
 
