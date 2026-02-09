@@ -175,6 +175,10 @@ def plotMM(collection):
             ide = str(track["hmm_inference", j][1])
             ds = float(track["hmm_inference", j][2])
             dt = float(track["hmm_inference", j][3])
+
+            e1 = track["hmm_inference", j][1]
+            e = network.EDGES[network.getEdgeId(e1)]
+
             if ide != "-1" and ds > 0.01 and dt > 0.01:
 
                 xmm = track["hmm_inference", j][0].getX()
@@ -196,7 +200,8 @@ def plotMM(collection):
                 prMM.addFeature(fet)
 
             elif ds < 0.01:
-                node = network.getEdge(ide).source
+                # node = network.getEdge(ide).source
+                node = e.source
                 xmm = node.coord.getX()
                 ymm = node.coord.getY()
                 pt2 = QgsPointXY(xmm, ymm)
@@ -216,7 +221,8 @@ def plotMM(collection):
                 prMM.addFeature(fet)
 
             elif dt < 0.01:
-                node = network.getEdge(ide).target
+                # node = network.getEdge(ide).target
+                node = e.target
                 xmm = node.coord.getX()
                 ymm = node.coord.getY()
                 pt2 = QgsPointXY(xmm, ymm)
@@ -271,7 +277,7 @@ for i in range(collection.size()):
         ds = float(track["hmm_inference", j][2])
         dt = float(track["hmm_inference", j][3])
 
-        e1 = track["hmm_inference", k][1]
+        e1 = track["hmm_inference", j][1]
         e = network.EDGES[network.getEdgeId(e1)]
 
         if ide != "-1" and ds > 0.01 and dt > 0.01:
