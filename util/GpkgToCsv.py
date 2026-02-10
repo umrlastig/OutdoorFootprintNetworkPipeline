@@ -4,9 +4,13 @@
 
     Script préparatoire qui lit un géopackage d'outdoorvision et
     qui construit un fichier CSV par trace.
-    
+
     Gère de 1 à n packages en même temps.
     Gère 4 activités : walk, run, vélo, ski
+
+    Les attributs sont mis comme AF.
+
+    Les traces sont projetées en Lambert93
 
 '''
 
