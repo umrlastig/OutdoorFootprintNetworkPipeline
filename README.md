@@ -22,10 +22,8 @@ Source code for creating an outdoor activity footprint network from GNSS traject
 
 ```mermaid
 graph LR
-A[Square Rect] -- Link text --> B((Circle))
-A --> C(Round Rect)
-B --> D{Rhombus}
-C --> D
+A(Round Rect) -- Découpage --> B(Traces découpées)
+
 ```
 
 
@@ -45,7 +43,7 @@ Paramètres à renseigner :
 
 * NB_OBS_MIN    = 10 # nombre de points minimum pour une trace
 
-* DIST_MAX_2OBS = 50 # si supérieur on coupe la trace
+* DIST_MAX_2OBS = 50 # si supérieur on coupe la trace. Par exemple : a stop can create a break in the trajectory
 
 * tracescsvpath = r'/home/md_vandamme/5_GPS/OV/BAUGES/run/'
 
