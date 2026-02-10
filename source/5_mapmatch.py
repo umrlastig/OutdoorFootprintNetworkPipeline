@@ -19,8 +19,8 @@ from PyQt5.QtGui import QColor
 SEARCH = 25
 
 netwokpath          = r'/home/md_vandamme/4_RESEAU/ExampleTest/network/reseau.csv'
-resampledtracespath = r'/home/md_vandamme/4_RESEAU/ExampleTest/resample/'
-
+#resampledtracespath = r'/home/md_vandamme/4_RESEAU/ExampleTest/resample/'
+tracespath          = r'/home/md_vandamme/4_RESEAU/ExampleTest/decoup/'
 
 
 # =============================================================================
@@ -92,9 +92,12 @@ QgsProject.instance().addMapLayer(layerNodes)
 fmt = tkl.TrackFormat({'ext': 'CSV',
                        'srid': 'ENU',
                        'id_E': 1,'id_N': 0, 'id_U': 3,'id_T': 2,
+                       'time_fmt': '2D/2M/4Y 2h:2m:2s',
                        'separator': ';',
-                       'header': 1})
-collection2 = tkl.TrackReader.readFromFile(resampledtracespath, fmt)
+                       'header': 0,
+                       'cmt': '#',
+                       'read_all': True})
+collection2 = tkl.TrackReader.readFromFile(tracespath, fmt)
 
 layer = QgsVectorLayer("Point?crs=EPSG:2154", "Traces points", "memory")
 pr = layer.dataProvider()
@@ -199,7 +202,7 @@ def plotMM(collection):
                 fet.setAttributes(attrs1)
                 prMM.addFeature(fet)
 
-            elif ds < 0.01:
+            elif abs(ds) < 0.01:
                 # node = network.getEdge(ide).source
                 node = e.source
                 xmm = node.coord.getX()
@@ -220,7 +223,7 @@ def plotMM(collection):
                 fet.setAttributes(attrs1)
                 prMM.addFeature(fet)
 
-            elif dt < 0.01:
+            elif abs(dt) < 0.01:
                 # node = network.getEdge(ide).target
                 node = e.target
                 xmm = node.coord.getX()
@@ -287,14 +290,14 @@ for i in range(collection.size()):
             if pkid not in MM[ide].keys():
                 MM[ide][pkid] = []
             MM[ide][pkid].append(pb)
-        elif ds < 0.01:
+        elif abs(ds) < 0.01:
             idnode = e.source.id
             if idnode not in MMN:
                 MMN[idnode] = {}
             if pkid not in MMN[idnode].keys():
                 MMN[idnode][pkid] = []
             MMN[idnode][pkid].append(pb)
-        elif dt < 0.01:
+        elif abs(dt) < 0.01:
             idnode = e.target.id
             if idnode not in MMN:
                 MMN[idnode] = {}
