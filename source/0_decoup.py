@@ -104,6 +104,10 @@ for trace in collection2:
                 if tn.size() >= NB_OBS_MIN:
                     tn.uid = str(trace.tid) + "-" + str(cpttrace)
                     tn.tid = str(trace.tid) + "-" + str(cpttrace)
+                    tn.createAnalyticalFeature('num', trace.getObsAnalyticalFeature('num', 0))
+                    tn.createAnalyticalFeature('track_id', tn.tid)
+                    tn.createAnalyticalFeature('user_id', tn.uid)
+
                     cpttrace += 1
                     collection.addTrack(tn)
                 tn = tkl.Track()
@@ -114,6 +118,9 @@ for trace in collection2:
     if tn.size() >= NB_OBS_MIN:
         tn.uid = str(trace.tid) + "-" + str(cpttrace)
         tn.tid = str(trace.tid) + "-" + str(cpttrace)
+        tn.createAnalyticalFeature('num', trace.getObsAnalyticalFeature('num', 0))
+        tn.createAnalyticalFeature('track_id', tn.tid)
+        tn.createAnalyticalFeature('user_id', tn.uid)
         cpttrace += 1
         collection.addTrack(tn)
 
@@ -134,7 +141,7 @@ QGIS.plotTracks(collection, type='POINT',
                 style=PointStyle.simpleSquareBlue,
                 title='Raw points')
 
-af_names = ['num', 'track_id', 'user_id', 'date_start', 'date_end']
+af_names = ['num', 'track_id', 'user_id']
 tkl.TrackWriter.writeToFiles(collection, tracespath,
                              id_E=1, id_N=0, id_U=3, id_T=2,
                              h=1, separator=";", af_names=af_names)
