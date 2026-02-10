@@ -257,7 +257,8 @@ field = layerEdges.fields().lookupField("mm")
 si = tkl.SpatialIndex(network, verbose=False)
 network.spatial_index = si
 
-# computes all distances between pairs of nodes
+
+# Computes all distances between pairs of nodes
 network.prepare()
 
 
