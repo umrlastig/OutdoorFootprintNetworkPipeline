@@ -62,6 +62,9 @@ print ('    Début ré-échantillonnage')
 cpt = 1
 collection = tkl.TrackCollection()
 for trace in collection2:
+    num = trace.getObsAnalyticalFeature('num', 0)
+    track_id = trace.getObsAnalyticalFeature('track_id', 0)
+    user_id = trace.getObsAnalyticalFeature('user_id', 0)
     if cpt%100 == 0:
         print ('   ', cpt, '/', collection2.size())
     cpt += 1
@@ -69,6 +72,9 @@ for trace in collection2:
     trace.resample(RESAMPLE_SIZE, tkl.MODE_SPATIAL)
     trace.uid = cpt
     trace.tid = cpt
+    trace.createAnalyticalFeature('num', num)
+    trace.createAnalyticalFeature('track_id', track_id)
+    trace.createAnalyticalFeature('user_id', user_id)
     collection.addTrack(trace)
 
 
@@ -86,9 +92,10 @@ QGIS.plotTracks(collection, type='POINT',
                 style=PointStyle.simpleSquareBlue,
                 title='Resampled points')
 
+af_names = ['num', 'track_id', 'user_id']
 tkl.TrackWriter.writeToFiles(collection, resampledtracespath,
                              id_E=1, id_N=0, id_U=3, id_T=2,
-                             h=1, separator=";")
+                             h=1, separator=";", af_names=af_names)
 
 print ("Fin de l'enregistrement et de l'affichage des données dans QGIS 3/3.")
 
