@@ -11,7 +11,7 @@ Source code for creating an outdoor activity footprint network from GNSS traject
 graph LR
 A(Traces brutes) -- Découpage --> B(Traces découpées) 
 B -- Ré-échantillonnées --> C(Traces échantionnées spatialement 1m)
-C -- Calcul densité --> D(grille de densités, "contraste", Raster binaire)
+C -- Calcul densité --> D(grille de densités-contraste-Raster binaire)
 D -- Center Line --> E(construction du squelette)
 E -- Topologie --> F(réseau avec une topologie)
 F -- Recalage --> G(topologie + traces associées)
