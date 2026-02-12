@@ -7,16 +7,7 @@ Source code for creating an outdoor activity footprint network from GNSS traject
 
 
 
-```mermaid
-graph LR
-A(Traces brutes) -- Découpage --> B(Traces découpées) 
-B -- Ré-échantillonnées --> C(Traces échantionnées spatialement 1m)
-C -- Calcul densité --> D(grille de densités-contraste-Raster binaire)
-D -- Center Line --> E(construction du squelette)
-E -- Topologie --> F(réseau avec une topologie)
-F -- Recalage --> G(topologie + traces associées)
-B -- Recalage --> G
-```
+
 
 
 
@@ -73,11 +64,15 @@ OutdoorFootprintNetworkPipeline requires the following Python packages and Plugi
 - Plugin QGis "SciPy Filters"
 
 
-The environment setup depends on your profile: development (if you need to modify Tracklib or Geonetlib), or user (if you just want to run the pipeline on a use case).
+## Environment Setup 
+
+The environment setup depends on your profile: 
+
+- development : in case you need to modify either the Tracklib or Geonetlib Python library , 
+- or user (if you just want to run the pipeline on a use case).
 
 
-### Development Environment Setup
-
+### "May be to fix bug in tracklib and geonetlib" Environment Setup 
 
 1. You need to install the following libraries:
 
@@ -94,7 +89,7 @@ Puis dans le bloc "Environnement", ajouter une variable personnalisée:
 
 *Appliquer* : ajouter au début
 *Variable*  : PYTHONPATH
-*Valeur*    : /home/md_vandamme/7_LIB/tracklib:/home/md_vandamme/7_LIB/GeoNetLib
+*Valeur*    : /home/glagaffe/7_LIB/tracklib:/home/glagaffe/7_LIB/GeoNetLib
 
 
 
