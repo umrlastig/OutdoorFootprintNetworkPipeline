@@ -18,10 +18,14 @@ from PyQt5.QtGui import QColor
 # Map matching
 SEARCH = 25
 
+# Préparation à la fusion
+NB_OBS_MIN    = 10
+DIST_MAX_2OBS = 50
+
 netwokpath          = r'/home/md_vandamme/4_RESEAU/ExampleTest/network/reseau.csv'
 #resampledtracespath = r'/home/md_vandamme/4_RESEAU/ExampleTest/resample/'
 tracespath          = r'/home/md_vandamme/4_RESEAU/ExampleTest/decoup/'
-
+mmpath              = r'/home/md_vandamme/4_RESEAU/ExampleTest/mapmatch/resultmm.csv'
 
 # =============================================================================
 #    Lecture du réseau
@@ -108,9 +112,15 @@ layer.updateFields()
 cptId = 1
 collection = tkl.TrackCollection()
 for trace in collection2:
+
+    # print (trace.uid, trace.tid)
+
     trace.uid = cptId
     trace.tid = cptId
     cptId += 1
+
+    #if cptId > 30:
+    #    break
 
     for j in range(trace.size()):
         obs = trace.getObs(j)
@@ -119,7 +129,7 @@ for trace in collection2:
         pt = QgsPointXY(X, Y)
         gPoint = QgsGeometry.fromPointXY(pt)
         
-        attrs = [str(cpt), j]
+        attrs = [str(trace.tid), j]
         fet = QgsFeature()
         fet.setAttributes(attrs)
         fet.setGeometry(gPoint)
@@ -165,7 +175,7 @@ def plotMM(collection):
 
     for i in range(collection.size()):
         track = collection.getTrack(i)
-        pkid = track.uid
+        pkid = track.tid
         # print (pkid)
 
         for j in range(track.size()):
@@ -244,6 +254,13 @@ def plotMM(collection):
                 fet.setAttributes(attrs1)
                 prMM.addFeature(fet)
 
+            else:
+                # pas de MM
+                attrs1 = [str(pkid), j, x, y, -1, -1, 'NOMM']
+                fet = QgsFeature()
+                fet.setAttributes(attrs1)
+                fet.setGeometry(g1)
+                pr.addFeature(fet)
 
     layer.updateExtents()
     QgsProject.instance().addMapLayer(layer)
@@ -251,9 +268,38 @@ def plotMM(collection):
     layerLinkMM.updateExtents()
     QgsProject.instance().addMapLayer(layerLinkMM)
 
+    # -------------------------------------------------------------------------
 
-MM = {}
-MMN = {}
+    # QgsRendererCategory
+    symbolArc = QgsSymbol.defaultSymbol(layer.geometryType())
+    symbolArc.setColor(QColor.fromRgb(148,240,96))
+    categoryArc = QgsRendererCategory("ARC", symbolArc, "ARC")
+
+    symbolNoeud = QgsSymbol.defaultSymbol(layer.geometryType())
+    symbolNoeud.setColor(QColor.fromRgb(60,186,250))
+    categoryNoeud = QgsRendererCategory("NOEUD", symbolNoeud, "NOEUD")
+
+    symbolNon = QgsSymbol.defaultSymbol(layer.geometryType())
+    symbolNon.setColor(QColor.fromRgb(235,70,124))
+    categoryNon = QgsRendererCategory("NOMM", symbolNon, "NOMM")
+
+
+    # On definit une liste pour y stocker 2 QgsRendererCategory
+    categories = []
+    categories.append(categoryNon)
+    categories.append(categoryNoeud)
+    categories.append(categoryArc)
+
+    # On construit une expression pour appliquer les categories
+    expression = 'type' # field name
+    renderer = QgsCategorizedSymbolRenderer(expression, categories)
+    layer.setRenderer(renderer)
+
+
+    # -------------------------------------------------------------------------
+
+
+MM = {}   #  [ide][pkid] : liste des observations
 
 field = layerEdges.fields().lookupField("mm")
 
@@ -272,7 +318,7 @@ print ('Map-matching ended')
 
 for i in range(collection.size()):
     track = collection.getTrack(i)
-    pkid = track.uid
+    pkid = track.tid
 
     for j in range(track.size()):
         pb  = track[j].position
@@ -289,24 +335,27 @@ for i in range(collection.size()):
                 MM[ide] = {}
             if pkid not in MM[ide].keys():
                 MM[ide][pkid] = []
-            MM[ide][pkid].append(pb)
+            MM[ide][pkid].append((j,pb))
         elif abs(ds) < 0.01:
             idnode = e.source.id
-            if idnode not in MMN:
-                MMN[idnode] = {}
-            if pkid not in MMN[idnode].keys():
-                MMN[idnode][pkid] = []
-            MMN[idnode][pkid].append(pb)
+            edgesid = network.getIncidentEdges(idnode)
+            for edgeid in edgesid:
+                if edgeid not in MM:
+                    MM[edgeid] = {}
+                if pkid not in MM[edgeid].keys():
+                    MM[edgeid][pkid] = []
+                MM[edgeid][pkid].append((j,pb))
         elif abs(dt) < 0.01:
             idnode = e.target.id
-            if idnode not in MMN:
-                MMN[idnode] = {}
-            if pkid not in MMN[idnode].keys():
-                MMN[idnode][pkid] = []
-            MMN[idnode][pkid].append(pb)
+            edgesid = network.getIncidentEdges(idnode)
+            for edgeid in edgesid:
+                if edgeid not in MM:
+                    MM[edgeid] = {}
+                if pkid not in MM[edgeid].keys():
+                    MM[edgeid][pkid] = []
+                MM[edgeid][pkid].append((j,pb))
 
-
-print ('Stats computing ended')
+print ('Stats computing ended.')
 
 with edit(layerEdges):
     for edid in network.EDGES.keys():
@@ -321,6 +370,52 @@ layerEdges.setSubsetString("")
 plotMM(collection)
 
 
+# =============================================================================
+#  On prépare les traces pour la fusion:
+#     - créer des morceaux
+#     - toutes les traces dans le même sens
+# on enregistre le MM dans un fichier CSV
+
+
+NB_OBS_MIN    = 10
+DIST_MAX_2OBS = 50
+
+f = open(mmpath,'w')
+f.write("EDGE_ID;TRACK_ID;WKT\n")
+for edgeid, tobstrack in MM.items():
+    for trackid, tobs in tobstrack.items():
+        points_sorted = sorted(tobs, key=lambda x: x[0])
+
+        txt = "LINESTRING("
+        cpt = 0
+        pold = None
+        for p in points_sorted:
+            cpt += 1
+            if pold != None:
+                if p[1].distance2DTo(pold)> DIST_MAX_2OBS:
+                    # on coupe la trace pour créer un nouveau morceau
+                    if cpt >= NB_OBS_MIN:
+                        if len(txt) > 1:
+                            txt = txt[0:len(txt)-2] + ")"
+                            f.write(str(edgeid) + ";" + str(trackid) + ";" + txt + "\n")
+                    txt = "LINESTRING("
+                    cpt = 0
+
+            pt = p[1]
+            txt += str(pt.getX()) + " " + str(pt.getY()) + ","
+            pold = pt
+
+        # dernier morceau de trace
+        if cpt >= NB_OBS_MIN:
+            if len(txt) > 1:
+                txt = txt[0:len(txt)-2] + ")"
+                f.write(str(edgeid) + ";" + str(trackid) + ";" + txt + "\n")
+
+f.close()
+
+txtpath = r"file:///" + mmpath + "?delimiter=;&wktField=WKT&crs=EPSG:2154"
+layerTracksForFusion = QgsVectorLayer(txtpath, "tracks for fusion", "delimitedtext")
+QgsProject.instance().addMapLayer(layerTracksForFusion)
 
 
 # =============================================================================

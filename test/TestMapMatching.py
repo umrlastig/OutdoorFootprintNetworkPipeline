@@ -5,7 +5,7 @@
 # import matplotlib.pyplot as plt
 
 import tracklib as tkl
-from tracklib.util.qgis import QGIS, LineStyle, PointStyle
+#from tracklib.util.qgis import QGIS, LineStyle, PointStyle
 
 NB_OBS_MIN    = 10
 DIST_MAX_2OBS = 50
@@ -71,13 +71,14 @@ for trace in tkl.TrackCollection([trace]):
 
 print ('Size of collection : ', collection.size())
 
+'''
 QGIS.plotTracks(collection, type='POINT',
                 style=PointStyle.simpleSquareBlue,
                 title='Points découpés')
 QGIS.plotTracks(collection, type='LINE',
                 style=LineStyle.simpleBlue,
                 title='Lignes découpées')
-
+'''
 
 # -----------------------------------------------------------------------------
 #   Chargement du réseau
