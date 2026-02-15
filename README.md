@@ -8,8 +8,6 @@ The outdoor footprint network is defined by :
 * a geometry for each edge E defined as as sequence of vertics (x, y, z) and represents accurately the common path followed by all the individual sample trajectories (i.e. accurate aggregate trajectories)
 
 
-The two figures below illustrate the inputs and outputs of the pipeline.
-
 <p align="center">
 <table style="border:none;border:0;width:60%"><tr>
   <td align="center" style="width:30%">
@@ -23,12 +21,14 @@ The two figures below illustrate the inputs and outputs of the pipeline.
 </tr></table>
 </p>
 
+The two figures below illustrate the inputs and outputs of the pipeline.
+
 <br/>
 
 > README Contents
 > - [Pipeline Overview](#pipeline-overview)
 >     * [Découpage et ré-échantillonnage des traces brutes](#script-1_decoup_et_resamplepy-découpage-et-ré-échantillonnage-des-traces-en-entrée)
->     * [Calculs des cartes de densité, de contraste et binaire](#script-2_calculs_des_cartes_de_densité_de_contraste_et_binaire)
+>     * [Calculs des cartes de densité, de contraste et binaire](#script-2-calculs-des-cartes-de-densité-de-contraste-et-binaire)
 > - [Environment Setup](#environment-setup)
 >     * Requirements
 >     * Environment Setup
@@ -110,7 +110,7 @@ En sortie :
 
 
 
-
+<br/>
 
 # Environment Setup
 
