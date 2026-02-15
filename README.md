@@ -1,10 +1,30 @@
 # OutdoorFootprintNetworkPipeline (ONFP)
 
-is an open source (MIT) Python library w
-Source code for creating an outdoor activity footprint network from GNSS trajectories, representing the human footprint (e.g., hiking or running).
+OFNP is an open-source Python processing pipeline (MIT license) for generating outdoor activity footprint networks from GNSS trajectories, representing, for example, hikers’ or runners’ footprints within a defined spatial and temporal extent. The pipeline consists of several components, including GNSS point map-matching onto a network and trajectory merging, both implemented using the Tracklib Python library.
+
+The outdoor footprint network is defined by :
+
+* a topology graph G (V, E) : a set of vertex V and a set of edges E, E ⊆ V x V non oriented
+* a geometry for each edge E defined as as sequence of vertics (x, y, z) and represents accurately the common path followed by all the individual sample trajectories (i.e. accurate aggregate trajectories)
 
 
+The two figures below illustrate the inputs and outputs of the pipeline.
 
+<p align="center">
+<table style="border:none;border:0;width:60%"><tr>
+  <td align="center" style="width:30%">
+    <img width="200px" src="https://github.com/IntForOut/HikersFootprint/blob/main/img/input.png" />
+    <label>Raw GNSS trajectories</label>
+  </td>
+  <td style="padding:16px;">
+    <img width="200px" src="https://github.com/IntForOut/HikersFootprint/blob/main/img/output.png" />
+    <label>Outdoor Footprint Network</label>
+  </td>
+</tr></table>
+</p>
+
+
+# Pipeline Overview
 
 
 
