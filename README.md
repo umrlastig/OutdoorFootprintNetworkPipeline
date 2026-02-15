@@ -24,15 +24,37 @@ The two figures below illustrate the inputs and outputs of the pipeline.
 </p>
 
 
+> README Contents
+> - [Pipeline Overview](#pipeline-overview)
+>     * [Découpage et ré-échantillonnage des traces brutes](#script-1_decoup_et_resamplepy-découpage-et-ré-échantillonnage-des-traces-en-entrée)
+>     * [Calculs des cartes de densité, de contraste et binaire](#script-2_calculs_des_cartes_de_densité_de_contraste_et_binaire)
+> - [Environment Setup](#environment-setup)
+>     * Requirements
+>     * Environment Setup
+>     * How to Run the Code
+
+<br/>
+
 # Pipeline Overview
 
 
+|                |ASCII                          |OUTPUT DIR                   |
+|----------------|-------------------------------|-----------------------------|
+|Script 1        |                               |decoup and resample          |
+|Script 2        |                               |densite                      |
+|Script 3        |                               |network                      |
 
 
+Chaque script enregistre des résultats dans un répertoire (colonne 3).
 
 
-## Script *1_decoup_et_resample.py*: Découpage et ré-échantillonnage des traces en entrée
-          
+<br/>
+
+<!-- ===================================================================================================== -->
+
+## Script 1 *Découpage et ré-échantillonnage des traces brutes*
+
+        
 => produit un jeu de traces, résolues spatialement à 1 mètre, 
                     extraites (peut-être découpées) suivant une figure géométrique
 
@@ -62,13 +84,20 @@ Il faut créer le répertoire avant de lancer le script.
 tracespath = r'/home/md_vandamme/4_RESEAU/ExampleRunning/traces/'
 
 
-
-
-
 En sortie :
 
 
-## 
+<br/>
+
+<!-- ===================================================================================================== -->
+
+## Script 2 *Calculs des cartes de densité, de contraste et binaire*
+
+
+=> produit un jeu de traces résolues spatialement à 1 mètre
+
+
+
 
 
 
