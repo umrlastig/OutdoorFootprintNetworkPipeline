@@ -21,11 +21,11 @@ The outdoor footprint network is defined by :
 </tr></table>
 </p>
 
-The two figures below illustrate the inputs and outputs of the pipeline.
+The two figures above illustrate the pipeline input (left) and output (right).
 
 <br/>
 
-> README Contents
+> Table of Contents
 > - [Pipeline Overview](#pipeline-overview)
 >     * [Découpage et ré-échantillonnage des traces brutes](#script-1_decoup_et_resamplepy-découpage-et-ré-échantillonnage-des-traces-en-entrée)
 >     * [Calculs des cartes de densité, de contraste et binaire](#script-2-calculs-des-cartes-de-densité-de-contraste-et-binaire)
@@ -38,41 +38,45 @@ The two figures below illustrate the inputs and outputs of the pipeline.
 
 # Pipeline Overview
 
-Le pipeline est composant est composé de 6 briques :
+Le pipeline a été testé sur 3 zones d'études:
+
+- study area 1 dans les Bauges : 4145 traces, 1172 traces après filtrage,   3km x 2.5km
+- study area 2 dans la vallée de Chamonix - Mont Blanc
 
 
-|         |DESCRIPTION                    |OUTPUT DIR                   |
-|---------|-------------------------------|-----------------------------|
-|Script 1 | decoup, filtre, resample      |selection                    |
-|Script 2 | traitement images             |densite                      |
-|Script 3 | topologie                     |network                      |
-|Script 4 | recalage                      |mapmatch                     |
-|Script 5 | fusion + raccord              |agggeometry                  |
-|Script 6 | 2ème passage                  |agggeometry                  |
+Le pipeline est composé de 6 briques:
 
 
-Chaque script enregistre des résultats dans un répertoire (colonne 3). Pour l'installation et la configuration, voir le paragraphe II.
+|           |DESCRIPTION                    |OUTPUT DIR                   | RUNTIME for me (study area 1)     |
+|-----------|-------------------------------|-----------------------------|-----------------------------------|
+|Script 1+2 | filtre, decoup, resample      | decoup, resample            | 7 min + 2 min                     |
+|Script 3+4 | création et traitement images | image                       | 2 min + 15 min                    |
+|Script 5   | topologie                     | network                     | 3 min                             |
+|Script 6   | recalage                      | mapmatch                    | 5 min  | 
+|Script 7   | fusion et raccord             |agggeometry                  |   |
+|Script 8   | 2ème passage                  |agggeometry                  |   |
+
+
+Pour l'installation et la configuration, voir le paragraphe II.
 
 Les scripts se lancent dans la console QGIS. 
-
-Ci-dessous un détail de chaque brique: 
-
-
-<br/>
-
-<!-- ===================================================================================================== -->
-
-## Script 1 *Découpage et ré-échantillonnage des traces brutes*
-
-        
-=> produit un jeu de traces, résolues spatialement à 1 mètre, 
-                    extraites (peut-être découpées) suivant une figure géométrique
-
-Le script peut être lancer sans QGIS, dans ce cas il faut commenter 
 
 
 Paramètres à renseigner :
 --------------------------
+
+* tracescsvpath = r'/home/md_vandamme/5_GPS/OV/BAUGES/run/'
+
+* Le répertoire qui va contenir les nouvelles traces : découpées et ré-échantillonnées :
+
+tracespath = r'/home/md_vandamme/4_RESEAU/ExampleRunning/traces/'. Chaque script enregistre des résultats dans un répertoire (colonne 3). 
+
+
+* Limites de la zone d'étude sous forme de coordonnées des sommets des vertex d'un polygone:
+
+X = [945878, 956330, 955879, 954402, 952511, 950389, 948774, 945857, 945878]
+
+Y = [6516870, 6516805, 6508417, 6506849, 6506503, 6505649, 6504150, 6503762, 6516870]
 
 * RESAMPLE_SIZE = 1
 
@@ -80,28 +84,42 @@ Paramètres à renseigner :
 
 * DIST_MAX_2OBS = 50 # si supérieur on coupe la trace. Par exemple : a stop can create a break in the trajectory
 
-* tracescsvpath = r'/home/md_vandamme/5_GPS/OV/BAUGES/run/'
-
-* Limites de la zone d'étude sous forme de coordonnées des sommets des vertex :
-
-X = [945878, 956330, 955879, 954402, 952511, 950389, 948774, 945857, 945878]
-Y = [6516870, 6516805, 6508417, 6506849, 6506503, 6505649, 6504150, 6503762, 6516870]
-
-* Le répertoire qui va contenir les nouvelles traces : découpées et ré-échantillonnées 
-
-Il faut créer le répertoire avant de lancer le script.
-
-tracespath = r'/home/md_vandamme/4_RESEAU/ExampleRunning/traces/'
 
 
-En sortie :
+
+
+
+
+<br/>
+
+Ci-dessous un détail de chaque brique: 
+
+<br/>
+
+<!-- ===================================================================================================== -->
+
+## Script 1: *Découpage et ré-échantillonnage des traces brutes*
+
+Ce script prend en entrée des traces brutes en entrée du pipeline. A la fin du script un nouveau jeu de traces est produit, extraites, découpées et sélectionnées si elle traverse une figure géométrique, résolues spatialement à 1 mètre.
+
+=> produit un jeu de traces, résolues spatialement à 1 mètre, 
+                    extraites (peut-être découpées) suivant une figure géométrique
+
+
+PS : le script peut être lancer sans QGIS.
+
+
+
+
+
+
 
 
 <br/>
 
 <!-- ===================================================================================================== -->
 
-## Script 2 *Calculs des cartes de densité, de contraste et binaire*
+## Script 2: *Calculs des cartes de densité, de contraste et binaire*
 
 
 => produit un jeu de traces résolues spatialement à 1 mètre
@@ -172,6 +190,21 @@ A GNSS trace dataset in CSV format is required.
 Run this source code in the QGIS Python console to display the created layers.
 
 Execute MainWorkflow.py to start the creation scripts.
+
+
+
+
+# Development & Contributions
+
+* Institute: LASTIG, Univ Gustave Eiffel, Géodata Paris, IGN
+* License: MIT license
+* Authors:
+  - Marie-Dominique Van Damme
+  - Yann Méneroux
+
+
+
+
 
 
 
