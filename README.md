@@ -14,15 +14,16 @@ The two figures below illustrate the inputs and outputs of the pipeline.
 <table style="border:none;border:0;width:60%"><tr>
   <td align="center" style="width:30%">
     <img width="200px" src="https://github.com/IntForOut/HikersFootprint/blob/main/img/input.png" />
-    <label>Raw GNSS trajectories</label>
+    <br/><label>Raw GNSS trajectories</label>
   </td>
   <td style="padding:16px;">
     <img width="200px" src="https://github.com/IntForOut/HikersFootprint/blob/main/img/output.png" />
-    <label>Outdoor Footprint Network</label>
+    <br/><label>Outdoor Footprint Network</label>
   </td>
 </tr></table>
 </p>
 
+<br/>
 
 > README Contents
 > - [Pipeline Overview](#pipeline-overview)
@@ -37,15 +38,24 @@ The two figures below illustrate the inputs and outputs of the pipeline.
 
 # Pipeline Overview
 
-
-|                |ASCII                          |OUTPUT DIR                   |
-|----------------|-------------------------------|-----------------------------|
-|Script 1        |                               |decoup and resample          |
-|Script 2        |                               |densite                      |
-|Script 3        |                               |network                      |
+Le pipeline est composant est composé de 6 briques :
 
 
-Chaque script enregistre des résultats dans un répertoire (colonne 3).
+|         |DESCRIPTION                    |OUTPUT DIR                   |
+|---------|-------------------------------|-----------------------------|
+|Script 1 | decoup, filtre, resample      |selection                    |
+|Script 2 | traitement images             |densite                      |
+|Script 3 | topologie                     |network                      |
+|Script 4 | recalage                      |mapmatch                     |
+|Script 5 | fusion + raccord              |agggeometry                  |
+|Script 6 | 2ème passage                  |agggeometry                  |
+
+
+Chaque script enregistre des résultats dans un répertoire (colonne 3). Pour l'installation et la configuration, voir le paragraphe II.
+
+Les scripts se lancent dans la console QGIS. 
+
+Ci-dessous un détail de chaque brique: 
 
 
 <br/>
