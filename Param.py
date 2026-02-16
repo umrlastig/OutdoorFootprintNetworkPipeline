@@ -101,6 +101,10 @@ DIST_MIN_ARC = 30     # 20
 # Map matching
 SEARCH = 25
 
+# Aggregation
+
+
+
 
 
 

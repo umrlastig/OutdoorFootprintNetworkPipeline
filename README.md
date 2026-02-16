@@ -44,7 +44,7 @@ Le pipeline a été testé sur 3 zones d'études:
 - study area 2 dans la vallée de Chamonix - Mont Blanc
 
 
-Le pipeline est composé de 6 briques:
+Le pipeline est composé de 6 briques à exécuter en 8 étapes :
 
 
 |           |DESCRIPTION                    |OUTPUT DIR                   | RUNTIME for me (study area 1)     |
@@ -53,8 +53,8 @@ Le pipeline est composé de 6 briques:
 |Script 3+4 | création et traitement images | image                       | 2 min + 15 min                    |
 |Script 5   | topologie                     | network                     | 3 min                             |
 |Script 6   | recalage                      | mapmatch                    | 3 heures                          | 
-|Script 7   | fusion et raccord             |agggeometry                  |   |
-|Script 8   | 2ème passage                  |agggeometry                  |   |
+|Script 7   | fusion et raccord             | geometry                    | 21 minutes                        |
+|Script 8   | 2ème passage                  | geometry                    |                                   |
 
 
 Pour l'installation et la configuration, voir le paragraphe II.

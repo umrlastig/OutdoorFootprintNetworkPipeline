@@ -7,6 +7,7 @@ from source.Selection import decoup, resample
 from source.Image import density, polygonize
 from source.Topology import network
 from source.Mapmatch import mapmatch
+from source.Aggregation import aggregation
 
 
 # Polygon ((950987 6513197, 951409 6512091, 950696 6511113, 949467 6510719,
@@ -27,7 +28,7 @@ from source.Mapmatch import mapmatch
 #   5 :
 #
 #
-STAGE = 6
+STAGE = 7
 
 
 if STAGE == 1:
@@ -66,6 +67,11 @@ if STAGE == 6:
     t1 = time.time()
     total = t1-t0
     print ("Temps d'exécution en s:", total)
-
+if STAGE == 7:
+    t0 = time.time()
+    aggregation(RESPATH, SEARCH)
+    t1 = time.time()
+    total = t1-t0
+    print ("Temps d'exécution en s:", total)
 
 
