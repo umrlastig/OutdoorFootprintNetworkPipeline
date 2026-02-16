@@ -52,7 +52,7 @@ Le pipeline est composé de 6 briques:
 |Script 1+2 | filtre, decoup, resample      | decoup, resample            | 7 min + 2 min                     |
 |Script 3+4 | création et traitement images | image                       | 2 min + 15 min                    |
 |Script 5   | topologie                     | network                     | 3 min                             |
-|Script 6   | recalage                      | mapmatch                    | 5 min  | 
+|Script 6   | recalage                      | mapmatch                    | 3 heures                          | 
 |Script 7   | fusion et raccord             |agggeometry                  |   |
 |Script 8   | 2ème passage                  |agggeometry                  |   |
 
