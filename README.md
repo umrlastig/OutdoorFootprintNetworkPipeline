@@ -47,14 +47,35 @@ Le pipeline a été testé sur 3 zones d'études:
 Le pipeline est composé de 6 briques à exécuter en 8 étapes :
 
 
-|           |DESCRIPTION                    |OUTPUT DIR                   | RUNTIME for me (study area 1)     |
-|-----------|-------------------------------|-----------------------------|-----------------------------------|
-|Script 1+2 | filtre, decoup, resample      | decoup, resample            | 7 min + 2 min                     |
-|Script 3+4 | création et traitement images | image                       | 2 min + 15 min                    |
-|Script 5   | topologie                     | network                     | 3 min                             |
-|Script 6   | recalage                      | mapmatch                    | 3 heures                          | 
-|Script 7   | fusion et raccord             | geometry                    | 21 minutes                        |
-|Script 8   | 2ème passage                  | geometry                    |                                   |
+|           |DESCRIPTION                    |OUTPUT DIR                   |
+|-----------|-------------------------------|-----------------------------|
+|Script 1+2 | filtre, decoup, resample      | decoup, resample            |
+|Script 3+4 | création et traitement images | image                       |
+|Script 5   | topologie                     | network                     |
+|Script 6   | recalage                      | mapmatch                    |
+|Script 7   | fusion et raccord             | geometry                    |
+|Script 8   | 2ème passage                  | geometry                    |
+
+
+
+Temps d'exécution
+
+
+|           | RUNTIME for me (study area 1)     | RUNTIME for me (study area 1)     |
+|-----------|-----------------------------------|-----------------------------------|
+|Script 1+2 | 7 min + 2 min                     | 5.25 min + 1.16 min               |
+|Script 3+4 | 2 min + 15 min                    | 1.20 min +                    |
+|Script 5   | 3 min                             |                            |
+|Script 6   | 3 heures 10 min                   |                    |  
+|Script 7   | 21 minutes                        |                         |
+|Script 8   |                                   |                         |
+
+
+Polygon ((950819.6432923924876377 6513116.07216513901948929, 951195.66912580374628305 6513112.05049847066402435, 951195.66912580374628305 6512563.09299835748970509, 950813.61079239123500884 6512567.11466502491384745, 950819.6432923924876377 6513116.07216513901948929))
+
+
+
+
 
 
 Pour l'installation et la configuration, voir le paragraphe II.
