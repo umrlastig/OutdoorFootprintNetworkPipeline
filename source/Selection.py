@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import tracklib as tkl
-from tracklib.util.qgis import QGIS, LineStyle, PointStyle
 
 
 def decoup(tracespathsource, NB_OBS_MIN, DIST_MAX_2OBS, X, Y, RESPATH):
 
-    print ("Lancement du découpage...")
+    print ("Lancement du découpage ...")
 
     """ ======================================================================= """
     """         LECTURE de toutes les traces                                    """
@@ -44,6 +43,8 @@ def decoup(tracespathsource, NB_OBS_MIN, DIST_MAX_2OBS, X, Y, RESPATH):
         if cpt%200 == 0:
             print ('   ', cpt, '/', collection2.size())
         cpt += 1
+
+
     
         selection = constraintBBox.select(tkl.TrackCollection([trace]))
         if len(selection) <= 0:
@@ -87,16 +88,8 @@ def decoup(tracespathsource, NB_OBS_MIN, DIST_MAX_2OBS, X, Y, RESPATH):
     
     
     """ ======================================================================= """
-    """         Affichage des résultats dans QGis                               """
+    """         Enregistrement des données                                      """
     """                                                                         """
-    
-    QGIS.plotTracks(collection, type='LINE',
-                    style=LineStyle.simpleBlue,
-                    title='Raw lines')
-    QGIS.plotTracks(collection, type='POINT',
-                    style=PointStyle.simpleSquareBlue,
-                    title='Raw points')
-    
     af_names = ['num', 'track_id', 'user_id']
     tracespath = RESPATH + "decoup/"
     tkl.TrackWriter.writeToFiles(collection, tracespath,
@@ -146,7 +139,8 @@ def resample(RESPATH, RESAMPLE_SIZE):
     print ('    Début ré-échantillonnage')
 
     cpt = 1
-    collection = tkl.TrackCollection()
+    collection1 = tkl.TrackCollection()
+    collection5 = tkl.TrackCollection()
     for trace in collection2:
         num = trace.getObsAnalyticalFeature('num', 0)
         track_id = trace.getObsAnalyticalFeature('track_id', 0)
@@ -155,16 +149,27 @@ def resample(RESPATH, RESAMPLE_SIZE):
             print ('   ', cpt, '/', collection2.size())
         cpt += 1
 
-        trace.resample(RESAMPLE_SIZE, tkl.MODE_SPATIAL)
-        trace.uid = cpt
-        trace.tid = cpt
-        trace.createAnalyticalFeature('num', num)
-        trace.createAnalyticalFeature('track_id', track_id)
-        trace.createAnalyticalFeature('user_id', user_id)
-        collection.addTrack(trace)
+        track1 = trace.copy()
+        track1.resample(RESAMPLE_SIZE, tkl.MODE_SPATIAL)
+        track1.uid = cpt
+        track1.tid = cpt
+        track1.createAnalyticalFeature('num', num)
+        track1.createAnalyticalFeature('track_id', track_id)
+        track1.createAnalyticalFeature('user_id', user_id)
+        collection1.addTrack(trace)
+
+        track5 = trace.copy()
+        track5.resample(RESAMPLE_SIZE*5, tkl.MODE_SPATIAL)
+        track5.uid = cpt
+        track5.tid = cpt
+        track5.createAnalyticalFeature('num', num)
+        track5.createAnalyticalFeature('track_id', track_id)
+        track5.createAnalyticalFeature('user_id', user_id)
+        collection5.addTrack(trace)
 
 
-    print ('    Nombre de traces après resampling: ' + str(collection.size()))
+    print ('    Nombre de traces après resampling: ' + str(collection1.size()))
+    print ('    Nombre de traces après resampling: ' + str(collection1.size()))
     print ('Fin ré-échantillonnage 2/3.')
 
 
@@ -173,18 +178,19 @@ def resample(RESPATH, RESAMPLE_SIZE):
     # =============================================================================
     #         Affichage des résultats dans QGis
     #
-
-    QGIS.plotTracks(collection, type='POINT',
-                    style=PointStyle.simpleSquareBlue,
-                    title='Resampled points')
-
     af_names = ['num', 'track_id', 'user_id']
-    resampledtracespath = RESPATH + 'resample/'
-    tkl.TrackWriter.writeToFiles(collection, resampledtracespath,
+    resampledtracespath = RESPATH + 'resample1/'
+    tkl.TrackWriter.writeToFiles(collection1, resampledtracespath,
+                                 id_E=1, id_N=0, id_U=3, id_T=2,
+                                 h=1, separator=";", af_names=af_names)
+    resampledtracespath = RESPATH + 'resample5/'
+    tkl.TrackWriter.writeToFiles(collection5, resampledtracespath,
                                  id_E=1, id_N=0, id_U=3, id_T=2,
                                  h=1, separator=";", af_names=af_names)
 
-    print ("Fin de l'enregistrement et de l'affichage des données dans QGIS 3/3.")
+    print ("Fin de l'enregistrement.")
 
 
-    print ("END SCRIPT 1.")
+
+
+
