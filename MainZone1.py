@@ -11,7 +11,7 @@ from source.Aggregation import aggregation
 
 
 
-STAGE = 3
+STAGE = 4
 
 """ ======================================================================= """
 """     PARAMETRES  GLOBAL                                                  """
@@ -159,19 +159,22 @@ if STAGE == 1:
     total = t1-t0
     print ("Temps d'exécution en s:", total)
 
+
+
 if STAGE == 3:
     t0 = time.time()
     density(RESPATH, G1_SIZE, G2_SIZE, SEUIL)
     t1 = time.time()
     total = t1-t0
     print ("Temps d'exécution en s:", total)
-
 if STAGE == 4:
     t0 = time.time()
-    polygonize(RESPATH, SEUIL_SURFACE, connectparam)
+    polygonize(RESPATH, SEUIL_SURFACE)
     t1 = time.time()
     total = t1-t0
     print ("Temps d'exécution en s:", total)
+
+
 
 
 if STAGE == 5:

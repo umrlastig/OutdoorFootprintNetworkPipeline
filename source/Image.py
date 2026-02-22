@@ -9,26 +9,18 @@
 import sys
 import csv
 csv.field_size_limit(sys.maxsize)
+
+
 import math
 import os
-import psycopg2
 from scipy.ndimage import maximum_filter
 
 import tracklib as tkl
-from tracklib.util.qgis import QGIS, LineStyle, PointStyle
-from . import plotRaster, styleTurbo
+import numpy as np
 
-try:
-    from qgis.PyQt.QtCore import QVariant
-    from qgis.core import QgsStyle, QgsColorRampShader, QgsColorRampShader, QgsRasterShader
-    from qgis.core import QgsSingleBandPseudoColorRenderer, QgsRasterLayer, QgsProject
-    from qgis.core import QgsCoordinateReferenceSystem, QgsVectorLayer, QgsFeatureRequest
-    from qgis.core import QgsField, QgsGeometry, QgsFeature, QgsVectorFileWriter
-    from PyQt5.QtGui import QColor
-    import processing
-    from qgis.core import edit
-except ImportError:
-    print ('Code running in a no qgis environment')
+from osgeo import gdal, ogr, osr
+from tracklib.util.centerline import Shp2centerline
+
 
 
 
@@ -48,23 +40,15 @@ def density(RESPATH, G1_SIZE, G2_SIZE, SEUIL):
                            'srid': 'ENU',
                            'id_E': 1,'id_N': 0, 'id_U': 3,'id_T': 2,
                            'separator': ';',
-                           'header': 1})
+                           'header': 1,
+                           'read_all': True})
     
-    cptId = 1
-    resampledtracespath = RESPATH + 'resample/'
+    resampledtracespath = RESPATH + 'resample_grid/'
     collection = tkl.TrackReader.readFromFile(resampledtracespath, fmt)
     for trace in collection:
-        trace.uid = cptId
-        trace.tid = cptId
-        cptId += 1
+        trace.uid = trace.getObsAnalyticalFeature('user_id', 0)
+        trace.tid = trace.getObsAnalyticalFeature('track_id', 0)
     print ('Number of tracks : ', collection.size())
-
-    QGIS.plotTracks(collection, type='POINT',
-                    style=PointStyle.circleYellow,
-                    title='Zone3-walk points')
-    QGIS.plotTracks(collection, type='LINE',
-                    style=LineStyle.simpleLightOrange,
-                    title='Zone3-walk line')
 
 
 
@@ -89,15 +73,16 @@ def density(RESPATH, G1_SIZE, G2_SIZE, SEUIL):
     pathG1 = respath + 'G1.asc'
     tkl.RasterWriter.writeMapToAscFile(pathG1, grilleG1)
     
-    plotRaster(pathG1, "G1", "Turbo")
-    
-    # Combien de cellules de chaque côté pour la petite résolution ?
-    nb = math.floor(G2_SIZE / G1_SIZE)
 
 
     # =============================================================================
-    
+
+    # Combien de cellules de chaque côté pour la petite résolution ?
+    nb = math.floor(G2_SIZE / G1_SIZE)
+    print ("nb", nb)
+
     epsilon = 0.001
+    
     # On construit une grille vide comme G1
     box = tkl.Bbox(tkl.ENUCoords(rasterG1.xmin, rasterG1.ymin),
                    tkl.ENUCoords(rasterG1.xmax, rasterG1.ymax))
@@ -118,6 +103,7 @@ def density(RESPATH, G1_SIZE, G2_SIZE, SEUIL):
             g1 = grilleG1.grid[line][column]
     
             g2 = G2[line][column] / (nb * G1_SIZE * nb * G1_SIZE)
+            #g2 = G2[line][column] / (G2_SIZE * G2_SIZE)
     
             if g1 <= 2:
                 g1 = 0
@@ -134,7 +120,7 @@ def density(RESPATH, G1_SIZE, G2_SIZE, SEUIL):
     pathK = respath + 'K.asc'
     tkl.RasterWriter.writeMapToAscFile(pathK, grilleK)
     
-    plotRaster(pathK, "K", "Turbo")
+    #plotRaster(pathK, "K", "Turbo")
 
 
     # =============================================================================
@@ -159,180 +145,189 @@ def density(RESPATH, G1_SIZE, G2_SIZE, SEUIL):
     pathB = respath + 'B.asc'
     tkl.RasterWriter.writeMapToAscFile(pathB, raster.getAFMap(0))
     
-    plotRaster(pathB, "B")
+    # plotRaster(pathB, "B")
 
 
     # =============================================================================
     
     
     print ("Fin des calculs des cartes de densités, de constraste et binaire.")
-    
-    
-    print ("END SCRIPT 2.")
 
 
 
-def polygonize(RESPATH, SEUIL_SURFACE, connectparam):
+def polygonize(RESPATH, SEUIL_SURFACE):
 
     respath  = RESPATH + 'image/'
 
     pathB           = respath + 'B.asc'
     patherosion     = respath + 'erosion.tif'
+    pathdilatation  = respath + 'dilatation.tif'
+    surfpath        = respath + 'surface.shp'
     roadsurfpath    = respath + 'road_surface.shp'
     squelettepath   = respath + 'squelette.shp'
 
     try:
-        os.remove(roadsurfpath)
         os.remove(patherosion)
-        os.remove(squelettepath)
-        print(f"Files '{roadsurfpath}', '{patherosion}' and '{squelettepath}' deleted successfully.")
+        os.remove(pathdilatation)
+        print(f"Files '{patherosion}' and '{pathdilatation}' deleted successfully.")
     except FileNotFoundError:
-        print(f"File '{roadsurfpath}', '{patherosion}' or '{squelettepath}' not found.")
+        print(f"File '{patherosion}' or '{pathdilatation}' not found.")
+
+
+    try:
+        os.remove(roadsurfpath)
+        os.remove(squelettepath)
+        print(f"Files '{roadsurfpath}' and '{squelettepath}' deleted successfully.")
+    except FileNotFoundError:
+        print(f"File '{roadsurfpath}' or '{squelettepath}' not found.")
+
+
 
 
     # =============================================================================
     #   On charge le binaire
 
     rasterB = tkl.RasterReader.readFromAscFile(pathB, name='B', separator='\t')
-    grille = rasterB.getAFMap('B')
-    plotRaster(pathB, "B")
+    mapBinaire = rasterB.getAFMap('B')
 
 
     # =============================================================================
-    #   Fermeture
-    '''
-    ALGORITHM :
-        - 0: Dilation
-        - 1: Erosion
-        - 2: Closing
-        - 3: Opening
-    '''
+    #   Dilatation + Fermeture
 
-    param = {
-        'INPUT': pathB,
-        'DIMENSION': 0,
-        'ALGORITHM': 1,
-        'STRUCTURE':'[[0, 1, 0],\n[1, 1, 1],\n[0, 1, 0]]',
-        'ORIGIN': '0, 0',
-        'BANDSTATS': True,
-        'DTYPE': 0,
-        'OUTPUT' : patherosion,
-        'ITERATIONS': 1,
-        'BORDERVALUE': 0,
-        'MASK': None
-    }
-    resultat = processing.run("scipy_filters:binary_morphology", param)
-    plotRaster(patherosion, "erosion")
+    mask = np.array([
+        [0,0,1,0,0],
+        [0,1,1,1,0],
+        [1,1,1,1,1],
+        [0,1,1,1,0],
+        [0,0,1,0,0]])
+
+    # Dilatation
+    mapBinaire.filter(mask, np.max)
+    tkl.RasterWriter.writeMapToAscFile(pathdilatation, mapBinaire)
+
+    # Erosion
+    mapBinaire.filter(np.array([[1]]), lambda x : 1-x)     # Dual de la carte
+    mapBinaire.filter(mask, np.max)                        # Dilatation
+    mapBinaire.filter(np.array([[1]]), lambda x : 1-x)     # Dual de la carte
+    tkl.RasterWriter.writeMapToAscFile(patherosion, mapBinaire)
+
+
+
+
 
     # =============================================================================
     #   Vectorisation
 
-    param = {
-        'INPUT':patherosion,
-        'BAND':1,
-        'FIELD':'DN',
-        'EIGHT_CONNECTEDNESS':False,
-        'EXTRA':'',
-        'OUTPUT': roadsurfpath
-    }
+    #  get raster datasource
+    src_ds = gdal.Open(pathdilatation)
+    srcband = src_ds.GetRasterBand(1)
 
-    resultat = processing.run("gdal:polygonize", param)
-    layerRoadSurface = QgsVectorLayer(roadsurfpath, "Road surface", "ogr")
-    layerRoadSurface.setCrs(QgsCoordinateReferenceSystem("EPSG:2154"))
-    QgsProject.instance().addMapLayer(layerRoadSurface)
+    dst_layername = 'road_surface'
+    driver = ogr.GetDriverByName("ESRI Shapefile")
+    dst_ds = driver.CreateDataSource(surfpath)
+    sp_ref = osr.SpatialReference()
+    sp_ref.SetFromUserInput('EPSG:2154')
 
+    dst_layer = dst_ds.CreateLayer(dst_layername, srs=sp_ref)
+    fld2 = ogr.FieldDefn("DN", ogr.OFTInteger)
+    dst_layer.CreateField(fld2)
+    dst_field = dst_layer.GetLayerDefn().GetFieldIndex("DN")
 
-    request = QgsFeatureRequest().setFilterExpression("DN = 0")
-    with edit(layerRoadSurface):
-        for feat in layerRoadSurface.getFeatures(request):
-            layerRoadSurface.deleteFeature(feat.id())
+    gdal.Polygonize(srcband, None, dst_layer, dst_field, [], callback=None )
 
 
-    # -----------------------------------------------------------------------------
-    #     On ajoute un champ surface pour garder les troncons
-    #          dont la surface est supérieure à un certain seuil
-
-    # On regarde si l'attribut existe dans la couche
-    pr = layerRoadSurface.dataProvider()
-    trouve = False
-    for attribut in pr.fields():
-        if attribut.name() == ' SURF':
-            print (attribut.name())
-            trouve = True
-
-    # S'il n'existe pas, on le crée
-    if not trouve :
-        layerRoadSurface.startEditing()
-        pr.addAttributes([QgsField("SURF", QVariant.Double)])
-    layerRoadSurface.updateFields()
-    layerRoadSurface.commitChanges()
+    # Nettoyage
+    del src_ds
+    del dst_ds
 
 
-    attrSurf = layerRoadSurface.fields().lookupField("SURF")
+    # On copie
+    src_surf = ogr.Open(surfpath)
+    driver.CopyDataSource(src_surf, roadsurfpath)
+    src_surf = None
 
-    with edit(layerRoadSurface):
-        for feat in layerRoadSurface.getFeatures():
-            surf = feat.geometry().area()
-            layerRoadSurface.changeAttributeValue(feat.id(), attrSurf, float(surf))
+
+
+
+
+
+    # =============================================================================
+    #   Squeletisation : center line
+
+    src_ds = ogr.Open(roadsurfpath, 1)
+    src_layer = src_ds.GetLayer()
+
+
+    # Appliquer un filtre attributaire
+    src_layer.SetAttributeFilter("DN = 0")
+
+    # Récupérer les features à supprimer
+    feature_ids = []
+    for feature in src_layer:
+        feature_ids.append(feature.GetFID())
+    
+    # Supprimer les features
+    for fid in feature_ids:
+        src_layer.DeleteFeature(fid)
+
+    src_layer.SetAttributeFilter(None)
+
+    # ------------------------------------------
+    #   Surface
+
+    fids_to_delete = []
+
+    for feature in src_layer:
+        geom = feature.GetGeometryRef()
+        if geom is not None:
+            area = geom.GetArea()
+            if area <= SEUIL_SURFACE:
+                fids_to_delete.append(feature.GetFID())
+
+    for fid in fids_to_delete:
+        src_layer.DeleteFeature(fid)
+
+    del src_ds
+
+
+    # -----------------------------------------
+    #   Id
+
+    ds = ogr.Open(roadsurfpath, 1)
+    layer = ds.GetLayer()
+
+    # Vérifier si le champ existe déjà
+    layer_defn = layer.GetLayerDefn()
+    field_names = [layer_defn.GetFieldDefn(i).GetName() for i in range(layer_defn.GetFieldCount())]
+
+    if "id" not in field_names:
+        field_defn = ogr.FieldDefn("id", ogr.OFTInteger)
+        layer.CreateField(field_defn)
+
+    i = 1
+    for feature in layer:
+        feature.SetField("id", i)
+        layer.SetFeature(feature)
+        i += 1
+
+    ds = None
+
 
 
 
     # =============================================================================
     #   Squeletisation : center line dans Postgis
 
+    interp_dist = 5
+    clean_dist  = 0
 
-    layerSqueletteBrut = QgsVectorLayer("LineString?crs=epsg:2154", "Squelette brut", "memory")
-    pr = layerSqueletteBrut.dataProvider()
-    layerSqueletteBrut.startEditing()
-
-    connection = psycopg2.connect(
-        host=connectparam['HOST'],
-        port = connectparam['PORT'],
-        database=connectparam['DATABASE'],
-        user=connectparam['USER'],
-        password=connectparam['PASSWD']
-    )
-
-    for feat in layerRoadSurface.getFeatures():
-        surf = feat.geometry().area()
-        if surf > SEUIL_SURFACE:
-            wkt = feat.geometry().asWkt()
-            cursor = connection.cursor()
-            sql = " SELECT ST_ASText(ST_ApproximateMedialAxis(ST_BUFFER(ST_GeomFromText('" + wkt + "'), 0.25))) as ligne "
-            cursor.execute(sql)
-            record = cursor.fetchone()
-            mlwkt = record[0]
-
-            ligne = QgsGeometry.fromWkt(mlwkt)
-
-            newFeature = QgsFeature()
-            newFeature.setGeometry(ligne)
-            pr.addFeature(newFeature)
-
-    connection.close()
-    layerSqueletteBrut.commitChanges()
-    QgsProject.instance().addMapLayer(layerSqueletteBrut)
-
-    save_options = QgsVectorFileWriter.SaveVectorOptions()
-    save_options.driverName = "ESRI Shapefile"
-    save_options.fileEncoding = "UTF-8"
-
-    error = QgsVectorFileWriter.writeAsVectorFormatV3(layerSqueletteBrut,
-                                                      squelettepath,
-                                                      QgsProject.instance().transformContext(),
-                                                      save_options)
-
-
-
-
+    Shp2centerline(roadsurfpath, squelettepath, interp_dist, clean_dist)
+    
 
 
     # =============================================================================
 
 
-    print ("Fin des calculs des cartes de densités, de constraste et binaire.")
-
-
-    print ("END SCRIPT 3.")
+    print ("Fin des calculs de vectorisation et squelette.")
 
 
