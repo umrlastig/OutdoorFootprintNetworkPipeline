@@ -5,7 +5,8 @@
 import tracklib as tkl
 
 
-def decoup_resample(RESPATH, tracespathsource, NB_OBS_MIN, DIST_MAX_2OBS, X, Y, RESAMPLE_SIZE):
+def decoup_resample(RESPATH, tracespathsource, NB_OBS_MIN, DIST_MAX_2OBS, X, Y,
+                    RESAMPLE_SIZE_GRID, RESAMPLE_SIZE_FUSION):
 
     print ("Lancement du découpage et ré-échantillonnage ...")
 
@@ -22,7 +23,7 @@ def decoup_resample(RESPATH, tracespathsource, NB_OBS_MIN, DIST_MAX_2OBS, X, Y, 
                            'header': 0,
                            'cmt': '#',
                            'read_all': True})
-    collection2 = tkl.TrackReader.readFromFile(tracespathsource, fmt)
+    rawCollection = tkl.TrackReader.readFromFile(tracespathsource, fmt)
     print ('Fin de la lecture des traces.')
 
 
@@ -38,15 +39,13 @@ def decoup_resample(RESPATH, tracespathsource, NB_OBS_MIN, DIST_MAX_2OBS, X, Y, 
 
     # On prépare la nouvelle collection de traces
     cpt = 1
-    collection = tkl.TrackCollection()
-    for trace in collection2:
+    cutCollection = tkl.TrackCollection()
+    for trace in rawCollection:
     
         if cpt%200 == 0:
-            print ('   ', cpt, '/', collection2.size())
+            print ('   ', cpt, '/', rawCollection.size())
         cpt += 1
 
-
-    
         selection = constraintBBox.select(tkl.TrackCollection([trace]))
         if len(selection) <= 0:
             continue
@@ -59,42 +58,41 @@ def decoup_resample(RESPATH, tracespathsource, NB_OBS_MIN, DIST_MAX_2OBS, X, Y, 
                 if o1.distance2DTo(o2) > DIST_MAX_2OBS:
                     # on coupe la trace pour créer un nouveau morceau
                     if tn.size() >= NB_OBS_MIN:
-                        tn.uid = str(trace.getObsAnalyticalFeature('user_id', 0))
+                        tn.uid = str(trace.getObsAnalyticalFeature('user_id', 0)) + "-"+ str(idxSelect)
                         tn.tid = str(trace.getObsAnalyticalFeature('track_id', 0)) + "-"+ str(idxSelect)
                         tn.createAnalyticalFeature('num', trace.getObsAnalyticalFeature('num', 0))
+                        tn.createAnalyticalFeature('user_id', tn.uid)
                         tn.createAnalyticalFeature('track_id', tn.tid)
-                        tn.createAnalyticalFeature('user_id', trace.getObsAnalyticalFeature('user_id', 0))
-                        collection.addTrack(tn)
+                        cutCollection.addTrack(tn)
                         idxSelect += 1
                     tn = tkl.Track()
             tn.addObs(o2)
             o1 = o2
     
-        # dernier morceau de trace
+        # Dernier morceau de trace
         if tn.size() >= NB_OBS_MIN:
-            tn.uid = str(trace.getObsAnalyticalFeature('user_id', 0))
+            tn.uid = str(trace.getObsAnalyticalFeature('user_id', 0)) + "-"+ str(idxSelect)
             tn.tid = str(trace.getObsAnalyticalFeature('track_id', 0)) + "-"+ str(idxSelect)
             tn.createAnalyticalFeature('num', trace.getObsAnalyticalFeature('num', 0))
+            tn.createAnalyticalFeature('user_id', tn.uid)
             tn.createAnalyticalFeature('track_id', tn.tid)
-            tn.createAnalyticalFeature('user_id', trace.getObsAnalyticalFeature('user_id', 0))
-            collection.addTrack(tn)
+            cutCollection.addTrack(tn)
     
     
-    print ('    Nombre de traces après découpage : ' + str(collection.size()))
-    print ('Fin découpage.')
-    
-    
+    print ('    Nombre de traces après découpage : ' + str(cutCollection.size()))
+
+
     
     """ ======================================================================= """
     """         Enregistrement des données                                      """
     """                                                                         """
     af_names = ['num', 'track_id', 'user_id']
     tracespath = RESPATH + "decoup/"
-    tkl.TrackWriter.writeToFiles(collection, tracespath,
+    tkl.TrackWriter.writeToFiles(cutCollection, tracespath,
                                  id_E=1, id_N=0, id_U=3, id_T=2,
                                  h=1, separator=";", af_names=af_names)
     
-    print ("Fin de l'enregistrement et affichage des données dans QGIS 3/3.")
+    print ("Fin de l'enregistrement des traces découpées.")
 
 
 
@@ -105,38 +103,38 @@ def decoup_resample(RESPATH, tracespathsource, NB_OBS_MIN, DIST_MAX_2OBS, X, Y, 
 
     print ('    Début ré-échantillonnage')
 
-    collection1 = tkl.TrackCollection()
-    collection5 = tkl.TrackCollection()
-    for trace in collection:
+    collectionGrid = tkl.TrackCollection()
+    collectionFusion = tkl.TrackCollection()
+    for trace in cutCollection:
         num = trace.getObsAnalyticalFeature('num', 0)
         track_id = trace.getObsAnalyticalFeature('track_id', 0)
         user_id = trace.getObsAnalyticalFeature('user_id', 0)
 
         if cpt%100 == 0:
-            print ('   ', cpt, '/', collection2.size())
+            print ('   ', cpt, '/', cutCollection.size())
 
 
-        track1 = trace.copy()
-        track1.resample(RESAMPLE_SIZE, tkl.MODE_SPATIAL)
-        track1.uid = user_id
-        track1.tid = track_id
-        track1.createAnalyticalFeature('num', num)
-        track1.createAnalyticalFeature('track_id', track_id)
-        track1.createAnalyticalFeature('user_id', user_id)
-        collection1.addTrack(trace)
+        trackG = trace.copy()
+        trackG.resample(RESAMPLE_SIZE_GRID, mode=tkl.MODE_SPATIAL)
+        trackG.uid = user_id
+        trackG.tid = track_id
+        trackG.createAnalyticalFeature('num', num)
+        trackG.createAnalyticalFeature('track_id', track_id)
+        trackG.createAnalyticalFeature('user_id', user_id)
+        collectionGrid.addTrack(trackG)
 
-        track5 = trace.copy()
-        track5.resample(RESAMPLE_SIZE*5, tkl.MODE_SPATIAL)
-        track5.uid = user_id
-        track5.tid = track_id
-        track5.createAnalyticalFeature('num', num)
-        track5.createAnalyticalFeature('track_id', track_id)
-        track5.createAnalyticalFeature('user_id', user_id)
-        collection5.addTrack(trace)
+        trackF = trace.copy()
+        trackF.resample(RESAMPLE_SIZE_FUSION, mode=tkl.MODE_SPATIAL)
+        trackF.uid = user_id
+        trackF.tid = track_id
+        trackF.createAnalyticalFeature('num', num)
+        trackF.createAnalyticalFeature('track_id', track_id)
+        trackF.createAnalyticalFeature('user_id', user_id)
+        collectionFusion.addTrack(trackF)
 
 
-    print ('    Nombre de traces après resampling: ' + str(collection1.size()))
-    print ('    Nombre de traces après resampling: ' + str(collection5.size()))
+    print ('    Nombre de traces après resampling: ' + str(collectionGrid.size()))
+    print ('    Nombre de traces après resampling: ' + str(collectionFusion.size()))
     print ('Fin ré-échantillonnage.')
 
 
@@ -146,18 +144,19 @@ def decoup_resample(RESPATH, tracespathsource, NB_OBS_MIN, DIST_MAX_2OBS, X, Y, 
     #        Enregistrement
     #
     af_names = ['num', 'track_id', 'user_id']
-    resampledtracespath = RESPATH + 'resample1/'
-    tkl.TrackWriter.writeToFiles(collection1, resampledtracespath,
+    
+    resampledtracespath = RESPATH + 'resample_grid/'
+    tkl.TrackWriter.writeToFiles(collectionGrid, resampledtracespath,
                                  id_E=1, id_N=0, id_U=3, id_T=2,
                                  h=1, separator=";", af_names=af_names)
-    resampledtracespath = RESPATH + 'resample5/'
-    tkl.TrackWriter.writeToFiles(collection5, resampledtracespath,
+    resampledtracespath = RESPATH + 'resample_fusion/'
+    tkl.TrackWriter.writeToFiles(collectionFusion, resampledtracespath,
                                  id_E=1, id_N=0, id_U=3, id_T=2,
                                  h=1, separator=";", af_names=af_names)
 
-    print ("Fin de l'enregistrement.")
+    print ("Fin de l'enregistrement des traces ré-échantillonnées.")
 
-
+    print ("Fin.")
 
 
 
