@@ -28,7 +28,7 @@ The two figures above illustrate the pipeline input (left) and output (right).
 > Table of Contents
 > - [Pipeline Overview](#pipeline-overview)
 >     * [Préparation des traces brutes]()
->     * [Création des flux de pratiques sportives]()
+>     * [Création des cartes de pratiques sportives et extrait du réseau]()
 >     * [Calcul de la topologie du réseau]()
 >     * [Calcul de la géométrie des arcs du réseau]()
 >     * [Second pass]()
@@ -123,7 +123,7 @@ Découpage et ré-échantillonnage des traces brutes
 <!-- ===================================================================================================== -->
 <!-- ===================================================================================================== -->
 
-## Script 2: *Création des flux de pratiques*
+## Script 2: *Création des cartes de pratiques sportives et extrait du réseau*
 
 
 Calculs des cartes de densité, de contraste et binaire
