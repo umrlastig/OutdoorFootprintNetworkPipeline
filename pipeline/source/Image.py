@@ -25,7 +25,7 @@ from tracklib.util.centerline import Shp2centerline
 
 
 
-def density(RESPATH, G1_SIZE, G2_SIZE, SEUIL):
+def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE):
 
 
     respath = RESPATH + 'image/'
@@ -147,24 +147,18 @@ def density(RESPATH, G1_SIZE, G2_SIZE, SEUIL):
     
     # plotRaster(pathB, "B")
 
-
-    # =============================================================================
-    
-    
     print ("Fin des calculs des cartes de densités, de constraste et binaire.")
 
 
+    # =========================================================================
 
-def polygonize(RESPATH, SEUIL_SURFACE):
-
-    respath  = RESPATH + 'image/'
 
     pathB           = respath + 'B.asc'
     patherosion     = respath + 'erosion.tif'
     pathdilatation  = respath + 'dilatation.tif'
     surfpath        = respath + 'surface.shp'
     roadsurfpath    = respath + 'road_surface.shp'
-    squelettepath   = respath + 'squelette.shp'
+    squelettepath   = RESPATH + 'network/squelette.shp'
 
     try:
         os.remove(patherosion)
@@ -175,12 +169,32 @@ def polygonize(RESPATH, SEUIL_SURFACE):
 
 
     try:
-        os.remove(roadsurfpath)
-        os.remove(squelettepath)
-        print(f"Files '{roadsurfpath}' and '{squelettepath}' deleted successfully.")
+        os.remove(respath + 'road_surface.shp')
+        os.remove(respath + 'road_surface.shx')
+        os.remove(respath + 'road_surface.dbf')
+        os.remove(respath + 'road_surface.prj')
+        print(f"Files road_surface.shp deleted successfully.")
     except FileNotFoundError:
-        print(f"File '{roadsurfpath}' or '{squelettepath}' not found.")
+        print(f"File '{roadsurfpath}' not found.")
 
+    try:
+        os.remove(respath + 'surface.shp')
+        os.remove(respath + 'surface.shx')
+        os.remove(respath + 'surface.dbf')
+        os.remove(respath + 'surface.prj')
+        print(f"Files surface.shp deleted successfully.")
+    except FileNotFoundError:
+        print(f"File '{roadsurfpath}' not found.")
+
+
+    try:
+        os.remove(RESPATH + 'network/squelette.shp')
+        os.remove(RESPATH + 'network/squelette.shx')
+        os.remove(RESPATH + 'network/squelette.dbf')
+        os.remove(RESPATH + 'network/squelette.cpg')
+        print(f"Files '{squelettepath}' deleted successfully.")
+    except FileNotFoundError:
+        print(f"File '{squelettepath}' not found.")
 
 
 
@@ -200,10 +214,10 @@ def polygonize(RESPATH, SEUIL_SURFACE):
         [1,1,1,1,1],
         [0,1,1,1,0],
         [0,0,1,0,0]])
-
-    # Dilatation
-    mapBinaire.filter(mask, np.max)
-    tkl.RasterWriter.writeMapToAscFile(pathdilatation, mapBinaire)
+    mask = np.array([
+        [0,1,0],
+        [1,1,1],
+        [0,1,0]])
 
     # Erosion
     mapBinaire.filter(np.array([[1]]), lambda x : 1-x)     # Dual de la carte
@@ -211,7 +225,9 @@ def polygonize(RESPATH, SEUIL_SURFACE):
     mapBinaire.filter(np.array([[1]]), lambda x : 1-x)     # Dual de la carte
     tkl.RasterWriter.writeMapToAscFile(patherosion, mapBinaire)
 
-
+    # Dilatation
+    mapBinaire.filter(mask, np.max)
+    tkl.RasterWriter.writeMapToAscFile(pathdilatation, mapBinaire)
 
 
 

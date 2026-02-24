@@ -4,14 +4,13 @@ import os
 import time
 
 from source.Selection import decoup_resample
-from source.Image import density, polygonize
+from source.Image import density_polygonize
 from source.Topology import network
-from source.Mapmatch import mapmatch
-from source.Aggregation import aggregation
+from source.Geometry import createNetworkGeom
 
 
 
-STAGE = 4
+STAGE = 3
 
 """ ======================================================================= """
 """     PARAMETRES  GLOBAL                                                  """
@@ -140,16 +139,6 @@ if not os.path.exists(RESPATH + 'resample_fusion'):
 #        de performance : on charge dans chaque étape ce dont on a besoin
 #        et de pratique : permet de régler le pipeline au fur et à mesure
 #
-#   1 : Lecture traces brutes, découpage, resampling spatial à 1m et 5m
-#   2 :
-#   3 : Lecture traces ré-échantillonnées et découpées, création des cartes
-#   4 : Lecture des cartes, Filtre morphologique, Vectorisation,
-#                      Squeletisation : center line dans Postgis
-#       Connection à Postgis
-#   5 :
-#
-#
-
 
 if STAGE == 1:
     t0 = time.time()
@@ -161,39 +150,31 @@ if STAGE == 1:
 
 
 
+if STAGE == 2:
+    t0 = time.time()
+    density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE)
+    t1 = time.time()
+    total = t1-t0
+    print ("Temps d'exécution en s:", total)
+
+
+
 if STAGE == 3:
-    t0 = time.time()
-    density(RESPATH, G1_SIZE, G2_SIZE, SEUIL)
-    t1 = time.time()
-    total = t1-t0
-    print ("Temps d'exécution en s:", total)
-if STAGE == 4:
-    t0 = time.time()
-    polygonize(RESPATH, SEUIL_SURFACE)
-    t1 = time.time()
-    total = t1-t0
-    print ("Temps d'exécution en s:", total)
-
-
-
-
-if STAGE == 5:
     t0 = time.time()
     network(RESPATH, tolerance, seuil_doublon, DIST_MIN_ARC)
     t1 = time.time()
     total = t1-t0
     print ("Temps d'exécution en s:", total)
-if STAGE == 6:
+
+
+
+if STAGE == 4:
     t0 = time.time()
-    mapmatch(RESPATH, SEARCH, DIST_MAX_2OBS, NB_OBS_MIN)
+    createNetworkGeom(RESPATH, SEARCH, DIST_MAX_2OBS, NB_OBS_MIN)
     t1 = time.time()
     total = t1-t0
     print ("Temps d'exécution en s:", total)
-if STAGE == 7:
-    t0 = time.time()
-    aggregation(RESPATH, SEARCH)
-    t1 = time.time()
-    total = t1-t0
-    print ("Temps d'exécution en s:", total)
+
+
 
 

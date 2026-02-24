@@ -41,8 +41,6 @@ def createNetwork(collection, threshold):
     cptNode = 1
 
     for track in collection:
-        tkl.computeAbsCurv(track)
-
         edge_id = tkl.NetworkReader.counter
         track.tid = edge_id
         tkl.NetworkReader.counter = tkl.NetworkReader.counter + 1
@@ -72,7 +70,6 @@ def createNetwork(collection, threshold):
         else:
             noeudIni = tkl.Node(cptNode, p1)
             cptNode += 1
-
 
         # Target node
         p2 = track.getLastObs().position
@@ -118,6 +115,7 @@ def createNetwork(collection, threshold):
         if not existant:
         '''
         network.addEdge(edge, noeudIni, noeudFin)
+
 
     return network
 

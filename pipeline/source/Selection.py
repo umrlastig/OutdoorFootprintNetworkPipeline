@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 
-
 import tracklib as tkl
+
 
 
 def decoup_resample(RESPATH, tracespathsource, NB_OBS_MIN, DIST_MAX_2OBS, X, Y,
