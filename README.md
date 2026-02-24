@@ -27,8 +27,11 @@ The two figures above illustrate the pipeline input (left) and output (right).
 
 > Table of Contents
 > - [Pipeline Overview](#pipeline-overview)
->     * [Découpage et ré-échantillonnage des traces brutes](#script-1_decoup_et_resamplepy-découpage-et-ré-échantillonnage-des-traces-en-entrée)
->     * [Calculs des cartes de densité, de contraste et binaire](#script-2-calculs-des-cartes-de-densité-de-contraste-et-binaire)
+>     * [Préparation des traces brutes]()
+>     * [Création des flux de pratiques sportives]()
+>     * [Calcul de la topologie du réseau]()
+>     * [Calcul de la géométrie des arcs du réseau]()
+>     * [Second pass]()
 > - [Environment Setup](#environment-setup)
 >     * Requirements
 >     * Environment Setup
@@ -42,62 +45,43 @@ Le pipeline a été testé sur 3 zones d'études:
 
 - study area 1 dans les Bauges : 4145 traces, 1172 traces après filtrage,   3km x 2.5km
 - study area 2 dans la vallée de Chamonix - Mont Blanc
+- study ??
 
 
-Le pipeline est composé de 6 briques à exécuter en 8 étapes :
+Le pipeline est composé de 5 briques à exécuter une par une:
 
 
 |           |DESCRIPTION                    |OUTPUT DIR                   |
 |-----------|-------------------------------|-----------------------------|
-|Script 1+2 | filtre, decoup, resample      | decoup, resample            |
-|Script 3+4 | création et traitement images | image                       |
-|Script 5   | topologie                     | network                     |
-|Script 6   | recalage                      | mapmatch                    |
-|Script 7   | fusion et raccord             | geometry                    |
-|Script 8   | 2ème passage                  | geometry                    |
+|Script 1   | filtre, decoup, resample      | decoup, resample            |
+|Script 2   | création et traitement images | image, network              |
+|Script 3   | topologie                     | network                     |
+|Script 4   | recalage, fusion et raccord   | mapmatch, geometry          |
+|Script 5   | second pass                   | geometry                    |
 
 
+Les scripts se lancent dans une console Python. Temps d'exécution approximatif: xxx min (470+150+180+)
 
-Temps d'exécution
-
-
-|           | RUNTIME for me (study area 1)     | RUNTIME for me (study area 1)     |
-|-----------|-----------------------------------|-----------------------------------|
-|Script 1+2 | 7 min + 2 min                     | 5.25 min + 1.16 min               |
-|Script 3+4 | 2 min + 15 min                    | 1.20 min +                    |
-|Script 5   | 3 min                             |                            |
-|Script 6   | 3 heures 10 min                   |                    |  
-|Script 7   | 21 minutes                        |                         |
-|Script 8   |                                   |                         |
-
-
-Polygon ((950819.6432923924876377 6513116.07216513901948929, 951195.66912580374628305 6513112.05049847066402435, 951195.66912580374628305 6512563.09299835748970509, 950813.61079239123500884 6512567.11466502491384745, 950819.6432923924876377 6513116.07216513901948929))
-
-
-
-
-
-
-Pour l'installation et la configuration, voir le paragraphe II.
-
-Les scripts se lancent dans la console QGIS. 
 
 
 Paramètres à renseigner :
 --------------------------
 
-* tracescsvpath = r'/home/md_vandamme/5_GPS/OV/BAUGES/run/'
+* Le répertoire qui contient les traces au format CSV (un fichier par trace)
+    
+        tracescsvpath = r'/home/md_vandamme/5_GPS/OV/BAUGES/run/'
 
-* Le répertoire qui va contenir les nouvelles traces : découpées et ré-échantillonnées :
+* Le répertoire qui va contenir tous les résultats : 
 
-tracespath = r'/home/md_vandamme/4_RESEAU/ExampleRunning/traces/'. Chaque script enregistre des résultats dans un répertoire (colonne 3). 
+        tracespath = r'/home/md_vandamme/4_RESEAU/ExampleRunning/traces/'. 
 
+  Chaque script lit et enregistre (col 3) des résultats dans un répertoire ou plusieurs répertoires. 
 
 * Limites de la zone d'étude sous forme de coordonnées des sommets des vertex d'un polygone:
 
-X = [945878, 956330, 955879, 954402, 952511, 950389, 948774, 945857, 945878]
+  X = [945878, 956330, 955879, 954402, 952511, 950389, 948774, 945857, 945878]
 
-Y = [6516870, 6516805, 6508417, 6506849, 6506503, 6505649, 6504150, 6503762, 6516870]
+  Y = [6516870, 6516805, 6508417, 6506849, 6506503, 6505649, 6504150, 6503762, 6516870]
 
 * RESAMPLE_SIZE = 1
 
@@ -115,11 +99,13 @@ Y = [6516870, 6516805, 6508417, 6506849, 6506503, 6505649, 6504150, 6503762, 651
 
 Ci-dessous un détail de chaque brique: 
 
-<br/>
 
+
+<br/>
+<!-- ===================================================================================================== -->
 <!-- ===================================================================================================== -->
 
-## Script 1: *Découpage et ré-échantillonnage des traces brutes*
+## Script 1: *Préparation des traces brutes*
 
 Ce script prend en entrée des traces brutes en entrée du pipeline. A la fin du script un nouveau jeu de traces est produit, extraites, découpées et sélectionnées si elle traverse une figure géométrique, résolues spatialement à 1 mètre.
 
@@ -127,23 +113,42 @@ Ce script prend en entrée des traces brutes en entrée du pipeline. A la fin du
                     extraites (peut-être découpées) suivant une figure géométrique
 
 
-PS : le script peut être lancer sans QGIS.
-
-
-
+Découpage et ré-échantillonnage des traces brutes
 
 
 
 
 
 <br/>
-
+<!-- ===================================================================================================== -->
 <!-- ===================================================================================================== -->
 
-## Script 2: *Calculs des cartes de densité, de contraste et binaire*
+## Script 2: *Création des flux de pratiques*
 
+
+Calculs des cartes de densité, de contraste et binaire
 
 => produit un jeu de traces résolues spatialement à 1 mètre
+
+Filtre morphologique, Vectorisation, Squeletisation
+
+
+
+
+<br/>
+<!-- ===================================================================================================== -->
+<!-- ===================================================================================================== -->
+
+## Script 3: *Calcul de la topologie du réseau*
+
+
+
+
+<br/>
+<!-- ===================================================================================================== -->
+<!-- ===================================================================================================== -->
+
+## Script 4: *Calcul de la géométrie des arcs du réseau*
 
 
 
@@ -158,28 +163,17 @@ PS : le script peut être lancer sans QGIS.
 OutdoorFootprintNetworkPipeline requires the following Python packages and Plugin QGIS:
 
 - Tracklib
-- GeoNetLib
-- Plugin QGis "SciPy Filters"
+- Fiona
+- Shapely
 
 
-## Environment Setup 
 
-The environment setup depends on your profile: 
+## "Just want to run the pipeline on a use case" Environment Setup
 
-- development : in case you need to modify either the Tracklib or Geonetlib Python library , 
-- or user (if you just want to run the pipeline on a use case).
+1. Install tracklib
 
 
-### "May be to fix bug in tracklib and geonetlib" Environment Setup 
-
-1. You need to install the following libraries:
-
-- clone the Tracklib from github
-- clone the GeoNetLib from github
-- Plugin QGis "SciPy Filters"
-
-
-2. Comme les scripts vont être exécutés dans QGis, il faut configuer à QGis ces deux librairies:
+2. Configuer dans QGis la librairie tracklib:
 
 Cliquer dans la barre de menu sur Préférences >> Options >> Système >> 
 
@@ -187,13 +181,10 @@ Puis dans le bloc "Environnement", ajouter une variable personnalisée:
 
 *Appliquer* : ajouter au début
 *Variable*  : PYTHONPATH
-*Valeur*    : /home/glagaffe/7_LIB/tracklib:/home/glagaffe/7_LIB/GeoNetLib
+*Valeur*    : /home/glagaffe/7_LIB/tracklib
 
 
 
-### "Just want to run the pipeline on a use case" Environment Setup
-
-1.
 
 
 
@@ -208,9 +199,7 @@ A GNSS trace dataset in CSV format is required.
 
 ### Execution
 
-Run this source code in the QGIS Python console to display the created layers.
-
-Execute MainWorkflow.py to start the creation scripts.
+Run this source code in the Python console. Execute MainWorkflow.py to start the creation scripts.
 
 
 
