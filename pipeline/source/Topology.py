@@ -10,15 +10,15 @@ from shapely.geometry import shape
 import progressbar
 
 import tracklib as tkl
-from util import createNetwork, filtreNoeudSimple, deleteSmallEdge
-from util import removeDuplicateGeometries
-from util import skeleton_smoothing
 
-
+from pipeline import createNetwork, filtreNoeudSimple, deleteSmallEdge
+from pipeline import removeDuplicateGeometries
+from pipeline import skeleton_smoothing
 
 
 
 def network(RESPATH, tolerance, seuil_doublon, DIST_MIN_ARC):
+
 
     # =============================================================================
     #          CHARGEMENT DU SQUELETTE
@@ -51,13 +51,12 @@ def network(RESPATH, tolerance, seuil_doublon, DIST_MIN_ARC):
     print ('Fin construction du réseau 2/4.')
 
 
-
     # =============================================================================
     #         SUPPRIME LES ARCS EN DOUBLONS
     #
     
-    removeDuplicateGeometries(network, seuil_doublon)
-    print ('Fin suppression des arcs en doublon 3/4.')
+    #removeDuplicateGeometries(network, seuil_doublon)
+    #print ('Fin suppression des arcs en doublon 3/4.')
 
 
     # =============================================================================
@@ -66,9 +65,10 @@ def network(RESPATH, tolerance, seuil_doublon, DIST_MIN_ARC):
 
 
     network.simplify(0, tkl.MODE_SIMPLIFY_REM_POS_DUP, verbose=False)
-    for idx in progressbar.progressbar(network.getEdgesId()):
-        network.getEdge(idx).geom = skeleton_smoothing(
-            network.getEdge(idx).geom, 1, 20)
+
+    #for idx in progressbar.progressbar(network.getEdgesId()):
+    #    network.getEdge(idx).geom = skeleton_smoothing(
+    #        network.getEdge(idx).geom, 1, 20)
 
     print ('Fin suppression des parties crochues du squelette 3/4.')
 
@@ -80,7 +80,7 @@ def network(RESPATH, tolerance, seuil_doublon, DIST_MIN_ARC):
     #TE = list(map(int, network.getIndexEdges()))
     #tkl.NetworkReader.counter = max(TE) + 1
     
-    # filtreNoeudSimple(network)
+    filtreNoeudSimple(network)
 
 
     cpt = 0
@@ -89,11 +89,25 @@ def network(RESPATH, tolerance, seuil_doublon, DIST_MIN_ARC):
         nb = deleteSmallEdge(network, DIST_MIN_ARC)
         print ('    nb arcs supprimés: ', nb)
         cpt += 1
-    # filtreNoeudSimple(network)
+    filtreNoeudSimple(network)
+
+
+    cpt = 0
+    nb = 1000
+    while nb > 10 and cpt < 10:
+        nb = deleteSmallEdge(network, DIST_MIN_ARC)
+        print ('    nb arcs supprimés: ', nb)
+        cpt += 1
+    filtreNoeudSimple(network)
 
 
     print ('Fin suppression des petis arcs 4/4.')
 
+
+
+    network.simplify(0, tkl.MODE_SIMPLIFY_REM_POS_DUP, verbose=False)
+    network.simplify(5, tkl.MODE_SIMPLIFY_DOUGLAS_PEUCKER, verbose=False)
+    print ('Fin simplification 5/5.')
 
 
     # =============================================================================
@@ -104,4 +118,4 @@ def network(RESPATH, tolerance, seuil_doublon, DIST_MIN_ARC):
     print ("Fin de la construction du réseau.")
 
 
-
+    

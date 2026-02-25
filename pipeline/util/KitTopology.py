@@ -388,12 +388,15 @@ def removeDuplicateGeometries(network, threshold):
                 #print ('   ', edge1.target.id, edge2.source.id)
                 arcsAEnlever.add(edge2.id)
 
-
+    print (len(arcsAEnlever))
     for eid in arcsAEnlever:
         edge = network.EDGES[eid]
         ni = edge.source
         nf = edge.target
 
+        print ('     ', edge.id)
+
+        '''
         network.NEXT_EDGES[ni.id].remove(edge.id)
         network.NEXT_EDGES[nf.id].remove(edge.id)
 
@@ -411,8 +414,10 @@ def removeDuplicateGeometries(network, threshold):
         network.NBGR_NODES[nf.id].remove(ni.id)
         network.NBGR_NODES[ni.id].remove(nf.id)
 
+
         # print ('     ', edge.id)
         network.removeEdge(edge)
+        '''
 
 
 
