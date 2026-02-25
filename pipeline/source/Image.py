@@ -209,33 +209,34 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE):
     #   Dilatation + Fermeture
 
     mask = np.array([
+        [0,1,0],
+        [1,1,1],
+        [0,1,0]])
+    # Dilatation
+    mapBinaire.filter(mask, np.max)
+    tkl.RasterWriter.writeMapToAscFile(pathdilatation, mapBinaire)
+    #pathdilatation = patherosion
+
+    # Erosion
+    mask = np.array([
         [0,0,1,0,0],
         [0,1,1,1,0],
         [1,1,1,1,1],
         [0,1,1,1,0],
         [0,0,1,0,0]])
-    mask = np.array([
-        [0,1,0],
-        [1,1,1],
-        [0,1,0]])
-
-    # Erosion
     mapBinaire.filter(np.array([[1]]), lambda x : 1-x)     # Dual de la carte
     mapBinaire.filter(mask, np.max)                        # Dilatation
     mapBinaire.filter(np.array([[1]]), lambda x : 1-x)     # Dual de la carte
     tkl.RasterWriter.writeMapToAscFile(patherosion, mapBinaire)
 
-    # Dilatation
-    mapBinaire.filter(mask, np.max)
-    tkl.RasterWriter.writeMapToAscFile(pathdilatation, mapBinaire)
 
-
+    pathdepart = patherosion
 
     # =============================================================================
     #   Vectorisation
 
     #  get raster datasource
-    src_ds = gdal.Open(pathdilatation)
+    src_ds = gdal.Open(pathdepart)
     srcband = src_ds.GetRasterBand(1)
 
     dst_layername = 'road_surface'
@@ -268,7 +269,7 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE):
 
 
     # =============================================================================
-    #   Squeletisation : center line
+    #   Squeletisation : DN=0 + filtre sur la surface + id
 
     src_ds = ogr.Open(roadsurfpath, 1)
     src_layer = src_ds.GetLayer()
@@ -299,6 +300,8 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE):
             area = geom.GetArea()
             if area <= SEUIL_SURFACE:
                 fids_to_delete.append(feature.GetFID())
+            else:
+                print (area, SEUIL_SURFACE)
 
     for fid in fids_to_delete:
         src_layer.DeleteFeature(fid)
@@ -332,7 +335,7 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE):
 
 
     # =============================================================================
-    #   Squeletisation : center line dans Postgis
+    #   Squeletisation : center line
 
     interp_dist = 5
     clean_dist  = 0
