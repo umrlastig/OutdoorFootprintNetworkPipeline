@@ -163,8 +163,9 @@ Filtre morphologique, Vectorisation, Squeletisation
 OutdoorFootprintNetworkPipeline requires the following Python packages and Plugin QGIS:
 
 - Tracklib
-- Fiona
-- Shapely
+- osgeo : gdal, ogr, osr (pour la partie vectorisation)
+- Fiona, Shapely (centerline et smooth)
+
 
 
 
