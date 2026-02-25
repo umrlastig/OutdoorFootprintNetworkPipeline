@@ -9,8 +9,8 @@ from source.Topology import network
 from source.Geometry import createNetworkGeom
 
 
+STAGE = 4
 
-STAGE = 3
 
 """ ======================================================================= """
 """     PARAMETRES  GLOBAL                                                  """
@@ -52,15 +52,15 @@ Y = [6513197, 6512091, 6511113, 6510719, 6511949, 6512621, 6513197]
 
 # Paramètre : Nombre de points minimum pour un morceau de trace au moment du découpage
 #             si le nombre n'est pas atteint, le morceau de trace est oublié
-NB_OBS_MIN = 10
+NB_OBS_MIN           = 10
 
 
 # Paramètre : Distance en mètres entre 2 points, si supérieure au seuil on coupe la trace
-DIST_MAX_2OBS = 50
+DIST_MAX_2OBS        = 50
 
 
 # Paramètre : 1 point tous les 1 mètres, avec un re-sampling spatial
-RESAMPLE_SIZE_GRID = 1
+RESAMPLE_SIZE_GRID   = 1
 RESAMPLE_SIZE_FUSION = 5
 
 
@@ -71,7 +71,7 @@ RESAMPLE_SIZE_FUSION = 5
 G1_SIZE = 2
 G2_SIZE = 50
 SEUIL = 15
-SEUIL_SURFACE = 5000 # m2
+SEUIL_SURFACE = 50000 # m2
 
 
 
