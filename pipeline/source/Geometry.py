@@ -10,8 +10,10 @@ csv.field_size_limit(sys.maxsize)
 
 import tracklib as tkl
 
-from util.KitFusion import bonneTrace
+from pipeline import bonneTrace
 
+
+# N;E;time;U;num;track_id;user_id;hmm_inference;mmtype;idedge
 
 
 
@@ -35,7 +37,7 @@ def createNetworkGeom(RESPATH, SEARCH, DIST_MAX_2OBS, NB_OBS_MIN):
     print ('Number of edges = ', len(network.EDGES))
     print ('Number of nodes = ', len(network.NODES))
 
-
+    
     # =============================================================================
     #   Lecture des traces découpées et ré-échantillonnées.
     #
@@ -51,12 +53,14 @@ def createNetworkGeom(RESPATH, SEARCH, DIST_MAX_2OBS, NB_OBS_MIN):
     collection2 = tkl.TrackReader.readFromFile(tracespath, fmt)
     print ('Nombre de traces:', collection2.size())
 
-    cptId = 1
     collection = tkl.TrackCollection()
     for trace in collection2:
-        trace.uid = cptId
-        trace.tid = cptId
-        cptId += 1
+        num = trace.getObsAnalyticalFeature('num', 0)
+        track_id = trace.getObsAnalyticalFeature('track_id', 0)
+        user_id = trace.getObsAnalyticalFeature('user_id', 0)
+
+        trace.uid = user_id
+        trace.tid = track_id
         collection.addTrack(trace)
     
 
@@ -65,11 +69,6 @@ def createNetworkGeom(RESPATH, SEARCH, DIST_MAX_2OBS, NB_OBS_MIN):
     # =============================================================================
     #     Map-matching
     #
-
-    MM = {}   #  [ide][pkid] : liste des observations
-
-    network.simplify(0, tkl.MODE_SIMPLIFY_REM_POS_DUP, verbose=False)
-    network.simplify(5, tkl.MODE_SIMPLIFY_DOUGLAS_PEUCKER, verbose=False)
 
     si = tkl.SpatialIndex(network, verbose=False)
     network.spatial_index = si
@@ -81,7 +80,7 @@ def createNetworkGeom(RESPATH, SEARCH, DIST_MAX_2OBS, NB_OBS_MIN):
 
     # Map track on network
     print ('Launching Map-matching')
-    tkl.mapOnNetwork(collection, network, search_radius=SEARCH, debug=False)
+    tkl.mapOnNetwork(collection, network, search_radius=SEARCH, debug=True)
     print ('Map-matching ended')
 
 
@@ -89,18 +88,21 @@ def createNetworkGeom(RESPATH, SEARCH, DIST_MAX_2OBS, NB_OBS_MIN):
     #     Stats Map-matching
     #
 
+    MM = {}   #  [ide][pkid] : liste des observations
+
     for i in range(collection.size()):
         track = collection.getTrack(i)
+        track.createAnalyticalFeature('mmtype', 'NOT')
+        track.createAnalyticalFeature('idedge', -1)
         pkid = track.tid
     
         for j in range(track.size()):
-            pb  = track[j].position
-            # mm  = track["hmm_inference", j][0]
 
+            pb  = track[j].position
             ds = float(track["hmm_inference", j][2])
             dt = float(track["hmm_inference", j][3])
-
             idxedge = track["hmm_inference", j][1]
+
             edgeid = network.getEdgeId(idxedge)
             e = network.EDGES[edgeid]
     
@@ -110,6 +112,8 @@ def createNetworkGeom(RESPATH, SEARCH, DIST_MAX_2OBS, NB_OBS_MIN):
                 if pkid not in MM[edgeid].keys():
                     MM[edgeid][pkid] = []
                 MM[edgeid][pkid].append((j,pb))
+                track.setObsAnalyticalFeature('mmtype', j, 'EDGE')
+                track.setObsAnalyticalFeature('idedge', j, edgeid)
             elif abs(ds) < 0.01:
                 idnode = e.source.id
                 edgesid = network.getIncidentEdges(idnode)
@@ -119,6 +123,8 @@ def createNetworkGeom(RESPATH, SEARCH, DIST_MAX_2OBS, NB_OBS_MIN):
                     if pkid not in MM[eid].keys():
                         MM[eid][pkid] = []
                     MM[eid][pkid].append((j,pb))
+                track.setObsAnalyticalFeature('mmtype', j, 'SOURCE')
+                track.setObsAnalyticalFeature('idedge', j, idnode)
             elif abs(dt) < 0.01:
                 idnode = e.target.id
                 edgesid = network.getIncidentEdges(idnode)
@@ -128,10 +134,18 @@ def createNetworkGeom(RESPATH, SEARCH, DIST_MAX_2OBS, NB_OBS_MIN):
                     if pkid not in MM[eid].keys():
                         MM[eid][pkid] = []
                     MM[eid][pkid].append((j,pb))
-    
+                track.setObsAnalyticalFeature('mmtype', j, 'TARGET')
+                track.setObsAnalyticalFeature('idedge', j, idnode)
+
     print ('Stats computing ended.')
     
 
+
+    af_names = ['num', 'track_id', 'user_id', 'hmm_inference', 'mmtype', 'idedge']
+    mmtracespath = RESPATH + 'mapmatch/tmm/'
+    tkl.TrackWriter.writeToFiles(collection, mmtracespath,
+                                 id_E=1, id_N=0, id_U=3, id_T=2,
+                                 h=1, separator=";", af_names=af_names)
 
 
     # =============================================================================
@@ -141,9 +155,6 @@ def createNetworkGeom(RESPATH, SEARCH, DIST_MAX_2OBS, NB_OBS_MIN):
     # on enregistre le MM dans un fichier CSV
     
     mmpath = RESPATH + 'mapmatch/resultmm.csv'
-
-    NBPasBonne = 0
-
     f = open(mmpath,'w')
     f.write("EDGE_ID;TRACK_ID;WKT\n")
 
@@ -163,8 +174,7 @@ def createNetworkGeom(RESPATH, SEARCH, DIST_MAX_2OBS, NB_OBS_MIN):
                         cb = bonneTrace(tn, e, NB_OBS_MIN, SEARCH)
                         for tb in cb:
                             f.write(str(edgeid) + ";" + str(trackid) + ";" + tb.toWKT() + "\n")
-                        if cb.size() <= 0:
-                            NBPasBonne += 1
+
                         tn = tkl.Track()
                 tn.addObs(tkl.Obs(p2, tkl.ObsTime()))
                 p1 = p2
@@ -173,14 +183,12 @@ def createNetworkGeom(RESPATH, SEARCH, DIST_MAX_2OBS, NB_OBS_MIN):
             cb = bonneTrace(tn, e, NB_OBS_MIN, SEARCH)
             for tb in cb:
                 f.write(str(edgeid) + ";" + str(trackid) + ";" + tn.toWKT() + "\n")
-            if cb.size() <= 0:
-                NBPasBonne += 1
+
 
     f.close()
 
 
     txtpath = r"file:///" + mmpath + "?delimiter=;&wktField=WKT&crs=EPSG:2154"
-    print ('Nombre de traces rejetées : ', NBPasBonne)
 
     print ("Fin de la partie de recalage.")
 
@@ -265,16 +273,13 @@ def createNetworkGeom(RESPATH, SEARCH, DIST_MAX_2OBS, NB_OBS_MIN):
 
 
     print ('Number of aggregations: ', fusions.size())
-    if fusions.size() > 0:
-        QGIS.plotTracks(fusions, type='LINE',
-                        style=LineStyle.simpleVert1,
-                        title='Fusions', AF=True)
+    print ("Fin de la fusion.")
 
 
     # =========================================================================
 
 
-    print ("Fin de la fusion.")
+
 
 
 

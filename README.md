@@ -60,7 +60,7 @@ Le pipeline est composé de 5 briques à exécuter une par une:
 |Script 5   | second pass                   | geometry                    |
 
 
-Les scripts se lancent dans une console Python. Temps d'exécution approximatif: xxx min (470+150+180+)
+Les scripts se lancent dans une console Python. Temps d'exécution approximatif: xxx min (470+150+180+660+)
 
 
 

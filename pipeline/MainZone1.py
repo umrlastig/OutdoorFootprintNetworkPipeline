@@ -108,7 +108,6 @@ SEARCH = 25
 """   - création des répertoires si nécessaire                                                                      """
 """                                                                         """
 
-# RESPATH = r'/home/md_vandamme/4_RESEAU/ExampleZ1Walk/'
 if not os.path.exists(RESPATH + 'decoup'):
     os.makedirs(RESPATH + 'decoup')
 if not os.path.exists(RESPATH + 'geometry'):
@@ -123,7 +122,8 @@ if not os.path.exists(RESPATH + 'resample_grid'):
     os.makedirs(RESPATH + 'resample_grid')
 if not os.path.exists(RESPATH + 'resample_fusion'):
     os.makedirs(RESPATH + 'resample_fusion')
-
+if not os.path.exists(RESPATH + 'mapmatch/tmm'):
+    os.makedirs(RESPATH + 'mapmatch/tmm')
 
 
 
