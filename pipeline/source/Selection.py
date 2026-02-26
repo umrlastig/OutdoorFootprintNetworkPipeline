@@ -58,9 +58,12 @@ def decoup_resample(RESPATH, tracespathsource, NB_OBS_MIN, DIST_MAX_2OBS, X, Y,
                 if o1.distance2DTo(o2) > DIST_MAX_2OBS:
                     # on coupe la trace pour créer un nouveau morceau
                     if tn.size() >= NB_OBS_MIN:
-                        tn.uid = str(trace.getObsAnalyticalFeature('user_id', 0)) + "-"+ str(idxSelect)
-                        tn.tid = str(trace.getObsAnalyticalFeature('track_id', 0)) + "-"+ str(idxSelect)
-                        tn.createAnalyticalFeature('num', trace.getObsAnalyticalFeature('num', 0))
+                        num = str(trace.getObsAnalyticalFeature('num', 0)) + "-" + str(idxSelect)
+                        uid = str(trace.getObsAnalyticalFeature('user_id', 0)) + "-"+ str(idxSelect)
+                        tid = str(trace.getObsAnalyticalFeature('track_id', 0)) + "-"+ str(idxSelect)
+                        tn.uid = uid
+                        tn.tid = tid
+                        tn.createAnalyticalFeature('num', num)
                         tn.createAnalyticalFeature('user_id', tn.uid)
                         tn.createAnalyticalFeature('track_id', tn.tid)
                         cutCollection.addTrack(tn)
@@ -71,9 +74,10 @@ def decoup_resample(RESPATH, tracespathsource, NB_OBS_MIN, DIST_MAX_2OBS, X, Y,
     
         # Dernier morceau de trace
         if tn.size() >= NB_OBS_MIN:
+            num = str(trace.getObsAnalyticalFeature('num', 0)) + "-" + str(idxSelect)
             tn.uid = str(trace.getObsAnalyticalFeature('user_id', 0)) + "-"+ str(idxSelect)
             tn.tid = str(trace.getObsAnalyticalFeature('track_id', 0)) + "-"+ str(idxSelect)
-            tn.createAnalyticalFeature('num', trace.getObsAnalyticalFeature('num', 0))
+            tn.createAnalyticalFeature('num', num)
             tn.createAnalyticalFeature('user_id', tn.uid)
             tn.createAnalyticalFeature('track_id', tn.tid)
             cutCollection.addTrack(tn)

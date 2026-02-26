@@ -60,7 +60,7 @@ def createNetworkGeom(RESPATH, SEARCH, DIST_MAX_2OBS, NB_OBS_MIN):
         user_id = trace.getObsAnalyticalFeature('user_id', 0)
 
         trace.uid = user_id
-        trace.tid = track_id
+        trace.tid = num
         collection.addTrack(trace)
     
 
@@ -101,12 +101,15 @@ def createNetworkGeom(RESPATH, SEARCH, DIST_MAX_2OBS, NB_OBS_MIN):
             pb  = track[j].position
             ds = float(track["hmm_inference", j][2])
             dt = float(track["hmm_inference", j][3])
-            idxedge = track["hmm_inference", j][1]
+            idxedge = int(track["hmm_inference", j][1])
 
             edgeid = network.getEdgeId(idxedge)
             e = network.EDGES[edgeid]
     
-            if idxedge != -1 and ds > 0.01 and dt > 0.01:
+            if idxedge == -1:
+                track.setObsAnalyticalFeature('mmtype', j, 'NOT')
+                track.setObsAnalyticalFeature('idedge', j, -1)
+            elif ds > 0.01 and dt > 0.01:
                 if edgeid not in MM:
                     MM[edgeid] = {}
                 if pkid not in MM[edgeid].keys():
@@ -137,15 +140,15 @@ def createNetworkGeom(RESPATH, SEARCH, DIST_MAX_2OBS, NB_OBS_MIN):
                 track.setObsAnalyticalFeature('mmtype', j, 'TARGET')
                 track.setObsAnalyticalFeature('idedge', j, idnode)
 
+
     print ('Stats computing ended.')
     
-
-
     af_names = ['num', 'track_id', 'user_id', 'hmm_inference', 'mmtype', 'idedge']
     mmtracespath = RESPATH + 'mapmatch/tmm/'
     tkl.TrackWriter.writeToFiles(collection, mmtracespath,
                                  id_E=1, id_N=0, id_U=3, id_T=2,
                                  h=1, separator=";", af_names=af_names)
+
 
 
     # =============================================================================
@@ -165,30 +168,35 @@ def createNetworkGeom(RESPATH, SEARCH, DIST_MAX_2OBS, NB_OBS_MIN):
             points_sorted = sorted(tobs, key=lambda x: x[0])
     
             tn = tkl.Track()
+            v = 1
             p1 = None
+            jp1 = -1
             for p in points_sorted:
                 p2 = p[1]
                 if p1 is not None:
-                    if p2.distance2DTo(p1)> DIST_MAX_2OBS:
+                    if jp1 + 1 < p[0]:
+                    # if p2.distance2DTo(p1)> DIST_MAX_2OBS:
                         # on coupe la trace pour créer un nouveau morceau
                         cb = bonneTrace(tn, e, NB_OBS_MIN, SEARCH)
                         for tb in cb:
-                            f.write(str(edgeid) + ";" + str(trackid) + ";" + tb.toWKT() + "\n")
+                            tid = str(trackid) + "-v" + str(v)
+                            v += 1
+                            f.write(str(edgeid) + ";" + str(tid) + ";" + tb.toWKT() + "\n")
 
                         tn = tkl.Track()
                 tn.addObs(tkl.Obs(p2, tkl.ObsTime()))
                 p1 = p2
+                jp1 = p[0]
 
             # dernier morceau de trace
             cb = bonneTrace(tn, e, NB_OBS_MIN, SEARCH)
             for tb in cb:
-                f.write(str(edgeid) + ";" + str(trackid) + ";" + tn.toWKT() + "\n")
+                tid = str(trackid) + "-v" + str(v)
+                v += 1
+                f.write(str(edgeid) + ";" + str(tid) + ";" + tn.toWKT() + "\n")
 
 
     f.close()
-
-
-    txtpath = r"file:///" + mmpath + "?delimiter=;&wktField=WKT&crs=EPSG:2154"
 
     print ("Fin de la partie de recalage.")
 

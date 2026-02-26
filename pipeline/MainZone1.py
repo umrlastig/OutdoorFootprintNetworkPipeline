@@ -124,6 +124,8 @@ if not os.path.exists(RESPATH + 'resample_fusion'):
     os.makedirs(RESPATH + 'resample_fusion')
 if not os.path.exists(RESPATH + 'mapmatch/tmm'):
     os.makedirs(RESPATH + 'mapmatch/tmm')
+if not os.path.exists(RESPATH + 'mapmatch/tagg'):
+    os.makedirs(RESPATH + 'mapmatch/tagg')
 
 
 
