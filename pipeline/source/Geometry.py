@@ -17,7 +17,7 @@ from pipeline import conflateOnNetwork
 
 
 
-def createNetworkGeom(RESPATH, SEARCH, DIST_MAX_2OBS, NB_OBS_MIN):
+def createNetworkGeom(RESPATH, SEARCH):
 
     # =========================================================================
     #    Lecture du réseau
@@ -88,6 +88,14 @@ def createNetworkGeom(RESPATH, SEARCH, DIST_MAX_2OBS, NB_OBS_MIN):
     #     Stats Map-matching
     #
 
+    # On construit un dictionnaire qui va contenir l'ensemble des points MM
+    #    avec  leurs séquences afin de reconstuire des traces candidates
+    #    pour la fusion:
+    #        la trace doit être proche de la source de l'arc et
+    #                           proche de la target de l'arc
+    #        sans trou (index manquant)
+    #        géométrie dans le même que celui de l'arc
+    #
     MM = {}   #  [ide][pkid] : liste des observations
 
     for i in range(collection.size()):
@@ -175,9 +183,8 @@ def createNetworkGeom(RESPATH, SEARCH, DIST_MAX_2OBS, NB_OBS_MIN):
                 p2 = p[1]
                 if p1 is not None:
                     if jp1 + 1 < p[0]:
-                    # if p2.distance2DTo(p1)> DIST_MAX_2OBS:
                         # on coupe la trace pour créer un nouveau morceau
-                        cb = bonneTrace(tn, e, NB_OBS_MIN, SEARCH)
+                        cb = create_candidate_for_aggregate(tn, e, SEARCH)
                         for tb in cb:
                             tid = str(trackid) + "-v" + str(v)
                             v += 1
@@ -189,7 +196,7 @@ def createNetworkGeom(RESPATH, SEARCH, DIST_MAX_2OBS, NB_OBS_MIN):
                 jp1 = p[0]
 
             # dernier morceau de trace
-            cb = bonneTrace(tn, e, NB_OBS_MIN, SEARCH)
+            cb = create_candidate_for_aggregate(tn, e, SEARCH)
             for tb in cb:
                 tid = str(trackid) + "-v" + str(v)
                 v += 1
@@ -209,7 +216,7 @@ def createNetworkGeom(RESPATH, SEARCH, DIST_MAX_2OBS, NB_OBS_MIN):
 
     print ("Lancement de l'agrégation")
 
-    geompath = RESPATH + 'geometry/'
+    geompath = RESPATH + 'geometry/fusion/'
 
     # Aggregation with DTW distance
     fusions = tkl.TrackCollection()
@@ -229,13 +236,15 @@ def createNetworkGeom(RESPATH, SEARCH, DIST_MAX_2OBS, NB_OBS_MIN):
                 continue
         
             edgeid = line[0]
+            e = network.EDGES[edgeid]
 
             if edgeprevious != edgeid:
                 if edgeprevious != -1 and len(TRACES) > 1:
                     print ("Fusion pour le edge :", edgeprevious)
-                    central = _fusion(TRACES, SEARCH)
+                    central = _fusion(e, TRACES, SEARCH)
                     if central is not None:
                         central.createAnalyticalFeature('edgeid', edgeprevious)
+                        central.tid = edgeprevious
                         fusions.addTrack(central)
 
                         # sauvegarde
@@ -267,9 +276,10 @@ def createNetworkGeom(RESPATH, SEARCH, DIST_MAX_2OBS, NB_OBS_MIN):
 
     if len(TRACES) > 1:
         print ("Dernière fusion pour le edge :", edgeprevious)
-        central = _fusion(TRACES, SEARCH)
+        central = _fusion(e, TRACES, SEARCH)
         if central is not None:
             central.createAnalyticalFeature('edgeid', edgeprevious)
+            central.tid = edgeprevious
             fusions.addTrack(central)
     
             # sauvegarde
@@ -285,14 +295,27 @@ def createNetworkGeom(RESPATH, SEARCH, DIST_MAX_2OBS, NB_OBS_MIN):
 
 
     # =========================================================================
+    # Raccord
 
 
+    conflated = conflateOnNetwork(fusions, network, threshold=50, h=30)
 
 
+    # enregistrer conflation
+    raccordpath = RESPATH + 'geometry/raccord/'
+    for segment in conflated:
+        if segment is not None:
+            print (segment.tid)
+            
+            # sauvegarde
+            chemin = raccordpath + str(edgeprevious) + ".csv"
+            f = open(chemin, 'w')
+            f.write("EDGE_ID;WKT\n")
+            f.write(str(segment.tid) + ";" + segment.toWKT() + "\n")
+            f.close()
 
 
-
-def _fusion (TRACES, SEARCH):
+def _fusion (e, TRACES, SEARCH):
     '''
 
     '''
@@ -308,49 +331,21 @@ def _fusion (TRACES, SEARCH):
     print ('    Nombre de traces à fusionner (avant le tirage):', NB)
 
     if NB > 50:
-        collection = candidatsMultiSens.randNTracks(min(NB,70))
+        collection = candidatsMultiSens.randNTracks(min(NB, 50))
     else:
         collection = candidatsMultiSens
 
     if collection is None:
         return None
-    if not isinstance(collection, tkl.TrackCollection) and collection.size() <= 0:
+    if not isinstance(collection, tkl.TrackCollection):
+        return None
+    if collection.size() <= 0:
         return None
 
-    # Même sens
-    candidats = tkl.TrackCollection()
-    TREF = collection[0]
-    for t1 in collection:
-
-        t = tkl.simplify(t1, tolerance=0.5, mode=tkl.MODE_SIMPLIFY_DOUGLAS_PEUCKER, verbose=False)
-
-        if t.length() < 2*SEARCH:
-            d1 = tkl.compare(TREF, t, verbose=False, mode=tkl.MODE_COMPARISON_DTW, p=1)
-            d2 = tkl.compare(TREF, t.reverse(), verbose=False, mode=tkl.MODE_COMPARISON_DTW, p=1)
-            # A l'envers
-            if (d2 < d1):
-                t = t.reverse()
-                candidats.addTrack(t)
-            else:
-                candidats.addTrack(t)
-        else:
-            p1 = t.getFirstObs().position
-            p2 = t.getLastObs().position
-
-            so = TREF.getFirstObs().position
-            ta = TREF.getLastObs().position
-
-            if p1.distance2DTo(so) < SEARCH and p2.distance2DTo(ta) < SEARCH:
-                candidats.addTrack(t)
-            elif p2.distance2DTo(so) < SEARCH and p1.distance2DTo(ta) < SEARCH:
-                t1 = t.reverse()
-                candidats.addTrack(t1)
-
-
-    print ('    Nombre de traces à fusionner (après la direction):', candidats.size())
-    if candidats.size() > 1:
+    print ('    Nombre de traces à fusionner (après la direction):', collection.size())
+    if collection.size() > 1:
         print ('Démarrage de la fusion ......')
-        centralDTW = tkl.fusion(candidats,
+        centralDTW = tkl.fusion(collection,
                              master=tkl.MODE_MASTER_MEDIAN_LEN,
                              dim=2,
                              mode=tkl.MODE_MATCHING_DTW,
@@ -363,7 +358,6 @@ def _fusion (TRACES, SEARCH):
                              recursive=15)
         print ('Fin de la fusion.')
         return centralDTW
-
     elif candidats.size() == 1:
         centralDTW = candidats.getTrack(0)
         return centralDTW
@@ -373,77 +367,87 @@ def _fusion (TRACES, SEARCH):
 
 
 
-def bonneTrace(tn, edge, NB_OBS_MIN, SEARCH):
+def create_candidate_for_aggregate(track_segment, edge, SEARCH):
     '''
     Fonction utilitaire.
-    Une trace est gardée pour la fusion si son point de départ est "proche" 
-    d'un noeud de l'arc et son point d'arrivée est "proche" de l'autre noeud de l'arc.
+    
+    tn : trace dont on a gardé l'ensemble des points consécutifs 
+         recalés sur le troncon edge
+    
+    tn est decoupe si après une première longueur la trace quitte l'arrivée
+    (cas d'un aller-retour sur le troncon)
+    
+    Les pauses au milieu ne sont pas gérées
+
+    Une trace est gardée pour la fusion si :
+        - son point de départ est "proche" de la source de l'arc 
+        - son point d'arrivée est "proche" de la target de l'arc.
+        - sa géométrie dans le même sens que celui de l'arc
+
+    Si trop petite, on ne garde pas
+    
+    Si pas assez de points, on fait un resample de 1m
+        
     '''
 
     morceaux = tkl.TrackCollection()
 
-    if tn.size() >= NB_OBS_MIN:
+    s = edge.source.coord
+    t = edge.target.coord
 
-        p1 = tn.getFirstObs().position
-        p2 = tn.getLastObs().position
+    # Est-ce que le début de la trace est dans la zone "source" ??
+    p1 = track_segment.getFirstObs().position
+    p2 = track_segment.getLastObs().position
 
-        s = edge.source.coord
-        t = edge.target.coord
-
-        if edge.geom.length() < SEARCH:
-            if p1.distance2DTo(s) < SEARCH/2 and p2.distance2DTo(t) < SEARCH/2:
-                morceaux.addTrack(tn)
-            if p1.distance2DTo(t) < SEARCH/2 and p2.distance2DTo(s) < SEARCH/2:
-                morceaux.addTrack(tn.reverse())
+    if p1.distance2DTo(s) >= SEARCH:
+        if p2.distance2DTo(s) < SEARCH:
+            # sens inverse
+            track_segment = track_segment.reverse()
+            p1 = track_segment.getFirstObs().position
+            p2 = track_segment.getLastObs().position
         else:
+            # on fait rien, trace à ne pas garder pour la fusion
+            return morceaux
 
-            if p1.distance2DTo(s) < SEARCH/2:
-                reverse = False
-                atteint = False
-                dd = 0
-                for idx, o in enumerate(tn):
-                    if o.position.distance2DTo(t) < SEARCH/2:
-                        atteint = True
-                    if atteint and o.position.distance2DTo(t) > SEARCH/2:
-                        # la deuxième partie de la trace est sortie
-                        t1 = tn.extract(dd, idx-1)
-                        dd = idx
-                        morceaux.addTrack(t1)
-                        t = s
-                        s = o.position
-                        atteint = False
-                        reverse = True
-                if atteint:
-                    t1 = tn.extract(dd, idx)
-                    if reverse:
-                        morceaux.addTrack(t1.reverse())
-                    else:
-                        morceaux.addTrack(t1)
+    # On découpe si besoin
+    atteint = False
+    dd = 0
+    start = 'S'
+    for idx, o in enumerate(track_segment):
+
+        if start == 'S' and o.position.distance2DTo(t) < SEARCH:
+            atteint = True
+        if start == 'T' and o.position.distance2DTo(s) < SEARCH:
+            atteint = True
+
+        if atteint and o.position.distance2DTo(t) > SEARCH and start == 'S':
+            # la deuxième partie de la trace est sortie
+            morceau = track_segment.extract(dd, idx-1)
+            morceaux.addTrack(morceau)
+            dd = idx
+            atteint = False
+            start = 'T'
+        if atteint and o.position.distance2DTo(s) > SEARCH and start == 'T':
+            # la deuxième partie de la trace est sortie
+            morceau = track_segment.extract(dd, idx-1).reverse()
+            morceaux.addTrack(morceau)
+            dd = idx
+            atteint = False
+            start = 'S'
+
+    if atteint:
+        morceau = track_segment.extract(dd, idx)
+        if start == 'T':
+            morceaux.addTrack(morceau.reverse())
+        else:
+            morceaux.addTrack(morceau)
 
 
-            if p2.distance2DTo(s) < SEARCH/2:
-                tnr = tn.reverse()
-                reverse = False
-                atteint = False
-                dd = 0
-                for idx, o in enumerate(tnr):
-                    if o.position.distance2DTo(t) < SEARCH/2:
-                        atteint = True
-                    if atteint and o.position.distance2DTo(t) > SEARCH/2:
-                        # la deuxième partie de la trace est sortie
-                        t1 = tn.extract(dd, idx-1)
-                        dd = idx
-                        morceaux.addTrack(t1)
-                        t = s
-                        s = o.position
-                        atteint = False
-                        reverse = True
-                if atteint:
-                    t1 = tnr.extract(dd, idx)
-                    if reverse:
-                        morceaux.addTrack(t1.reverse())
-                    else:
-                        morceaux.addTrack(t1)
+    if edge.geom.length() < 2*SEARCH:
+        for morceau in morceaux:
+            trackG = morceau.copy()
+            trackG.resample(1, mode=tkl.MODE_SPATIAL)
+
 
     return morceaux
 

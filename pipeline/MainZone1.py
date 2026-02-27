@@ -124,9 +124,11 @@ if not os.path.exists(RESPATH + 'resample_fusion'):
     os.makedirs(RESPATH + 'resample_fusion')
 if not os.path.exists(RESPATH + 'mapmatch/tmm'):
     os.makedirs(RESPATH + 'mapmatch/tmm')
-if not os.path.exists(RESPATH + 'mapmatch/tagg'):
-    os.makedirs(RESPATH + 'mapmatch/tagg')
 
+if not os.path.exists(RESPATH + 'geometry/fusion'):
+    os.makedirs(RESPATH + 'geometry/fusion')
+if not os.path.exists(RESPATH + 'geometry/raccord'):
+    os.makedirs(RESPATH + 'geometry/raccord')
 
 
 
@@ -172,7 +174,7 @@ if STAGE == 3:
 
 if STAGE == 4:
     t0 = time.time()
-    createNetworkGeom(RESPATH, SEARCH, DIST_MAX_2OBS, NB_OBS_MIN)
+    createNetworkGeom(RESPATH, SEARCH)
     t1 = time.time()
     total = t1-t0
     print ("Temps d'exécution en s:", total)

@@ -42,7 +42,6 @@ for fusionfilename in os.listdir(fusionpath):
 print ('Nombre de traces dans la collection : ', collection.size())
 
 
-
 conflated = tkl.conflateOnNetwork(collection, network, threshold=50, h=30)
 
 network.plot()
