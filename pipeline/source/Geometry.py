@@ -305,14 +305,14 @@ def createNetworkGeom(RESPATH, SEARCH):
     raccordpath = RESPATH + 'geometry/raccord/'
     for segment in conflated:
         if segment is not None:
-            print (segment.tid)
-            
             # sauvegarde
-            chemin = raccordpath + str(edgeprevious) + ".csv"
+            chemin = raccordpath + str(segment.tid) + ".csv"
             f = open(chemin, 'w')
             f.write("EDGE_ID;WKT\n")
             f.write(str(segment.tid) + ";" + segment.toWKT() + "\n")
             f.close()
+
+
 
 
 def _fusion (e, TRACES, SEARCH):
@@ -330,8 +330,8 @@ def _fusion (e, TRACES, SEARCH):
     NB = candidatsMultiSens.size()
     print ('    Nombre de traces à fusionner (avant le tirage):', NB)
 
-    if NB > 50:
-        collection = candidatsMultiSens.randNTracks(min(NB, 50))
+    if NB > 30:
+        collection = candidatsMultiSens.randNTracks(min(NB, 30))
     else:
         collection = candidatsMultiSens
 
