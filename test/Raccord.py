@@ -14,8 +14,6 @@ netwokpath = '/home/md_vandamme/4_RESEAU/Ex2Z1Walk/network/reseau.csv'
 fusionpath = '/home/md_vandamme/4_RESEAU/Ex2Z1Walk/geometry/'
 
 
-
-
 # lire le réseau
 fmt = tkl.NetworkFormat({
        "pos_edge_id": 0,
@@ -41,9 +39,9 @@ for fusionfilename in os.listdir(fusionpath):
         track = tkl.TrackReader.parseWkt(wkt, )
         track.tid = edge_id
         collection.addTrack(track)
-
-
 print ('Nombre de traces dans la collection : ', collection.size())
+
+
 
 conflated = tkl.conflateOnNetwork(collection, network, threshold=50, h=30)
 
