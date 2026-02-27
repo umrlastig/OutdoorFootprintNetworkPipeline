@@ -2,6 +2,6 @@
 
 
 from .KitTopology import *
-from .KitSmooth import *
-from .KitFusion import *
+from .smooth import *
+from .conflation import *
 
