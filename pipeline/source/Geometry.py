@@ -174,29 +174,31 @@ def createNetworkGeom(RESPATH, SEARCH):
 
         for trackid, tobs in tobstrack.items():
             points_sorted = sorted(tobs, key=lambda x: x[0])
-    
+
             tn = tkl.Track()
             v = 1
             p1 = None
             jp1 = -1
             for p in points_sorted:
+                # print (p[0])
                 p2 = p[1]
                 if p1 is not None:
                     if jp1 + 1 < p[0]:
                         # on coupe la trace pour créer un nouveau morceau
-                        cb = create_candidate_for_aggregate(tn, e, SEARCH)
+                        cb = return_candidate_for_aggregate(tn, e, SEARCH)
                         for tb in cb:
                             tid = str(trackid) + "-v" + str(v)
                             v += 1
                             f.write(str(edgeid) + ";" + str(tid) + ";" + tb.toWKT() + "\n")
-
                         tn = tkl.Track()
+
                 tn.addObs(tkl.Obs(p2, tkl.ObsTime()))
                 p1 = p2
                 jp1 = p[0]
 
+
             # dernier morceau de trace
-            cb = create_candidate_for_aggregate(tn, e, SEARCH)
+            cb = return_candidate_for_aggregate(tn, e, SEARCH)
             for tb in cb:
                 tid = str(trackid) + "-v" + str(v)
                 v += 1
@@ -367,7 +369,7 @@ def _fusion (e, TRACES, SEARCH):
 
 
 
-def create_candidate_for_aggregate(track_segment, edge, SEARCH):
+def return_candidate_for_aggregate(track_segment, edge, SEARCH):
     '''
     Fonction utilitaire.
     
@@ -395,12 +397,25 @@ def create_candidate_for_aggregate(track_segment, edge, SEARCH):
     s = edge.source.coord
     t = edge.target.coord
 
-    # Est-ce que le début de la trace est dans la zone "source" ??
-    p1 = track_segment.getFirstObs().position
-    p2 = track_segment.getLastObs().position
+    # Est-ce que le début de la trace est dans une zone de départ ou d'arrivée ?
+    # sinon on coupe le premier morceau
 
+    BEGIN = 0
+    END = track_segment.size()-1
+    p1 = track_segment.getFirstObs().position
+    while p1.distance2DTo(s) >= SEARCH and p1.distance2DTo(t) >= SEARCH:
+        BEGIN += 1
+        if BEGIN > END-1:
+            break
+        p1 = track_segment.getObs(BEGIN).position
+    if BEGIN > 0:
+        track_segment = track_segment.extract(BEGIN, END)
+
+    # On sait que le début est dans une zone, on s'occupe du sens
+    p2 = track_segment.getLastObs().position
     if p1.distance2DTo(s) >= SEARCH:
         if p2.distance2DTo(s) < SEARCH:
+            print ('inverse')
             # sens inverse
             track_segment = track_segment.reverse()
             p1 = track_segment.getFirstObs().position
@@ -409,6 +424,7 @@ def create_candidate_for_aggregate(track_segment, edge, SEARCH):
             # on fait rien, trace à ne pas garder pour la fusion
             return morceaux
 
+    # -------------------------------------------------------------------------
     # On découpe si besoin
     atteint = False
     dd = 0
@@ -417,6 +433,7 @@ def create_candidate_for_aggregate(track_segment, edge, SEARCH):
 
         if start == 'S' and o.position.distance2DTo(t) < SEARCH:
             atteint = True
+
         if start == 'T' and o.position.distance2DTo(s) < SEARCH:
             atteint = True
 
@@ -427,6 +444,7 @@ def create_candidate_for_aggregate(track_segment, edge, SEARCH):
             dd = idx
             atteint = False
             start = 'T'
+
         if atteint and o.position.distance2DTo(s) > SEARCH and start == 'T':
             # la deuxième partie de la trace est sortie
             morceau = track_segment.extract(dd, idx-1).reverse()
@@ -448,7 +466,4 @@ def create_candidate_for_aggregate(track_segment, edge, SEARCH):
             trackG = morceau.copy()
             trackG.resample(1, mode=tkl.MODE_SPATIAL)
 
-
     return morceaux
-
-
