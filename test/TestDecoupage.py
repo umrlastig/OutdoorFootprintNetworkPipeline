@@ -7,7 +7,111 @@ import tracklib as tkl
 RESPATH = r'/home/md_vandamme/4_RESEAU/Ex2Z1Walk/'
 SEARCH = 25
 
+def return_candidate_for_aggregate(track_segment, edge, SEARCH):
+    '''
+    Fonction utilitaire.
+    
+    tn : trace dont on a gardé l'ensemble des points consécutifs 
+         recalés sur le troncon edge
+    
+    tn est decoupe si après une première longueur la trace quitte l'arrivée
+    (cas d'un aller-retour sur le troncon)
+    
+    Les pauses au milieu ne sont pas gérées
 
+    Une trace est gardée pour la fusion si :
+        - son point de départ est "proche" de la source de l'arc 
+        - son point d'arrivée est "proche" de la target de l'arc.
+        - sa géométrie dans le même sens que celui de l'arc
+
+    Si trop petite, on ne garde pas
+    
+    Si pas assez de points, on fait un resample de 1m
+        
+    '''
+
+    morceaux = tkl.TrackCollection()
+
+    s = edge.source.coord
+    t = edge.target.coord
+
+    # Est-ce que le début de la trace est dans une zone de départ ou d'arrivée ?
+    # sinon on coupe le premier morceau
+
+    BEGIN = 0
+    END = track_segment.size()-1
+    p1 = track_segment.getFirstObs().position
+    while p1.distance2DTo(s) >= SEARCH and p1.distance2DTo(t) >= SEARCH:
+        BEGIN += 1
+        if BEGIN > END-1:
+            break
+        p1 = track_segment.getObs(BEGIN).position
+    if BEGIN > 0:
+        track_segment = track_segment.extract(BEGIN, END)
+
+    if track_segment.size() <= 0:
+        # on fait rien, trace à ne pas garder pour la fusion
+        # print ('Pas de candidat pour le segment')
+        return morceaux
+
+    # On sait que le début est dans une zone,
+    # on regarde la fin et aussi on s'occupe du sens d'orientation du
+    # premier morceau
+    p2 = track_segment.getLastObs().position
+    if p1.distance2DTo(s) >= SEARCH:
+        if p2.distance2DTo(s) < SEARCH:
+            # sens inverse
+            track_segment = track_segment.reverse()
+            p1 = track_segment.getFirstObs().position
+            p2 = track_segment.getLastObs().position
+        else:
+            # on fait rien, trace à ne pas garder pour la fusion
+            # print ('Pas de candidat pour le segment')
+            return morceaux
+
+    # -------------------------------------------------------------------------
+    # On découpe si besoin
+    atteint = False
+    dd = 0
+    start = 'S'
+    for idx, o in enumerate(track_segment):
+
+        if start == 'S' and o.position.distance2DTo(t) < SEARCH:
+            atteint = True
+
+        if start == 'T' and o.position.distance2DTo(s) < SEARCH:
+            atteint = True
+
+        if atteint and o.position.distance2DTo(t) > SEARCH and start == 'S':
+            # la deuxième partie de la trace est sortie
+            morceau = track_segment.extract(dd, idx-1)
+            morceaux.addTrack(morceau)
+            dd = idx
+            atteint = False
+            start = 'T'
+
+        if atteint and o.position.distance2DTo(s) > SEARCH and start == 'T':
+            # la deuxième partie de la trace est sortie
+            morceau = track_segment.extract(dd, idx-1).reverse()
+            morceaux.addTrack(morceau)
+            dd = idx
+            atteint = False
+            start = 'S'
+
+    if atteint:
+        morceau = track_segment.extract(dd, idx)
+        if start == 'T':
+            morceaux.addTrack(morceau.reverse())
+        else:
+            morceaux.addTrack(morceau)
+
+
+    if edge.geom.length() < 2*SEARCH:
+        for morceau in morceaux:
+            trackG = morceau.copy()
+            trackG.resample(1, mode=tkl.MODE_SPATIAL)
+
+    return morceaux
 
 
 # =============================================================================
@@ -41,16 +145,19 @@ collection = tkl.TrackCollection()
 for trace in collection2:
     num = trace.getObsAnalyticalFeature('num', 0)
 
-    if str(num) != '12299352.0' and str(num) != '12041476.0' and str(num) != '1198186.0':
+    #if str(num) != '12299352.0' and str(num) != '12041476.0' and str(num) != '1198186.0':
+    if str(num) != '1164104.0':
         continue
 
     track_id = trace.getObsAnalyticalFeature('track_id', 0)
+    print (num)
     user_id = trace.getObsAnalyticalFeature('user_id', 0)
 
     trace.uid = user_id
     trace.tid = num
     collection.addTrack(trace)
 
+print (collection.size())
 
 
 
@@ -64,7 +171,7 @@ network.prepare()
 
 # Map track on network
 print ('Launching Map-matching')
-tkl.mapOnNetwork(collection, network, search_radius=SEARCH, debug=True)
+tkl.mapOnNetwork(collection, network, search_radius=SEARCH, debug=False)
 print ('Map-matching ended')
 
 
@@ -127,7 +234,8 @@ edgeid = '11182'
 e = network.EDGES[edgeid]
 # trackid = 12299352
 # trackid = 12041476
-trackid = 1198186
+# trackid = 1198186
+trackid = 1164104
 tobs = MM[edgeid][trackid]
 
 

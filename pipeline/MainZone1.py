@@ -9,7 +9,7 @@ from source.Topology import network
 from source.Geometry import createNetworkGeom
 
 
-STAGE = 4
+STAGE = 1
 
 
 """ ======================================================================= """
@@ -30,7 +30,7 @@ RESPATH = r'/home/md_vandamme/4_RESEAU/Ex2Z1Walk/'
 #                           un fichier CSV par trace
 #tracespathsource = r'/home/md_vandamme/5_GPS/OV/BAUGES/run/'
 tracespathsource = r'/home/md_vandamme/5_GPS/OV/BAUGES/walk/'
-# tracespathsource = r'/home/md_vandamme/4_RESEAU/GPS10/tracks/'
+#tracespathsource = r'/home/md_vandamme/4_RESEAU/GPS10/tracks/'
 
 
 # Paramètre : Coordonnées de la zone d'étude sur laquelle on construit le réseau
@@ -54,14 +54,8 @@ Y = [6513197, 6512091, 6511113, 6510719, 6511949, 6512621, 6513197]
 #             si le nombre n'est pas atteint, le morceau de trace est oublié
 NB_OBS_MIN           = 10
 
-
 # Paramètre : Distance en mètres entre 2 points, si supérieure au seuil on coupe la trace
 DIST_MAX_2OBS        = 50
-
-
-# Paramètre : 1 point tous les 1 mètres, avec un re-sampling spatial
-RESAMPLE_SIZE_GRID   = 1
-RESAMPLE_SIZE_FUSION = 5
 
 
 """ ======================================================================= """
@@ -124,7 +118,6 @@ if not os.path.exists(RESPATH + 'resample_fusion'):
     os.makedirs(RESPATH + 'resample_fusion')
 if not os.path.exists(RESPATH + 'mapmatch/tmm'):
     os.makedirs(RESPATH + 'mapmatch/tmm')
-
 if not os.path.exists(RESPATH + 'geometry/fusion'):
     os.makedirs(RESPATH + 'geometry/fusion')
 if not os.path.exists(RESPATH + 'geometry/raccord'):
@@ -146,11 +139,10 @@ if not os.path.exists(RESPATH + 'geometry/raccord'):
 
 if STAGE == 1:
     t0 = time.time()
-    decoup_resample(RESPATH, tracespathsource, NB_OBS_MIN, DIST_MAX_2OBS, X, Y,
-                    RESAMPLE_SIZE_GRID, RESAMPLE_SIZE_FUSION)
+    decoup_resample(RESPATH, tracespathsource, NB_OBS_MIN, DIST_MAX_2OBS, X, Y)
     t1 = time.time()
     total = t1-t0
-    print ("Temps d'exécution en s:", total)
+    print ("Execution time (s):", total)
 
 
 
