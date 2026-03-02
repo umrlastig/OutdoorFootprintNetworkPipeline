@@ -337,9 +337,9 @@ def _fusion (e, TRACES, SEARCH):
     NB = candidats.size()
     print ('    Nombre de traces à fusionner (avant le tirage):', NB)
     if NB > 30:
-        collection = candidatsMultiSens.randNTracks(min(NB, 30))
+        collection = candidats.randNTracks(min(NB, 30))
     else:
-        collection = candidatsMultiSens
+        collection = candidats
 
     '''
     if collection is None:
