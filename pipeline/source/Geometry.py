@@ -58,9 +58,10 @@ def createNetworkGeom(RESPATH, SEARCH):
         num = trace.getObsAnalyticalFeature('num', 0)
         track_id = trace.getObsAnalyticalFeature('track_id', 0)
         user_id = trace.getObsAnalyticalFeature('user_id', 0)
+        version = trace.getObsAnalyticalFeature('version', 0)
 
         trace.uid = user_id
-        trace.tid = num
+        trace.tid = str(num) + '-' + version
         collection.addTrack(trace)
     
 
@@ -79,8 +80,8 @@ def createNetworkGeom(RESPATH, SEARCH):
 
 
     # Map track on network
-    print ('Launching Map-matching')
-    tkl.mapOnNetwork(collection, network, search_radius=SEARCH, debug=True)
+    print ('Launching Map-matching ...')
+    tkl.mapOnNetwork(collection, network, search_radius=SEARCH, debug=False)
     print ('Map-matching ended')
 
 
@@ -325,28 +326,34 @@ def _fusion (e, TRACES, SEARCH):
     if len(TRACES) <= 0:
         return None
 
-    candidatsMultiSens = tkl.TrackCollection(TRACES)
-    if candidatsMultiSens is None:
-        return None
+    candidats = tkl.TrackCollection()
+    for track in TRACES:
+        t = tkl.simplify(track, tolerance=0.5,
+                         mode=tkl.MODE_SIMPLIFY_DOUGLAS_PEUCKER,
+                         verbose=False)
+        candidats.addTrack(t)
 
-    NB = candidatsMultiSens.size()
+
+    NB = candidats.size()
     print ('    Nombre de traces à fusionner (avant le tirage):', NB)
-
     if NB > 30:
         collection = candidatsMultiSens.randNTracks(min(NB, 30))
     else:
         collection = candidatsMultiSens
 
+    '''
     if collection is None:
         return None
     if not isinstance(collection, tkl.TrackCollection):
         return None
     if collection.size() <= 0:
         return None
+    '''
 
-    print ('    Nombre de traces à fusionner (après la direction):', collection.size())
+    print ('    Number of candidates in the aggregation process:', collection.size())
+
     if collection.size() > 1:
-        print ('Démarrage de la fusion ......')
+        print ('Launching Aggregation ......')
         centralDTW = tkl.fusion(collection,
                              master=tkl.MODE_MASTER_MEDIAN_LEN,
                              dim=2,
@@ -358,7 +365,7 @@ def _fusion (e, TRACES, SEARCH):
                              verbose=False,
                              iter_max=25,
                              recursive=15)
-        print ('Fin de la fusion.')
+        print ('Aggregation ended')
         return centralDTW
     elif candidats.size() == 1:
         centralDTW = candidats.getTrack(0)
@@ -411,17 +418,24 @@ def return_candidate_for_aggregate(track_segment, edge, SEARCH):
     if BEGIN > 0:
         track_segment = track_segment.extract(BEGIN, END)
 
-    # On sait que le début est dans une zone, on s'occupe du sens
+    if track_segment.size() <= 0:
+        # on fait rien, trace à ne pas garder pour la fusion
+        # print ('Pas de candidat pour le segment')
+        return morceaux
+
+    # On sait que le début est dans une zone,
+    # on regarde la fin et aussi on s'occupe du sens d'orientation du
+    # premier morceau
     p2 = track_segment.getLastObs().position
     if p1.distance2DTo(s) >= SEARCH:
         if p2.distance2DTo(s) < SEARCH:
-            print ('inverse')
             # sens inverse
             track_segment = track_segment.reverse()
             p1 = track_segment.getFirstObs().position
             p2 = track_segment.getLastObs().position
         else:
             # on fait rien, trace à ne pas garder pour la fusion
+            # print ('Pas de candidat pour le segment')
             return morceaux
 
     # -------------------------------------------------------------------------
@@ -467,3 +481,4 @@ def return_candidate_for_aggregate(track_segment, edge, SEARCH):
             trackG.resample(1, mode=tkl.MODE_SPATIAL)
 
     return morceaux
+

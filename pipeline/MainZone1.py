@@ -9,7 +9,7 @@ from source.Topology import network
 from source.Geometry import createNetworkGeom
 
 
-STAGE = 1
+STAGE = 4
 
 
 """ ======================================================================= """
@@ -74,9 +74,6 @@ SEUIL_SURFACE = 50000 # m2
 """     PARAMETRES  RESEAU                                                  """
 """                                                                         """
 
-# Pour la construction du réseau
-tolerance     = 0.1    # 0.05
-seuil_doublon = 0.1
 # Longueur des petits arcs à supprimer
 DIST_MIN_ARC  = 30     # 20
 
@@ -157,7 +154,7 @@ if STAGE == 2:
 
 if STAGE == 3:
     t0 = time.time()
-    network(RESPATH, tolerance, seuil_doublon, DIST_MIN_ARC)
+    network(RESPATH, DIST_MIN_ARC)
     t1 = time.time()
     total = t1-t0
     print ("Temps d'exécution en s:", total)

@@ -17,7 +17,11 @@ from pipeline import skeleton_smoothing
 
 
 
-def network(RESPATH, tolerance, seuil_doublon, DIST_MIN_ARC):
+def network(RESPATH, DIST_MIN_ARC):
+
+    # Pour la construction du réseau
+    tolerance     = 0.1    # 0.05
+    seuil_doublon = 0.1
 
 
     # =============================================================================
@@ -79,7 +83,8 @@ def network(RESPATH, tolerance, seuil_doublon, DIST_MIN_ARC):
     #
     #TE = list(map(int, network.getIndexEdges()))
     #tkl.NetworkReader.counter = max(TE) + 1
-    
+
+
     filtreNoeudSimple(network)
 
 
@@ -110,7 +115,19 @@ def network(RESPATH, tolerance, seuil_doublon, DIST_MIN_ARC):
     print ('Fin simplification 5/5.')
 
 
-    # =============================================================================
+    # =========================================================================
+
+
+
+
+
+
+
+
+
+
+
+    # =========================================================================
     # Sauvegarde dans un fichier
     netwokpath = RESPATH + 'network/reseau.csv'
     tkl.NetworkWriter.writeToCsv(network, netwokpath)
