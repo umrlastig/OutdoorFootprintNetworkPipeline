@@ -7,7 +7,7 @@ from source.Selection import decoup_resample
 from source.Image import density_polygonize
 from source.Topology import network
 from source.Geometry import createNetworkGeom
-
+from source.Refining import second_round
 
 STAGE = 4
 
@@ -163,10 +163,26 @@ if STAGE == 3:
 
 if STAGE == 4:
     t0 = time.time()
-    createNetworkGeom(RESPATH, SEARCH)
+    createNetworkGeom(RESPATH, SEARCH, NB_OBS_MIN)
     t1 = time.time()
     total = t1-t0
     print ("Temps d'exécution en s:", total)
+
+
+
+if STAGE == 5:
+    t0 = time.time()
+    second_round(RESPATH)
+    t1 = time.time()
+    total = t1-t0
+    print ("Temps d'exécution en s:", total)
+
+
+
+
+
+
+
 
 
 

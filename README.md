@@ -62,6 +62,7 @@ Le pipeline est composé de 5 briques à exécuter une par une:
 
 Les scripts se lancent dans une console Python. Temps d'exécution approximatif: xxx min (500+165+100+660+)
 
+xxx min (500+155+50+1015+)
 
 
 Paramètres à renseigner :
