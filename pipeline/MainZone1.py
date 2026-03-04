@@ -9,7 +9,7 @@ from source.Topology import network
 from source.Geometry import createNetworkGeom
 from source.Refining import second_round
 
-STAGE = 4
+STAGE = 5
 
 
 """ ======================================================================= """
@@ -119,6 +119,8 @@ if not os.path.exists(RESPATH + 'geometry/fusion'):
     os.makedirs(RESPATH + 'geometry/fusion')
 if not os.path.exists(RESPATH + 'geometry/raccord'):
     os.makedirs(RESPATH + 'geometry/raccord')
+if not os.path.exists(RESPATH + 'geometry/points_left'):
+    os.makedirs(RESPATH + 'geometry/points_left')
 
 
 
@@ -172,7 +174,7 @@ if STAGE == 4:
 
 if STAGE == 5:
     t0 = time.time()
-    second_round(RESPATH)
+    second_round(RESPATH, NB_OBS_MIN, G1_SIZE, G2_SIZE)
     t1 = time.time()
     total = t1-t0
     print ("Temps d'exécution en s:", total)
