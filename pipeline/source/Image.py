@@ -19,7 +19,7 @@ import tracklib as tkl
 import numpy as np
 
 from osgeo import gdal, ogr, osr
-from tracklib.util.centerline import Shp2centerline
+from pipeline import Shp2centerline
 
 
 
@@ -334,7 +334,7 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE):
 
 
 
-    # =============================================================================
+    # =========================================================================
     #   Squeletisation : center line
 
     interp_dist = 5
@@ -344,7 +344,7 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE):
     
 
 
-    # =============================================================================
+    # =========================================================================
 
 
     print ("Fin des calculs de vectorisation et squelette.")
