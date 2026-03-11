@@ -9,7 +9,7 @@ from source.Topology import network
 from source.Geometry import createNetworkGeom
 from source.Refining import second_round
 
-STAGE = 5
+STAGE = 2
 
 
 """ ======================================================================= """
@@ -41,6 +41,7 @@ tracespathsource = r'/home/md_vandamme/5_GPS/OV/BAUGES/walk/'
 #Y = [6513065, 6513079, 6512862, 6512504, 6512529, 6512224, 6511908, 6511248, 6510989, 6511152, 6511415, 6511794, 6512337, 6513104, 6513065]
 
 # traces de la zone 1 (3km x 3km)
+# POLYGON ((950987 6513197, 951409 6512091, 950696 6511113, 949467 6510719, 947934 6511949, 948545 6512621, 950987 6513197))
 X = [950987, 951409, 950696, 949467, 947934, 948545, 950987]
 Y = [6513197, 6512091, 6511113, 6510719, 6511949, 6512621, 6513197]
 
@@ -84,7 +85,7 @@ DIST_MIN_ARC  = 30     # 20
 """                                                                         """
 
 # Map matching
-SEARCH = 25
+SEARCH = 25  #30 
 
 # Aggregation
 
@@ -119,8 +120,8 @@ if not os.path.exists(RESPATH + 'geometry/fusion'):
     os.makedirs(RESPATH + 'geometry/fusion')
 if not os.path.exists(RESPATH + 'geometry/raccord'):
     os.makedirs(RESPATH + 'geometry/raccord')
-if not os.path.exists(RESPATH + 'geometry/points_left'):
-    os.makedirs(RESPATH + 'geometry/points_left')
+if not os.path.exists(RESPATH + 'points_left'):
+    os.makedirs(RESPATH + 'points_left')
 
 
 
@@ -147,7 +148,7 @@ if STAGE == 1:
 
 if STAGE == 2:
     t0 = time.time()
-    density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE)
+    density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE, prefix='PT')
     t1 = time.time()
     total = t1-t0
     print ("Temps d'exécution en s:", total)

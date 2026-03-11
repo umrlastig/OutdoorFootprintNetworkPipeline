@@ -31,8 +31,8 @@ def createNetworkGeom(RESPATH, SEARCH, NB_OBS_MIN):
            "separator": ",",
            "header": 1})
     
-    netwokpath = RESPATH + 'network/reseau.csv'
-    network = tkl.NetworkReader.readFromFile(netwokpath, fmt)
+    networkpath = RESPATH + 'network/reseau.csv'
+    network = tkl.NetworkReader.readFromFile(networkpath, fmt)
     
     print ('Number of edges = ', len(network.EDGES))
     print ('Number of nodes = ', len(network.NODES))

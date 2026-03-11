@@ -25,7 +25,7 @@ from pipeline import Shp2centerline
 
 
 
-def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE):
+def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE, prefix='PT'):
 
 
     respath = RESPATH + 'image/'
@@ -70,7 +70,7 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE):
         for j in range(grilleG1.raster.ncol):
             grilleG1.grid[i][j] = grilleG1.grid[i][j] / (G1_SIZE*G1_SIZE)
     
-    pathG1 = respath + 'G1.asc'
+    pathG1 = respath + 'G1_' + prefix + '.asc'
     tkl.RasterWriter.writeMapToAscFile(pathG1, grilleG1)
     
 
@@ -117,7 +117,7 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE):
     
     grilleK = rasterK.getAFMap(0)
     
-    pathK = respath + 'K.asc'
+    pathK = respath + 'K_' + prefix + '.asc'
     tkl.RasterWriter.writeMapToAscFile(pathK, grilleK)
     
     #plotRaster(pathK, "K", "Turbo")
@@ -142,23 +142,22 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE):
             else:
                 raster.getAFMap(0).grid[i][j] = 0
     
-    pathB = respath + 'B.asc'
+    pathB = respath + 'B_' + prefix + '.asc'
     tkl.RasterWriter.writeMapToAscFile(pathB, raster.getAFMap(0))
     
-    # plotRaster(pathB, "B")
-
     print ("Fin des calculs des cartes de densités, de constraste et binaire.")
-
+    
 
     # =========================================================================
 
 
-    pathB           = respath + 'B.asc'
-    patherosion     = respath + 'erosion.tif'
-    pathdilatation  = respath + 'dilatation.tif'
-    surfpath        = respath + 'surface.shp'
-    roadsurfpath    = respath + 'road_surface.shp'
-    squelettepath   = RESPATH + 'network/squelette.shp'
+    pathB             = respath + 'B_' + prefix + '.asc'
+    patherosion       = respath + 'erosion_' + prefix + '.tif'
+    pathdilatation    = respath + 'dilatation_' + prefix + '.tif'
+    surfpath          = respath + 'surface_' + prefix + '.shp'
+    roadsurfpath      = respath + 'road_surface_' + prefix + '.shp'
+    roadsurflissepath = respath + 'road_surface_lissee_' + prefix + '.shp'
+    squelettepath     = RESPATH + 'network/squelette_' + prefix + '.shp'
 
     try:
         os.remove(patherosion)
@@ -167,31 +166,37 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE):
     except FileNotFoundError:
         print(f"File '{patherosion}' or '{pathdilatation}' not found.")
 
-
     try:
-        os.remove(respath + 'road_surface.shp')
-        os.remove(respath + 'road_surface.shx')
-        os.remove(respath + 'road_surface.dbf')
-        os.remove(respath + 'road_surface.prj')
+        os.remove(respath + 'road_surface_' + prefix + '.shp')
+        os.remove(respath + 'road_surface_' + prefix + '.shx')
+        os.remove(respath + 'road_surface_' + prefix + '.dbf')
+        os.remove(respath + 'road_surface_' + prefix + '.prj')
         print(f"Files road_surface.shp deleted successfully.")
     except FileNotFoundError:
         print(f"File '{roadsurfpath}' not found.")
 
     try:
-        os.remove(respath + 'surface.shp')
-        os.remove(respath + 'surface.shx')
-        os.remove(respath + 'surface.dbf')
-        os.remove(respath + 'surface.prj')
+        os.remove(respath + 'road_surface_lissee_' + prefix + '.shp')
+        os.remove(respath + 'road_surface_lissee_' + prefix + '.shx')
+        os.remove(respath + 'road_surface_lissee_' + prefix + '.dbf')
+        print(f"Files road_surface_lissee.shp deleted successfully.")
+    except FileNotFoundError:
+        print(f"File '{roadsurflissepath}' not found.")
+
+    try:
+        os.remove(respath + 'surface_' + prefix + '.shp')
+        os.remove(respath + 'surface_' + prefix + '.shx')
+        os.remove(respath + 'surface_' + prefix + '.dbf')
+        os.remove(respath + 'surface_' + prefix + '.prj')
         print(f"Files surface.shp deleted successfully.")
     except FileNotFoundError:
         print(f"File '{roadsurfpath}' not found.")
 
-
     try:
-        os.remove(RESPATH + 'network/squelette.shp')
-        os.remove(RESPATH + 'network/squelette.shx')
-        os.remove(RESPATH + 'network/squelette.dbf')
-        os.remove(RESPATH + 'network/squelette.cpg')
+        os.remove(RESPATH + 'network/squelette_' + prefix + '.shp')
+        os.remove(RESPATH + 'network/squelette_' + prefix + '.shx')
+        os.remove(RESPATH + 'network/squelette_' + prefix + '.dbf')
+        os.remove(RESPATH + 'network/squelette_' + prefix + '.cpg')
         print(f"Files '{squelettepath}' deleted successfully.")
     except FileNotFoundError:
         print(f"File '{squelettepath}' not found.")
@@ -232,115 +237,123 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE):
 
     pathdepart = patherosion
 
-    # =============================================================================
-    #   Vectorisation
+    # =========================================================================
+    #   Vectorisation dans le layer surface
+
+    shpDriver = ogr.GetDriverByName("ESRI Shapefile")
+    dsSurface = shpDriver.CreateDataSource(surfpath)
+
+    l93Ref = osr.SpatialReference()
+    l93Ref.SetFromUserInput('EPSG:2154')
+
+    surfaceLayername = 'surface'
+    layerSurface = dsSurface.CreateLayer(surfaceLayername, srs=l93Ref)
+
+    fld2 = ogr.FieldDefn("DN", ogr.OFTInteger)
+    layerSurface.CreateField(fld2)
+    dst_field = layerSurface.GetLayerDefn().GetFieldIndex("DN")
 
     #  get raster datasource
-    src_ds = gdal.Open(pathdepart)
-    srcband = src_ds.GetRasterBand(1)
+    dsDepart = gdal.Open(pathdepart)
+    srcband = dsDepart.GetRasterBand(1)
 
-    dst_layername = 'road_surface'
-    driver = ogr.GetDriverByName("ESRI Shapefile")
-    dst_ds = driver.CreateDataSource(surfpath)
-    sp_ref = osr.SpatialReference()
-    sp_ref.SetFromUserInput('EPSG:2154')
-
-    dst_layer = dst_ds.CreateLayer(dst_layername, srs=sp_ref)
-    fld2 = ogr.FieldDefn("DN", ogr.OFTInteger)
-    dst_layer.CreateField(fld2)
-    dst_field = dst_layer.GetLayerDefn().GetFieldIndex("DN")
-
-    gdal.Polygonize(srcband, None, dst_layer, dst_field, [], callback=None )
-
+    gdal.Polygonize(srcband, None, layerSurface, dst_field, [], callback=None)
 
     # Nettoyage
-    del src_ds
-    del dst_ds
+    del dsSurface
+    del dsDepart
 
 
-    # On copie
-    src_surf = ogr.Open(surfpath)
-    driver.CopyDataSource(src_surf, roadsurfpath)
-    src_surf = None
+    # =========================================================================
+    # On copie Surface vers RoadSurface
 
+    # ouvrir la source
+    dsSurface = ogr.Open(surfpath)
 
+    # copier la datasource
+    dsRoadSurface = shpDriver.CopyDataSource(dsSurface, roadsurfpath)
 
-
+    # fermer les datasets
+    dsSurface = None
+    dsRoadSurface = None
 
 
     # =============================================================================
     #   Squeletisation : DN=0 + filtre sur la surface + id
 
-    src_ds = ogr.Open(roadsurfpath, 1)
-    src_layer = src_ds.GetLayer()
+    dsRoadSurface = ogr.Open(roadsurfpath, 1)
+    layerRoadSurface = dsRoadSurface.GetLayer()
 
 
     # Appliquer un filtre attributaire
-    src_layer.SetAttributeFilter("DN = 0")
+    layerRoadSurface.SetAttributeFilter("DN = 0")
 
     # Récupérer les features à supprimer
     feature_ids = []
-    for feature in src_layer:
+    for feature in layerRoadSurface:
         feature_ids.append(feature.GetFID())
     
     # Supprimer les features
     for fid in feature_ids:
-        src_layer.DeleteFeature(fid)
+        layerRoadSurface.DeleteFeature(fid)
 
-    src_layer.SetAttributeFilter(None)
+    layerRoadSurface.SetAttributeFilter(None)
 
     # ------------------------------------------
-    #   Surface
 
     fids_to_delete = []
 
-    for feature in src_layer:
+    for feature in layerRoadSurface:
         geom = feature.GetGeometryRef()
         if geom is not None:
             area = geom.GetArea()
             if area <= SEUIL_SURFACE:
                 fids_to_delete.append(feature.GetFID())
             else:
-                print (area, SEUIL_SURFACE)
+                print ("Un pplygone gardé avec comme surface", area, SEUIL_SURFACE)
 
     for fid in fids_to_delete:
-        src_layer.DeleteFeature(fid)
+        layerRoadSurface.DeleteFeature(fid)
 
-    del src_ds
 
 
     # -----------------------------------------
     #   Id
 
-    ds = ogr.Open(roadsurfpath, 1)
-    layer = ds.GetLayer()
 
     # Vérifier si le champ existe déjà
-    layer_defn = layer.GetLayerDefn()
+    layer_defn = layerRoadSurface.GetLayerDefn()
     field_names = [layer_defn.GetFieldDefn(i).GetName() for i in range(layer_defn.GetFieldCount())]
 
     if "id" not in field_names:
         field_defn = ogr.FieldDefn("id", ogr.OFTInteger)
-        layer.CreateField(field_defn)
+        layerRoadSurface.CreateField(field_defn)
 
     i = 1
-    for feature in layer:
+    for feature in layerRoadSurface:
         feature.SetField("id", i)
-        layer.SetFeature(feature)
+        layerRoadSurface.SetFeature(feature)
         i += 1
 
-    ds = None
-
+    dsRoadSurface = None
 
 
 
     # =========================================================================
-    #   Squeletisation : center line
+    #   Lissage du polygone pour oublier le profil en escalier
+
+
+    #filtre(roadsurfpath, roadsurflissepath, shpDriver)
+    dual(roadsurfpath, roadsurflissepath, shpDriver)
+
+
+    # =========================================================================
+    #   Squeletisation : centerline
 
     interp_dist = 5
     clean_dist  = 0
 
-    Shp2centerline(roadsurfpath, squelettepath, interp_dist, clean_dist)
+    Shp2centerline(roadsurflissepath, squelettepath, interp_dist, clean_dist)
     
 
 
@@ -348,5 +361,117 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE):
 
 
     print ("Fin des calculs de vectorisation et squelette.")
+
+
+
+def dual(roadsurfpath, roadsurflissepath, shpDriver):
+    dsRoadSurface = ogr.Open(roadsurfpath, 0)
+    layerRoadSurface = dsRoadSurface.GetLayer()
+
+    dsRoadSurfaceLissee = shpDriver.CreateDataSource(roadsurflissepath)
+    layerRoadSurfaceLissee = dsRoadSurfaceLissee.CreateLayer(
+        "Road surface lissee",
+        geom_type = layerRoadSurface.GetGeomType()
+    )
+
+    # copier les champs attributaires
+    src_defn = layerRoadSurface.GetLayerDefn()
+    for i in range(src_defn.GetFieldCount()):
+        field_defn = src_defn.GetFieldDefn(i)
+        layerRoadSurfaceLissee.CreateField(field_defn)
+
+    dst_defn = layerRoadSurfaceLissee.GetLayerDefn()
+
+    for feature in layerRoadSurface:
+        geom = feature.GetGeometryRef()
+
+        polygon = ogr.Geometry(ogr.wkbPolygon)
+        for i in range(geom.GetGeometryCount()):
+            ring = geom.GetGeometryRef(i)
+            nbpoints = ring.GetPointCount()
+
+            track = tkl.Track()
+            for p in range(0, nbpoints):
+                track.addObs(tkl.Obs(tkl.ENUCoords(ring.GetPoint(p)[0], ring.GetPoint(p)[1]), tkl.ObsTime()))
+            tdual = track.dual()
+            newring = ogr.Geometry(ogr.wkbLinearRing)
+            for o in tdual:
+                newring.AddPoint(o.position.getX(), o.position.getY())
+            polygon.AddGeometry(newring)
+    
+        # Créer une nouvelle feature
+        dst_feat = ogr.Feature(dst_defn)
+        
+        # Copier les attributs
+        for i in range(dst_defn.GetFieldCount()):
+            dst_feat.SetField(i, feature.GetField(i))
+        
+        # Assigner la géométrie
+        dst_feat.SetGeometry(polygon)
+        
+        # Ajouter au layer
+        layerRoadSurfaceLissee.CreateFeature(dst_feat)
+        
+        dst_feat = None
+
+
+    dsRoadSurface = None
+    dsRoadSurfaceLissee = None
+
+
+def filtre(roadsurfpath, roadsurflissepath, shpDriver):
+    dsRoadSurface = ogr.Open(roadsurfpath, 0)
+    layerRoadSurface = dsRoadSurface.GetLayer()
+
+    dsRoadSurfaceLissee = shpDriver.CreateDataSource(roadsurflissepath)
+    layerRoadSurfaceLissee = dsRoadSurfaceLissee.CreateLayer(
+        "Road surface lissee",
+        geom_type = layerRoadSurface.GetGeomType()
+    )
+
+    # copier les champs attributaires
+    src_defn = layerRoadSurface.GetLayerDefn()
+    for i in range(src_defn.GetFieldCount()):
+        field_defn = src_defn.GetFieldDefn(i)
+        layerRoadSurfaceLissee.CreateField(field_defn)
+
+    dst_defn = layerRoadSurfaceLissee.GetLayerDefn()
+
+    for feature in layerRoadSurface:
+        geom = feature.GetGeometryRef()
+
+        polygon = ogr.Geometry(ogr.wkbPolygon)
+        for i in range(geom.GetGeometryCount()):
+            ring = geom.GetGeometryRef(i)
+            nbpoints = ring.GetPointCount()
+            # print ('Nb of vertex : ', nbpoints)
+
+            newring = ogr.Geometry(ogr.wkbLinearRing)
+            newring.AddPoint(ring.GetPoint(0)[0], ring.GetPoint(0)[1])
+            for p in range(1, nbpoints-1):
+                lon = 0.5*ring.GetPoint(p)[0] + 0.25*ring.GetPoint(p-1)[0] + 0.25*ring.GetPoint(p+1)[0]
+                lat = 0.5*ring.GetPoint(p)[1] + 0.25*ring.GetPoint(p-1)[1] + 0.25*ring.GetPoint(p+1)[1]
+                newring.AddPoint(lon, lat)
+            newring.AddPoint(ring.GetPoint(nbpoints-1)[0], ring.GetPoint(nbpoints-1)[1])
+            polygon.AddGeometry(newring)
+    
+        # Créer une nouvelle feature
+        dst_feat = ogr.Feature(dst_defn)
+        
+        # Copier les attributs
+        for i in range(dst_defn.GetFieldCount()):
+            dst_feat.SetField(i, feature.GetField(i))
+        
+        # Assigner la géométrie
+        dst_feat.SetGeometry(polygon)
+        
+        # Ajouter au layer
+        layerRoadSurfaceLissee.CreateFeature(dst_feat)
+        
+        dst_feat = None
+
+
+    dsRoadSurface = None
+    dsRoadSurfaceLissee = None
 
 
