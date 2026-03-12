@@ -17,7 +17,7 @@ from pipeline import conflateOnNetwork
 
 
 
-def createNetworkGeom(RESPATH, SEARCH, NB_OBS_MIN):
+def createNetworkGeom(RESPATH, SEARCH, NB_OBS_MIN, prefix='PT'):
 
     # =========================================================================
     #    Lecture du réseau
@@ -31,7 +31,7 @@ def createNetworkGeom(RESPATH, SEARCH, NB_OBS_MIN):
            "separator": ",",
            "header": 1})
     
-    networkpath = RESPATH + 'network/reseau.csv'
+    networkpath = RESPATH + 'network/reseau_' + prefix + '.csv'
     network = tkl.NetworkReader.readFromFile(networkpath, fmt)
     
     print ('Number of edges = ', len(network.EDGES))
@@ -173,7 +173,7 @@ def createNetworkGeom(RESPATH, SEARCH, NB_OBS_MIN):
     #     - toutes les traces dans le même sens
     # on enregistre le MM dans un fichier CSV
     
-    mmpath = RESPATH + 'mapmatch/resultmm.csv'
+    mmpath = RESPATH + 'mapmatch/resultmm_' + prefix + '.csv'
     f = open(mmpath,'w')
     f.write("EDGE_ID;TRACK_ID;WKT\n")
 
@@ -240,7 +240,7 @@ def createNetworkGeom(RESPATH, SEARCH, NB_OBS_MIN):
     fusions = tkl.TrackCollection()
     edgeprevious = -1
     TRACES = []
-    mmpath = RESPATH + 'mapmatch/resultmm.csv'
+    mmpath = RESPATH + 'mapmatch/resultmm_' + prefix + '.csv'
     with open(mmpath, 'r') as file:
         cpt = 0
         for s in file:
@@ -341,6 +341,9 @@ def _fusion (e, TRACES, SEARCH):
 
     '''
 
+    rec = 10
+    cv  = 1e-3
+
     if len(TRACES) <= 0:
         return None
 
@@ -375,14 +378,15 @@ def _fusion (e, TRACES, SEARCH):
         centralDTW = tkl.fusion(collection,
                              master=tkl.MODE_MASTER_MEDIAN_LEN,
                              dim=2,
-                             mode=tkl.MODE_MATCHING_DTW,
+                             mode=tkl.MODE_MATCHING_FDTW,
                              p=2,
                              represent_method=tkl.MODE_REP_BARYCENTRE,
                              agg_method=tkl.MODE_AGG_MEDIAN,
                              constraint=False,
                              verbose=False,
                              iter_max=25,
-                             recursive=15)
+                             recursive=rec,
+                             cv=cv)
         print ('Aggregation ended')
         return centralDTW
     elif candidats.size() == 1:

@@ -17,7 +17,7 @@ from pipeline import skeleton_smoothing
 
 
 
-def network(RESPATH, DIST_MIN_ARC):
+def network(RESPATH, DIST_MIN_ARC, prefix='PT'):
 
     # Pour la construction du réseau
     tolerance     = 0.1    # 0.05
@@ -29,7 +29,7 @@ def network(RESPATH, DIST_MIN_ARC):
 
     collection = tkl.TrackCollection()
 
-    squelettepath = RESPATH + 'network/squelette.shp'
+    squelettepath = RESPATH + 'network/squelette_' + prefix + '.shp'
     with fiona.open(squelettepath, 'r') as shapefile:
         for feature in shapefile:
             # 1 MultiLineString
@@ -129,7 +129,7 @@ def network(RESPATH, DIST_MIN_ARC):
 
     # =========================================================================
     # Sauvegarde dans un fichier
-    netwokpath = RESPATH + 'network/reseau.csv'
+    netwokpath = RESPATH + 'network/reseau_' + prefix + '.csv'
     tkl.NetworkWriter.writeToCsv(network, netwokpath)
 
     print ("Fin de la construction du réseau.")

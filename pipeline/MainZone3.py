@@ -9,7 +9,7 @@ from source.Topology import network
 from source.Geometry import createNetworkGeom
 from source.Refining import second_round
 
-STAGE = 1
+STAGE = 2
 
 
 """ ======================================================================= """
