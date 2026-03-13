@@ -27,6 +27,13 @@ from pipeline import Shp2centerline
 
 def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE, prefix='PT'):
 
+    main_text   = "----------------------------------------------------------------------\r\n"
+    main_text  += "STAGE 2 :                                   \r\n"
+    main_text  += "   - Calcul d’une carte de densité à partir des traces GNSS \r\n"
+    main_text  += "   - De la vectorisation on extrait une ligne centrée ≡ arc de la topologie \r\n"
+    main_text  += "----------------------------------------------------------------------\r\n"
+    print(main_text, end='')
+
 
     respath = RESPATH + 'image/'
 
@@ -79,7 +86,6 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE, prefix='
 
     # Combien de cellules de chaque côté pour la petite résolution ?
     nb = math.floor(G2_SIZE / G1_SIZE)
-    print ("nb", nb)
 
     epsilon = 0.001
     
@@ -105,7 +111,7 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE, prefix='
             g2 = G2[line][column] / (nb * G1_SIZE * nb * G1_SIZE)
             #g2 = G2[line][column] / (G2_SIZE * G2_SIZE)
     
-            if g1 <= 2:
+            if g1 < 2:
                 g1 = 0
     
             if g2 <= 0:

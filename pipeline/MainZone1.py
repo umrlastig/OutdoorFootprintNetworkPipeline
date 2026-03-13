@@ -9,7 +9,7 @@ from source.Topology import network
 from source.Geometry import createNetworkGeom
 from source.Refining import second_round
 
-STAGE = 2
+STAGE = 4
 
 
 """ ======================================================================= """
@@ -166,7 +166,7 @@ if STAGE == 3:
 
 if STAGE == 4:
     t0 = time.time()
-    createNetworkGeom(RESPATH, SEARCH, NB_OBS_MIN)
+    createNetworkGeom(RESPATH, SEARCH, NB_OBS_MIN, DIST_MAX_2OBS)
     t1 = time.time()
     total = t1-t0
     print ("Temps d'exécution en s:", total)

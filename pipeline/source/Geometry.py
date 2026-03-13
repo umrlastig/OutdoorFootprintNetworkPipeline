@@ -17,11 +17,23 @@ from pipeline import conflateOnNetwork
 
 
 
-def createNetworkGeom(RESPATH, SEARCH, NB_OBS_MIN, prefix='PT'):
+def createNetworkGeom(RESPATH, SEARCH, NB_OBS_MIN, DIST_MAX_2OBS, prefix='PT'):
+
+    main_text   = "--------------------------------------------------------------------------------------\r\n"
+    main_text  += " ETAPE 4 :                                                               \r\n"
+    main_text  += "   - Attribue les points des traces brutes à chaque arc de la topologie \r\n"
+    main_text  += "   - Reconstruit les bons morceaux de traces candidats pour chaque arc de la topologie\r\n"
+    main_text  += "   - Agrégation des morceaux de traces\r\n"
+    main_text  += "   - Conflation des traces fusionnées afin d’obtenir un réseau de mobilité\r\n"
+    main_text  += "--------------------------------------------------------------------------------------\r\n"
+    main_text  += "--------------------------------------------------------------------------------------\r\n"
+    print(main_text, end='')
+
 
     # =========================================================================
     #    Lecture du réseau
     #
+    print ('Loading network ......')
     fmt = tkl.NetworkFormat({
            "pos_edge_id": 0,
            "pos_source": 1,
@@ -32,15 +44,16 @@ def createNetworkGeom(RESPATH, SEARCH, NB_OBS_MIN, prefix='PT'):
            "header": 1})
     
     networkpath = RESPATH + 'network/reseau_' + prefix + '.csv'
-    network = tkl.NetworkReader.readFromFile(networkpath, fmt)
+    network = tkl.NetworkReader.readFromFile(networkpath, fmt, verbose=False)
     
-    print ('Number of edges = ', len(network.EDGES))
-    print ('Number of nodes = ', len(network.NODES))
+    print ('    Number of edges = ', len(network.EDGES))
+    print ('    Number of nodes = ', len(network.NODES))
 
     
     # =========================================================================
     #   Lecture des traces découpées et ré-échantillonnées.
     #
+    print ('Loading collection of tracks ......')
     fmt = tkl.TrackFormat({'ext': 'CSV',
                            'srid': 'ENU',
                            'id_E': 1,'id_N': 0, 'id_U': 3,'id_T': 2,
@@ -51,7 +64,7 @@ def createNetworkGeom(RESPATH, SEARCH, NB_OBS_MIN, prefix='PT'):
                            'read_all': True})
     tracespath = RESPATH + '/resample_fusion/'
     collection2 = tkl.TrackReader.readFromFile(tracespath, fmt)
-    print ('Number of tracks:', collection2.size())
+    print ('    Number of tracks:', collection2.size())
 
     collection = tkl.TrackCollection()
     for trace in collection2:
@@ -69,6 +82,8 @@ def createNetworkGeom(RESPATH, SEARCH, NB_OBS_MIN, prefix='PT'):
         #if str(trace.tid) == '8195702.0-v1':
         #if str(trace.tid) == '12449457.0-v1':
         #print (trace.toWKT())
+        #if str(trace.tid) == '2386441.0-v1':
+        # print (trace.toWKT())
         collection.addTrack(trace)
     
 
@@ -81,10 +96,8 @@ def createNetworkGeom(RESPATH, SEARCH, NB_OBS_MIN, prefix='PT'):
     si = tkl.SpatialIndex(network, verbose=False)
     network.spatial_index = si
 
-
     # Computes all distances between pairs of nodes
     network.prepare()
-
 
     # Map track on network
     print ('Launching Map-matching ...')
@@ -93,7 +106,7 @@ def createNetworkGeom(RESPATH, SEARCH, NB_OBS_MIN, prefix='PT'):
 
 
     # =========================================================================
-    #     Stats Map-matching
+    # Stats Map-matching
     #
 
     # On construit un dictionnaire qui va contenir l'ensemble des points MM
@@ -121,6 +134,9 @@ def createNetworkGeom(RESPATH, SEARCH, NB_OBS_MIN, prefix='PT'):
 
             edgeid = network.getEdgeId(idxedge)
             e = network.EDGES[edgeid]
+
+            #if edgeid == '9476':
+            #    print (e.geom.toWKT())
     
             if idxedge == -1:
                 track.setObsAnalyticalFeature('mmtype', j, 'NOT')
@@ -156,9 +172,9 @@ def createNetworkGeom(RESPATH, SEARCH, NB_OBS_MIN, prefix='PT'):
                 track.setObsAnalyticalFeature('mmtype', j, 'TARGET')
                 track.setObsAnalyticalFeature('idedge', j, idnode)
 
-
     print ('Data restructuring completed.')
-    
+    #print (MM['9476'])
+
     af_names = ['num', 'track_id', 'user_id', 'hmm_inference', 'mmtype', 'idedge']
     mmtracespath = RESPATH + 'mapmatch/tmm/'
     tkl.TrackWriter.writeToFiles(collection, mmtracespath,
@@ -169,22 +185,23 @@ def createNetworkGeom(RESPATH, SEARCH, NB_OBS_MIN, prefix='PT'):
 
     # =========================================================================
     #  On prépare les traces pour la fusion:
-    #     - créer des morceaux
-    #     - toutes les traces dans le même sens
-    # on enregistre le MM dans un fichier CSV
-    
+    #      - créer des morceaux
+    #      - toutes les traces dans le même sens
+    #  On enregistre le MM dans un fichier CSV
+
     mmpath = RESPATH + 'mapmatch/resultmm_' + prefix + '.csv'
-    f = open(mmpath,'w')
-    f.write("EDGE_ID;TRACK_ID;WKT\n")
+    allmmpath = RESPATH + 'mapmatch/resultallmm_' + prefix + '.csv'
+    f1 = open(mmpath,'w')
+    f1.write("EDGE_ID;TRACK_ID;WKT\n")
+    f2 = open(allmmpath,'w')
+    f2.write("EDGE_ID;TRACK_ID;WKT\n")
 
     for edgeid, tobstrack in MM.items():
         e = network.EDGES[edgeid]
-
-        # if edgeid == "11338":
-        #    print (edgeid)
-
         for trackid, tobs in tobstrack.items():
             points_sorted = sorted(tobs, key=lambda x: x[0])
+
+            regrouper = tkl.TrackCollection()
 
             tn = tkl.Track()
             v = 1
@@ -195,14 +212,21 @@ def createNetworkGeom(RESPATH, SEARCH, NB_OBS_MIN, prefix='PT'):
                 p2 = p[1]
                 if p1 is not None:
                     if idxp1 + 1 < idxp2:
-                        # On coupe la trace pour créer un nouveau morceau
+                        # On coupe la trace pour créer un nouveau morceau ?
+                        # Oui si zone de départ/arrivée
                         cb = candidates_for_aggregate(tn, e, SEARCH)
+                        if cb.size() <= 0:
+                            regrouper.addTrack(tn)
                         for tb in cb:
                             if tb.size() < NB_OBS_MIN:
                                 continue
                             tid = str(trackid) + "-m" + str(v)
                             v += 1
-                            f.write(str(edgeid) + ";" + str(tid) + ";" + tb.toWKT() + "\n")
+                            f1.write(str(edgeid) + ";" + str(tid) + ";" + tb.toWKT() + "\n")
+
+                        # On garde la trace de la trace sans regarder si c'est un bon candidat
+                        f2.write(str(edgeid) + ";" + str(trackid) + ";" + tn.toWKT() + "\n")
+
                         tn = tkl.Track()
                         p1 = None
 
@@ -213,19 +237,34 @@ def createNetworkGeom(RESPATH, SEARCH, NB_OBS_MIN, prefix='PT'):
 
             # dernier morceau de trace
             cb = candidates_for_aggregate(tn, e, SEARCH)
-            #if edgeid == "11338":
-            #    print ('++', cb.size())
+            if cb.size() <= 0:
+                regrouper.addTrack(tn)
             for tb in cb:
                 if tb.size() < NB_OBS_MIN:
                     continue
                 tid = str(trackid) + "-v" + str(v)
                 v += 1
-                f.write(str(edgeid) + ";" + str(tid) + ";" + tb.toWKT() + "\n")
+                f1.write(str(edgeid) + ";" + str(tid) + ";" + tb.toWKT() + "\n")
+
+            f2.write(str(edgeid) + ";" + str(trackid) + ";" + tn.toWKT() + "\n")
+
+            # On regarde si on peut regrouper des traces
+            fusionnees = getMerges(e, regrouper, DIST_MAX_2OBS)
+            for t in fusionnees:
+                cb = candidates_for_aggregate(t, e, SEARCH)
+                for tb in cb:
+                    if tb.size() < NB_OBS_MIN:
+                        continue
+                    tid = str(trackid) + "-m" + str(v)
+                    v += 1
+                    f1.write(str(edgeid) + ";" + str(tid) + ";" + tb.toWKT() + "\n")
 
 
-    f.close()
+    f1.close()
+    f2.close()
 
     print ("Mapmatched step completed")
+
 
 
     # =========================================================================
@@ -411,9 +450,9 @@ def candidates_for_aggregate(track_segment, edge, SEARCH):
     Les pauses au milieu ne sont pas gérées
 
     Une trace est gardée pour la fusion si :
-        - son point de départ est "proche" de la source de l'arc 
+        - son point de départ est "proche" de la source de l'arc. 
         - son point d'arrivée est "proche" de la target de l'arc.
-        - sa géométrie dans le même sens que celui de l'arc
+        - sa géométrie dans le même sens que celui de l'arc.
 
     Si trop petite, on ne garde pas
     
@@ -434,13 +473,11 @@ def candidates_for_aggregate(track_segment, edge, SEARCH):
     
     Zone = 'N'
     p1 = track_segment.getFirstObs().position
-    # if edge.id == "11338":
-    #    print ('distance à la source', p1.distance2DTo(s))
-    #    print ('distance au target ',  p1.distance2DTo(t))
     if p1.distance2DTo(s) < SEARCH:
         Zone = 'S'
     if p1.distance2DTo(t) < SEARCH:
         Zone = 'T'
+
     while p1.distance2DTo(s) >= SEARCH and p1.distance2DTo(t) >= SEARCH:
         BEGIN += 1
         if BEGIN > END-1:
@@ -451,11 +488,11 @@ def candidates_for_aggregate(track_segment, edge, SEARCH):
         if p1.distance2DTo(s) < SEARCH:
             Zone = 'S'
 
-    #if edge.id == "11338":
-    #    print ('---------', edge.id, Zone, BEGIN)
-    # print (track_segment.toWKT())
     if Zone == 'N':
         # Aucun des points n'est dans la zone de départ ou d'arrivée
+        #if edge.id == "9476":
+        #    print ('---------', edge.id, Zone, BEGIN)
+        # print (track_segment.toWKT())
         return morceaux
 
     if BEGIN > 0:
@@ -552,4 +589,88 @@ def candidates_for_aggregate(track_segment, edge, SEARCH):
             morceau.resample(1, mode=tkl.MODE_SPATIAL)
 
     return morceaux
+
+def sommets_proches(t1, t2, DIST_MAX_2OBS):
+    p1 = t1.getFirstObs()
+    p2 = t1.getLastObs()
+
+    o1 = t2.getFirstObs()
+    o2 = t2.getLastObs()
+
+    if o1.distance2DTo(p1) < DIST_MAX_2OBS and o2.distance2DTo(p2) < DIST_MAX_2OBS:
+        return False
+    if o2.distance2DTo(p1) < DIST_MAX_2OBS and o1.distance2DTo(p2) < DIST_MAX_2OBS:
+        return False
+
+    if o1.distance2DTo(p1) < DIST_MAX_2OBS:
+        return True
+    if o2.distance2DTo(p1) < DIST_MAX_2OBS:
+        return True
+    if o1.distance2DTo(p2) < DIST_MAX_2OBS:
+        return True
+    if o2.distance2DTo(p2) < DIST_MAX_2OBS:
+        return True
+    return False
+
+
+def merge(t1, t2, DIST_MAX_2OBS):
+    p1 = t1.getFirstObs()
+    p2 = t1.getLastObs()
+
+    o1 = t2.getFirstObs()
+    o2 = t2.getLastObs()
+
+    if o1.distance2DTo(p1) < DIST_MAX_2OBS:
+        return t1.reverse() + t2
+    if o2.distance2DTo(p1) < DIST_MAX_2OBS:
+        return t2 + t1
+    if o1.distance2DTo(p2) < DIST_MAX_2OBS:
+        return t1 + t2
+    if o2.distance2DTo(p2) < DIST_MAX_2OBS:
+        return t1 + t2.reverse()
+
+    return None
+
+
+
+
+def getMerges(edge, collection, DIST_MAX_2OBS):
+
+    s = edge.geom.getFirstObs()
+    t = edge.geom.getLastObs()
+    
+
+    TRAITEES = []
+    for track in collection:
+    
+        PROXGROUPS = []
+    
+        # chercher les traces contenant des segments proches
+        for t in TRAITEES:
+            if sommets_proches(t, track, DIST_MAX_2OBS):
+                PROXGROUPS.append(t)
+                break
+    
+        if len(PROXGROUPS) == 0:
+            # créer un nouveau groupe
+            TRAITEES.append(track)
+    
+        elif len(PROXGROUPS) == 1:
+            t1  = PROXGROUPS[0]
+            TRAITEES.remove(t1)
+            # ajouter au groupe existant
+            newtrack = merge(t1, track, DIST_MAX_2OBS)
+            TRAITEES.append(newtrack)
+    
+        else:
+            # fusionner les groupes
+            nouveau = track
+            for t1 in PROXGROUPS:
+                TRAITEES.remove(t1)
+                newtrack = merge(t1, track, DIST_MAX_2OBS)
+    
+            TRAITEES.append(newtrack)
+
+    return TRAITEES
+
 
