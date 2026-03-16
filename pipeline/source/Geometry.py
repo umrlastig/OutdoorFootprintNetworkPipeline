@@ -104,11 +104,7 @@ def createNetworkGeom (RESPATH, SEARCH, NB_OBS_MIN, DIST_MAX_2OBS, prefix='PT'):
     print ('Map-matching ended')
 
 
-    af_names = ['num', 'track_id', 'user_id', 'hmm_inference', 'mmtype', 'idedge']
-    mmtracespath = RESPATH + 'mapmatch/tmm/'
-    tkl.TrackWriter.writeToFiles(collection, mmtracespath,
-                                 id_E=1, id_N=0, id_U=3, id_T=2,
-                                 h=1, separator=";", af_names=af_names)
+
 
 
     # =========================================================================
@@ -180,6 +176,14 @@ def createNetworkGeom (RESPATH, SEARCH, NB_OBS_MIN, DIST_MAX_2OBS, prefix='PT'):
 
     print ('Map-matching results restructuring completed.')
     #print (MM['9476'])
+
+
+
+    af_names = ['num', 'track_id', 'user_id', 'hmm_inference', 'mmtype', 'idedge']
+    mmtracespath = RESPATH + 'mapmatch/tmm/'
+    tkl.TrackWriter.writeToFiles(collection, mmtracespath,
+                                 id_E=1, id_N=0, id_U=3, id_T=2,
+                                 h=1, separator=";", af_names=af_names)
 
 
 

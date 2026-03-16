@@ -29,7 +29,7 @@ def network(RESPATH, DIST_MIN_ARC, prefix='PT'):
 
     collection = tkl.TrackCollection()
 
-    squelettepath = RESPATH + 'network/squelette_' + prefix + '.shp'
+    squelettepath = str(RESPATH + 'network/squelette_' + prefix + '.shp')
     with fiona.open(squelettepath, 'r') as shapefile:
         for feature in shapefile:
             # 1 MultiLineString
@@ -40,6 +40,7 @@ def network(RESPATH, DIST_MIN_ARC, prefix='PT'):
                     if track.length() < tolerance/2:
                         continue
                     collection.addTrack(track)
+
 
     print ('Nb lignes : ', collection.size())
     print ('Fin chargement des données 1/4.')

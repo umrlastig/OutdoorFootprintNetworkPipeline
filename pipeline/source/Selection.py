@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import math
+import os
+import sys
+import csv
+csv.field_size_limit(sys.maxsize)
 
 import tracklib as tkl
 
@@ -189,4 +194,99 @@ def decoup_resample(RESPATH, tracespathsource, X, Y,
     print ("Stage 1 finished: segmentation and resampling.")
 
 
+
+def second_round(RESPATH, NB_OBS_MIN, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE, DIST_MIN_ARC,
+                 RESAMPLE_SIZE_GRID):
+
+    buffer_size = 5
+    k = 0.6
+
+    OPT_PLUS_PTS = True
+    NB_PTS = 4
+
+
+    # =========================================================================
+    #   Lecture des traces découpées et ré-échantillonnées.
+    #
+
+    collection = tkl.TrackCollection()
+    mmtrackpath = RESPATH + '/mapmatch/tmm/'
+    for mmfilename in os.listdir(mmtrackpath):
+        #N;E;time;U;num;track_id;user_id;hmm_inference;mmtype;idedge
+        fmt = tkl.TrackFormat({'ext': 'CSV',
+                               'srid': 'ENU',
+                               'id_E': 1,'id_N': 0, 'id_U': 3,'id_T': 2,
+                               'separator': ';',
+                               'header': 0,
+                               'comment': '#',
+                               'read_all': True})
+        trace = tkl.TrackReader.readFromFile(mmtrackpath + mmfilename, fmt)
+        collection.addTrack(trace)
+    print ('Number of tracks map matched :', collection.size())
+
+    index =  tkl.SpatialIndex(collection)
+
+    cpt = 1
+    morceaux = tkl.TrackCollection()
+
+
+    for i in range(collection.size()):
+        track = collection.getTrack(i)
+        pkid = track.tid
+        # print (pkid)
+
+        num = track.getObsAnalyticalFeature('num', 0)
+        track_id = track.getObsAnalyticalFeature('track_id', 0)
+        user_id = track.getObsAnalyticalFeature('user_id', 0)
+        #version = track.getObsAnalyticalFeature('version', 0)
+
+        cptNot = 0
+        morceau = tkl.Track()
+        morceau.tid = cpt
+        morceau.uid = cpt
+        cpt += 1
+        for j in range(track.size()):
+            obs = track.getObs(j)
+
+            if str(track["mmtype", j]) == "NOT":
+                cptNot += 1
+
+                # On modifie un petit peu la position
+                # POINTS = index.neighborhood(obs.position, None, buffer_size)
+                # TODO : il faudrait trouver le barycentre et faire le kième de la distance encore
+                # print (len(POINTS))
+
+                morceau.addObs(obs.copy())
+
+            else:
+                if cptNot >= NB_OBS_MIN:
+                    if OPT_PLUS_PTS:
+                        morceau = track.extract(j-NB_PTS, j) + morceau
+                        if j < track.size()-1:
+                            morceau = morceau + track.extract(j+1, min(j+NB_PTS, track.size()-1))
+                    morceau.resample(RESAMPLE_SIZE_GRID, mode=tkl.MODE_SPATIAL)
+                    morceaux.addTrack(morceau)
+
+                morceau = tkl.Track()
+                morceau.tid = cpt
+                morceau.uid = cpt
+                cpt += 1
+                cptNot = 0
+
+        if cptNot >= NB_OBS_MIN:
+            if OPT_PLUS_PTS:
+                morceau = track.extract(j-NB_PTS, j) + morceau
+                if j < track.size()-1:
+                    morceau = morceau + track.extract(j+1, min(j+NB_PTS, track.size()-1))
+            morceau.resample(RESAMPLE_SIZE_GRID, mode=tkl.MODE_SPATIAL)
+            morceaux.addTrack(morceau)
+
+
+    # On enregistre
+    # print (morceaux.size())
+
+    tracespath = RESPATH + "points_not_mm/"
+    tkl.TrackWriter.writeToFiles(morceaux, tracespath,
+                                 id_E=1, id_N=0, id_U=3, id_T=2,
+                                 h=1, separator=";") # af_names=af_names
 
