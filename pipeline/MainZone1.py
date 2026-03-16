@@ -124,8 +124,8 @@ if not os.path.exists(RESPATH + 'geometry/fusion'):
     os.makedirs(RESPATH + 'geometry/fusion')
 if not os.path.exists(RESPATH + 'geometry/raccord'):
     os.makedirs(RESPATH + 'geometry/raccord')
-if not os.path.exists(RESPATH + 'geometry/points_not_mm'):
-    os.makedirs(RESPATH + 'geometry/points_not_mm')
+if not os.path.exists(RESPATH + 'points_not_mm'):
+    os.makedirs(RESPATH + 'points_not_mm')
 
 
 
