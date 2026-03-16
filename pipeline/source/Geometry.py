@@ -17,7 +17,7 @@ from pipeline import conflateOnNetwork
 
 
 
-def createNetworkGeom(RESPATH, SEARCH, NB_OBS_MIN, DIST_MAX_2OBS, prefix='PT'):
+def createNetworkGeom (RESPATH, SEARCH, NB_OBS_MIN, DIST_MAX_2OBS, prefix='PT'):
 
     main_text   = "--------------------------------------------------------------------------------------\r\n"
     main_text  += " ETAPE 4 :                                                               \r\n"
@@ -27,7 +27,7 @@ def createNetworkGeom(RESPATH, SEARCH, NB_OBS_MIN, DIST_MAX_2OBS, prefix='PT'):
     main_text  += "   - Conflation des traces fusionnées afin d’obtenir un réseau de mobilité\r\n"
     main_text  += "--------------------------------------------------------------------------------------\r\n"
     main_text  += "--------------------------------------------------------------------------------------\r\n"
-    print(main_text, end='')
+    print (main_text, end='')
 
 
     # =========================================================================
@@ -88,7 +88,6 @@ def createNetworkGeom(RESPATH, SEARCH, NB_OBS_MIN, DIST_MAX_2OBS, prefix='PT'):
     
 
 
-
     # =========================================================================
     #     Map-matching
     #
@@ -105,8 +104,15 @@ def createNetworkGeom(RESPATH, SEARCH, NB_OBS_MIN, DIST_MAX_2OBS, prefix='PT'):
     print ('Map-matching ended')
 
 
+    af_names = ['num', 'track_id', 'user_id', 'hmm_inference', 'mmtype', 'idedge']
+    mmtracespath = RESPATH + 'mapmatch/tmm/'
+    tkl.TrackWriter.writeToFiles(collection, mmtracespath,
+                                 id_E=1, id_N=0, id_U=3, id_T=2,
+                                 h=1, separator=";", af_names=af_names)
+
+
     # =========================================================================
-    # Stats Map-matching
+    #  Réultats Map-matching
     #
 
     # On construit un dictionnaire qui va contenir l'ensemble des points MM
@@ -135,7 +141,7 @@ def createNetworkGeom(RESPATH, SEARCH, NB_OBS_MIN, DIST_MAX_2OBS, prefix='PT'):
             edgeid = network.getEdgeId(idxedge)
             e = network.EDGES[edgeid]
 
-            #if edgeid == '9476':
+            # if edgeid == '9476':
             #    print (e.geom.toWKT())
     
             if idxedge == -1:
@@ -172,14 +178,8 @@ def createNetworkGeom(RESPATH, SEARCH, NB_OBS_MIN, DIST_MAX_2OBS, prefix='PT'):
                 track.setObsAnalyticalFeature('mmtype', j, 'TARGET')
                 track.setObsAnalyticalFeature('idedge', j, idnode)
 
-    print ('Data restructuring completed.')
+    print ('Map-matching results restructuring completed.')
     #print (MM['9476'])
-
-    af_names = ['num', 'track_id', 'user_id', 'hmm_inference', 'mmtype', 'idedge']
-    mmtracespath = RESPATH + 'mapmatch/tmm/'
-    tkl.TrackWriter.writeToFiles(collection, mmtracespath,
-                                 id_E=1, id_N=0, id_U=3, id_T=2,
-                                 h=1, separator=";", af_names=af_names)
 
 
 
@@ -188,6 +188,8 @@ def createNetworkGeom(RESPATH, SEARCH, NB_OBS_MIN, DIST_MAX_2OBS, prefix='PT'):
     #      - créer des morceaux
     #      - toutes les traces dans le même sens
     #  On enregistre le MM dans un fichier CSV
+
+    # EDGE_ID;TRACK_ID;WKT
 
     mmpath = RESPATH + 'mapmatch/resultmm_' + prefix + '.csv'
     allmmpath = RESPATH + 'mapmatch/resultallmm_' + prefix + '.csv'

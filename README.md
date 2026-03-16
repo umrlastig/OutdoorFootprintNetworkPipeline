@@ -65,6 +65,12 @@ Les scripts se lancent dans une console Python. Temps d'exécution approximatif:
 xxx min (500+155+50+1015+)
 
 
+<p align="center">
+<img width="200px" src="pipeline.png" />
+</p>
+
+
+
 Paramètres à renseigner :
 --------------------------
 
