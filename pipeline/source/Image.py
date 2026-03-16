@@ -51,7 +51,7 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE, prefix='
                            'header': 1,
                            'read_all': True})
     
-    resampledtracespath = RESPATH + 'resample_grid/'
+    resampledtracespath = RESPATH + rep + '/'
     collection = tkl.TrackReader.readFromFile(resampledtracespath, fmt)
     for trace in collection:
         trace.uid = trace.getObsAnalyticalFeature('user_id', 0)

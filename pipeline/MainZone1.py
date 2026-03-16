@@ -8,7 +8,7 @@ from source.Image import density_polygonize
 from source.Topology import network
 from source.Geometry import createNetworkGeom
 
-STAGE = 5
+STAGE = 6
 
 
 """ ======================================================================= """
@@ -120,13 +120,29 @@ if not os.path.exists(RESPATH + 'resample_fusion'):
     os.makedirs(RESPATH + 'resample_fusion')
 if not os.path.exists(RESPATH + 'mapmatch/tmm'):
     os.makedirs(RESPATH + 'mapmatch/tmm')
+if not os.path.exists(RESPATH + 'mapmatch/tmm1'):
+    os.makedirs(RESPATH + 'mapmatch/tmm1')
+    if not os.path.exists(RESPATH + 'mapmatch/tmm2'):
+        os.makedirs(RESPATH + 'mapmatch/tmm2')
+
 if not os.path.exists(RESPATH + 'geometry/fusion'):
     os.makedirs(RESPATH + 'geometry/fusion')
+if not os.path.exists(RESPATH + 'geometry/fusion1'):
+    os.makedirs(RESPATH + 'geometry/fusion1')
+if not os.path.exists(RESPATH + 'geometry/fusion2'):
+    os.makedirs(RESPATH + 'geometry/fusion2')
+
 if not os.path.exists(RESPATH + 'geometry/raccord'):
     os.makedirs(RESPATH + 'geometry/raccord')
-if not os.path.exists(RESPATH + 'points_not_mm'):
-    os.makedirs(RESPATH + 'points_not_mm')
+if not os.path.exists(RESPATH + 'geometry/raccord1'):
+    os.makedirs(RESPATH + 'geometry/raccord1')
+if not os.path.exists(RESPATH + 'geometry/raccord2'):
+    os.makedirs(RESPATH + 'geometry/raccord2')
 
+if not os.path.exists(RESPATH + 'points_not_mm_1'):
+    os.makedirs(RESPATH + 'points_not_mm_1')
+if not os.path.exists(RESPATH + 'points_not_mm_2'):
+    os.makedirs(RESPATH + 'points_not_mm_2')
 
 
 
@@ -180,15 +196,21 @@ if STAGE == 4:
 if STAGE == 5:
     t0 = time.time()
 
-    SEUIL = 350
-    SEUIL_SURFACE = 750
+    rep='points_not_mm_1'
 
-    second_round(RESPATH, NB_OBS_MIN, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE, DIST_MIN_ARC,
-                 RESAMPLE_SIZE_GRID)
+    SEUIL = 14
+    SEUIL_SURFACE = 500
+
+    second_round(RESPATH, NB_OBS_MIN, DIST_MAX_2OBS, RESAMPLE_SIZE_GRID, rep)
+
     density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE,
-                       prefix='ST', rep='points_not_mm')
-    # network(RESPATH, DIST_MIN_ARC)
+                        prefix='ST', rep=rep)
 
+    network(RESPATH, DIST_MIN_ARC, prefix='ST')
+
+    createNetworkGeom(RESPATH, SEARCH, NB_OBS_MIN, DIST_MAX_2OBS, prefix='ST',
+                      pathtraces='points_not_mm_1', pathtmm='tmm1',
+                      pathfusion='fusion1', pathraccord='raccord1')
 
     t1 = time.time()
     total = t1-t0
@@ -196,7 +218,27 @@ if STAGE == 5:
 
 
 
+if STAGE == 6:
+    t0 = time.time()
 
+    SEUIL = 14
+    SEUIL_SURFACE = 500
+
+    second_round(RESPATH, NB_OBS_MIN, DIST_MAX_2OBS, RESAMPLE_SIZE_GRID,
+                 rep='points_not_mm_2', pathtmm='tmm1')
+
+    density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE,
+                        prefix='TT', rep='points_not_mm_2')
+
+    #network(RESPATH, DIST_MIN_ARC, prefix='TT')
+    #
+    #createNetworkGeom(RESPATH, SEARCH, NB_OBS_MIN, DIST_MAX_2OBS, prefix='ST',
+    #                  pathtraces='points_not_mm_2', pathtmm='tmm2',
+    #                  pathfusion='fusion2', pathraccord='raccord2')
+
+    t1 = time.time()
+    total = t1-t0
+    print ("Temps d'exécution en s:", total)
 
 
 

@@ -97,7 +97,7 @@ def network(RESPATH, DIST_MIN_ARC, prefix='PT'):
         cpt += 1
     filtreNoeudSimple(network)
 
-
+    '''
     cpt = 0
     nb = 1000
     while nb > 10 and cpt < 10:
@@ -105,7 +105,7 @@ def network(RESPATH, DIST_MIN_ARC, prefix='PT'):
         print ('    nb arcs supprimés: ', nb)
         cpt += 1
     filtreNoeudSimple(network)
-
+    '''
 
     print ('Fin suppression des petis arcs 4/4.')
 

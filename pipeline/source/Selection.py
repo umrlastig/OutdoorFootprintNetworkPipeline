@@ -195,8 +195,8 @@ def decoup_resample(RESPATH, tracespathsource, X, Y,
 
 
 
-def second_round(RESPATH, NB_OBS_MIN, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE, DIST_MIN_ARC,
-                 RESAMPLE_SIZE_GRID):
+def second_round(RESPATH, NB_OBS_MIN = 10, DIST_MAX_2OBS = 50, RESAMPLE_SIZE_GRID = 1,
+                 rep='points_not_mm_1', pathtmm='tmm'):
 
     buffer_size = 5
     k = 0.6
@@ -210,7 +210,7 @@ def second_round(RESPATH, NB_OBS_MIN, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE, DI
     #
 
     collection = tkl.TrackCollection()
-    mmtrackpath = RESPATH + '/mapmatch/tmm/'
+    mmtrackpath = RESPATH + '/mapmatch/' + pathtmm + '/'
     for mmfilename in os.listdir(mmtrackpath):
         #N;E;time;U;num;track_id;user_id;hmm_inference;mmtype;idedge
         fmt = tkl.TrackFormat({'ext': 'CSV',
@@ -224,7 +224,7 @@ def second_round(RESPATH, NB_OBS_MIN, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE, DI
         collection.addTrack(trace)
     print ('Number of tracks map matched :', collection.size())
 
-    index =  tkl.SpatialIndex(collection)
+    # index =  tkl.SpatialIndex(collection)
 
     cpt = 1
     morceaux = tkl.TrackCollection()
@@ -244,6 +244,7 @@ def second_round(RESPATH, NB_OBS_MIN, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE, DI
         morceau = tkl.Track()
         morceau.tid = cpt
         morceau.uid = cpt
+
         cpt += 1
         for j in range(track.size()):
             obs = track.getObs(j)
@@ -261,32 +262,66 @@ def second_round(RESPATH, NB_OBS_MIN, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE, DI
             else:
                 if cptNot >= NB_OBS_MIN:
                     if OPT_PLUS_PTS:
-                        morceau = track.extract(j-NB_PTS, j) + morceau
-                        if j < track.size()-1:
-                            morceau = morceau + track.extract(j+1, min(j+NB_PTS, track.size()-1))
+                        # on ajoute 4 points avant
+                        o1 = track[j]
+                        for k in range(j-1, j-NB_PTS-1, -1):
+                            o2 = track[k]
+                            if o1.distance2DTo(o2) <= DIST_MAX_2OBS:
+                                morceau.insertObs(o2, k)
+                            o1 = o2
+                        # on ajoute 4 points après
+                        o1 = track[j]
+                        for k in range(j+1, min(j+NB_PTS+1, track.size())):
+                            o2 = track[k]
+                            if o1.distance2DTo(o2) <= DIST_MAX_2OBS:
+                                morceau.addObs(o2)
+                            o1 = o2
+
                     morceau.resample(RESAMPLE_SIZE_GRID, mode=tkl.MODE_SPATIAL)
+                    morceau.createAnalyticalFeature('num', num)
+                    morceau.createAnalyticalFeature('user_id', user_id)
+                    morceau.createAnalyticalFeature('track_id', track_id)
+                    morceau.createAnalyticalFeature('version', 'v1')
                     morceaux.addTrack(morceau)
 
                 morceau = tkl.Track()
                 morceau.tid = cpt
                 morceau.uid = cpt
+
                 cpt += 1
                 cptNot = 0
 
         if cptNot >= NB_OBS_MIN:
             if OPT_PLUS_PTS:
-                morceau = track.extract(j-NB_PTS, j) + morceau
-                if j < track.size()-1:
-                    morceau = morceau + track.extract(j+1, min(j+NB_PTS, track.size()-1))
+                # on ajoute 4 points avant
+                o1 = track[j]
+                for k in range(j-1, j-NB_PTS, -1):
+                    o2 = track[k]
+                    if o1.distance2DTo(o2) <= DIST_MAX_2OBS:
+                        morceau.insertObs(o2, k)
+                    o1 = o2
+                # on ajoute 4 points après
+                o1 = track[j]
+                for k in range(j+1, min(j+NB_PTS+1, track.size())):
+                    o2 = track[k]
+                    if o1.distance2DTo(o2) <= DIST_MAX_2OBS:
+                        morceau.addObs(o2)
+                    o1 = o2
             morceau.resample(RESAMPLE_SIZE_GRID, mode=tkl.MODE_SPATIAL)
+            morceau.createAnalyticalFeature('num', num)
+            morceau.createAnalyticalFeature('user_id', user_id)
+            morceau.createAnalyticalFeature('track_id', track_id)
+            morceau.createAnalyticalFeature('version', 'v1')
             morceaux.addTrack(morceau)
 
 
     # On enregistre
     # print (morceaux.size())
 
-    tracespath = RESPATH + "points_not_mm/"
+    af_names = ['num', 'track_id', 'user_id', 'version']
+
+    tracespath = RESPATH + rep + "/"
     tkl.TrackWriter.writeToFiles(morceaux, tracespath,
                                  id_E=1, id_N=0, id_U=3, id_T=2,
-                                 h=1, separator=";") # af_names=af_names
+                                 h=1, separator=";", af_names=af_names)
 

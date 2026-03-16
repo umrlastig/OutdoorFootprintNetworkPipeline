@@ -15,7 +15,7 @@ The outdoor footprint network is defined by :
     <br/><label>Raw GNSS trajectories</label>
   </td>
   <td style="padding:16px;">
-    <img width="200px" src="https://github.com/IntForOut/HikersFootprint/blob/main/img/output.png" />
+    <img width="200px" src="https://github.com/IntForOut/HikersFootprint/blob/main/img/IT2.png" />
     <br/><label>Outdoor Footprint Network</label>
   </td>
 </tr></table>
@@ -62,7 +62,7 @@ Le pipeline est composé de 5 briques à exécuter une par une:
 
 Les scripts se lancent dans une console Python. 
 
-Temps d'exécution approximatif: xxx min (500+155+50+300+)
+Temps d'exécution approximatif: xxx min (500+155+50+300+355)
 
 
 <p align="center">

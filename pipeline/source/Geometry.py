@@ -17,7 +17,9 @@ from pipeline import conflateOnNetwork
 
 
 
-def createNetworkGeom (RESPATH, SEARCH, NB_OBS_MIN, DIST_MAX_2OBS, prefix='PT'):
+def createNetworkGeom (RESPATH, SEARCH, NB_OBS_MIN, DIST_MAX_2OBS, prefix='PT',
+                       pathtraces='resample_fusion', pathtmm='tmm', pathfusion='fusion',
+                       pathraccord='raccord'):
 
     main_text   = "--------------------------------------------------------------------------------------\r\n"
     main_text  += " ETAPE 4 :                                                               \r\n"
@@ -62,7 +64,7 @@ def createNetworkGeom (RESPATH, SEARCH, NB_OBS_MIN, DIST_MAX_2OBS, prefix='PT'):
                            'header': 0,
                            'cmt': '#',
                            'read_all': True})
-    tracespath = RESPATH + '/resample_fusion/'
+    tracespath = RESPATH + '/' + pathtraces + '/'
     collection2 = tkl.TrackReader.readFromFile(tracespath, fmt)
     print ('    Number of tracks:', collection2.size())
 
@@ -180,7 +182,7 @@ def createNetworkGeom (RESPATH, SEARCH, NB_OBS_MIN, DIST_MAX_2OBS, prefix='PT'):
 
 
     af_names = ['num', 'track_id', 'user_id', 'hmm_inference', 'mmtype', 'idedge']
-    mmtracespath = RESPATH + 'mapmatch/tmm/'
+    mmtracespath = RESPATH + 'mapmatch/' + pathtmm + '/'
     tkl.TrackWriter.writeToFiles(collection, mmtracespath,
                                  id_E=1, id_N=0, id_U=3, id_T=2,
                                  h=1, separator=";", af_names=af_names)
@@ -280,7 +282,8 @@ def createNetworkGeom (RESPATH, SEARCH, NB_OBS_MIN, DIST_MAX_2OBS, prefix='PT'):
 
     print ("Starting aggregation ...")
 
-    geompath = RESPATH + 'geometry/fusion/'
+    geompath = RESPATH + 'geometry/' + pathfusion + '/'
+    
 
     # Aggregation with DTW distance
     fusions = tkl.TrackCollection()
@@ -361,10 +364,11 @@ def createNetworkGeom (RESPATH, SEARCH, NB_OBS_MIN, DIST_MAX_2OBS, prefix='PT'):
     # =========================================================================
     # Raccord
 
+
     conflated = conflateOnNetwork(fusions, network, threshold=50, h=30)
 
     # enregistrer conflation
-    raccordpath = RESPATH + 'geometry/raccord/'
+    raccordpath = RESPATH + 'geometry/' + pathraccord + '/'
     for segment in conflated:
         if segment is not None:
             # Sauvegarde
