@@ -3,13 +3,12 @@
 import os
 import time
 
-from source.Selection import decoup_resample
+from source.Selection import decoup_resample, second_round
 from source.Image import density_polygonize
 from source.Topology import network
 from source.Geometry import createNetworkGeom
-from source.Refining import second_round
 
-STAGE = 2
+STAGE = 5
 
 
 """ ======================================================================= """
@@ -80,7 +79,7 @@ SEUIL_SURFACE = 50000 # m2
 """                                                                         """
 
 # Longueur des petits arcs à supprimer
-DIST_MIN_ARC  = 30
+DIST_MIN_ARC  = 50 # 30
 
 
 
@@ -188,7 +187,7 @@ if STAGE == 5:
                  RESAMPLE_SIZE_GRID)
     density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE,
                        prefix='ST', rep='points_not_mm')
-
+    # network(RESPATH, DIST_MIN_ARC)
 
 
     t1 = time.time()
