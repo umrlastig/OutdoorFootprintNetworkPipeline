@@ -246,6 +246,8 @@ class Shp2centerline(object):
 
             for i, key in enumerate(self.dct_centerlines):
                 geom = self.dct_centerlines[key]
+                if geom.length <= 0.0:
+                    continue
                 #print(shapely.is_valid(geom))
                 #print (geom.length)
                 #print (geom.geom_type)
