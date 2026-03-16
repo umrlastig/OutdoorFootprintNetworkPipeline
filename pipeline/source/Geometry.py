@@ -250,6 +250,7 @@ def createNetworkGeom (RESPATH, SEARCH, NB_OBS_MIN, DIST_MAX_2OBS, prefix='PT'):
 
             f2.write(str(edgeid) + ";" + str(trackid) + ";" + tn.toWKT() + "\n")
 
+
             # On regarde si on peut regrouper des traces
             fusionnees = getMerges(e, regrouper, DIST_MAX_2OBS)
             for t in fusionnees:

@@ -9,7 +9,7 @@ from source.Topology import network
 from source.Geometry import createNetworkGeom
 from source.Refining import second_round
 
-STAGE = 4
+STAGE = 2
 
 
 """ ======================================================================= """
@@ -63,9 +63,13 @@ DIST_MAX_2OBS        = 50
 """     PARAMETRES  IMAGES                                                  """
 """                                                                         """
 
+RESAMPLE_SIZE_GRID = 1
+
+
 G1_SIZE = 2
 G2_SIZE = 50
-SEUIL = 15
+
+SEUIL         = 1000  # 15
 SEUIL_SURFACE = 50000 # m2
 
 
@@ -76,7 +80,7 @@ SEUIL_SURFACE = 50000 # m2
 """                                                                         """
 
 # Longueur des petits arcs à supprimer
-DIST_MIN_ARC  = 30     # 20
+DIST_MIN_ARC  = 30
 
 
 
@@ -85,7 +89,8 @@ DIST_MIN_ARC  = 30     # 20
 """                                                                         """
 
 # Map matching
-SEARCH = 25  #30 
+RESAMPLE_SIZE_FUSION = 5
+SEARCH = 25
 
 # Aggregation
 
@@ -120,8 +125,9 @@ if not os.path.exists(RESPATH + 'geometry/fusion'):
     os.makedirs(RESPATH + 'geometry/fusion')
 if not os.path.exists(RESPATH + 'geometry/raccord'):
     os.makedirs(RESPATH + 'geometry/raccord')
-if not os.path.exists(RESPATH + 'points_left'):
-    os.makedirs(RESPATH + 'points_left')
+if not os.path.exists(RESPATH + 'geometry/points_not_mm'):
+    os.makedirs(RESPATH + 'geometry/points_not_mm')
+
 
 
 
@@ -139,20 +145,21 @@ if not os.path.exists(RESPATH + 'points_left'):
 
 if STAGE == 1:
     t0 = time.time()
-    decoup_resample(RESPATH, tracespathsource, NB_OBS_MIN, DIST_MAX_2OBS, X, Y)
+    decoup_resample(RESPATH, tracespathsource, X, Y,
+                    NB_OBS_MIN, DIST_MAX_2OBS,
+                    RESAMPLE_SIZE_GRID, RESAMPLE_SIZE_FUSION)
     t1 = time.time()
     total = t1-t0
     print ("Execution time (s):", total)
 
 
-
 if STAGE == 2:
     t0 = time.time()
-    density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE, prefix='PT')
+    density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE,
+                       prefix='PT', rep='resample_grid')
     t1 = time.time()
     total = t1-t0
     print ("Temps d'exécution en s:", total)
-
 
 
 if STAGE == 3:
@@ -163,7 +170,6 @@ if STAGE == 3:
     print ("Temps d'exécution en s:", total)
 
 
-
 if STAGE == 4:
     t0 = time.time()
     createNetworkGeom(RESPATH, SEARCH, NB_OBS_MIN, DIST_MAX_2OBS)
@@ -172,10 +178,19 @@ if STAGE == 4:
     print ("Temps d'exécution en s:", total)
 
 
-
 if STAGE == 5:
     t0 = time.time()
-    second_round(RESPATH, NB_OBS_MIN, G1_SIZE, G2_SIZE)
+
+    SEUIL = 350
+    SEUIL_SURFACE = 750
+
+    second_round(RESPATH, NB_OBS_MIN, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE, DIST_MIN_ARC,
+                 RESAMPLE_SIZE_GRID)
+    density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE,
+                       prefix='ST', rep='points_not_mm')
+
+
+
     t1 = time.time()
     total = t1-t0
     print ("Temps d'exécution en s:", total)

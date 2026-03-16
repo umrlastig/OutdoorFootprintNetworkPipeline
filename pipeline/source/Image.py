@@ -25,7 +25,8 @@ from pipeline import Shp2centerline
 
 
 
-def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE, prefix='PT'):
+def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE, prefix='PT',
+                       rep='resample_grid'):
 
     main_text   = "----------------------------------------------------------------------\r\n"
     main_text  += "STAGE 2 :                                   \r\n"
@@ -217,7 +218,7 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE, prefix='
 
 
     # =============================================================================
-    #   Dilatation + Fermeture
+    #   Dilatation + Erosion
 
     mask = np.array([
         [0,1,0],
@@ -229,12 +230,14 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE, prefix='
     #pathdilatation = patherosion
 
     # Erosion
+    '''
     mask = np.array([
         [0,0,1,0,0],
         [0,1,1,1,0],
         [1,1,1,1,1],
         [0,1,1,1,0],
         [0,0,1,0,0]])
+    '''
     mapBinaire.filter(np.array([[1]]), lambda x : 1-x)     # Dual de la carte
     mapBinaire.filter(mask, np.max)                        # Dilatation
     mapBinaire.filter(np.array([[1]]), lambda x : 1-x)     # Dual de la carte
@@ -374,10 +377,13 @@ def dual(roadsurfpath, roadsurflissepath, shpDriver):
     dsRoadSurface = ogr.Open(roadsurfpath, 0)
     layerRoadSurface = dsRoadSurface.GetLayer()
 
+    srs = layerRoadSurface.GetSpatialRef()
+
     dsRoadSurfaceLissee = shpDriver.CreateDataSource(roadsurflissepath)
     layerRoadSurfaceLissee = dsRoadSurfaceLissee.CreateLayer(
-        "Road surface lissee",
-        geom_type = layerRoadSurface.GetGeomType()
+        "road_surface_lissee",
+        srs,
+        geom_type = ogr.wkbPolygon
     )
 
     # copier les champs attributaires
@@ -389,7 +395,9 @@ def dual(roadsurfpath, roadsurflissepath, shpDriver):
     dst_defn = layerRoadSurfaceLissee.GetLayerDefn()
 
     for feature in layerRoadSurface:
-        geom = feature.GetGeometryRef()
+        geom = feature.GetGeometryRef().Clone()
+        if geom is None:
+            continue
 
         polygon = ogr.Geometry(ogr.wkbPolygon)
         for i in range(geom.GetGeometryCount()):
@@ -403,6 +411,7 @@ def dual(roadsurfpath, roadsurflissepath, shpDriver):
             newring = ogr.Geometry(ogr.wkbLinearRing)
             for o in tdual:
                 newring.AddPoint(o.position.getX(), o.position.getY())
+            newring.CloseRings()
             polygon.AddGeometry(newring)
     
         # Créer une nouvelle feature

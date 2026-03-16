@@ -5,12 +5,14 @@ import tracklib as tkl
 
 
 
-def decoup_resample(RESPATH, tracespathsource, NB_OBS_MIN, DIST_MAX_2OBS, X, Y):
+def decoup_resample(RESPATH, tracespathsource, X, Y,
+                    NB_OBS_MIN = 10, DIST_MAX_2OBS = 50,
+                    resampleSizeGrid = 1, resampleSizeFusion = 5):
 
     print ("Starting segmentation and resampling...")
 
-    RESAMPLE_SIZE_GRID = 1
-    RESAMPLE_SIZE_FUSION = 5
+    RESAMPLE_SIZE_GRID   = resampleSizeGrid
+    RESAMPLE_SIZE_FUSION = resampleSizeFusion
 
 
     """ ======================================================================= """
