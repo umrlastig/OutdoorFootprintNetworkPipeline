@@ -66,7 +66,7 @@ xxx min (500+155+50+1015+)
 
 
 <p align="center">
-<img width="200px" src="pipeline.png" />
+  <img width="1000px" src="pipeline.png" />
 </p>
 
 
