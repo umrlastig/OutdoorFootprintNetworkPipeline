@@ -20,22 +20,14 @@ affiliations:
    index: 1
  - name: Institut national de l’information géographique et forestière, France 
    index: 2
-date: March 23, 2026
+date: 23 March 2026
 bibliography: paper.bib
 
 ---
 
 # Summary
 
-* Calcul d’une carte de densité à partir des traces GNSS
-* De la vectorisation on extrait une ligne centrée ≡ arc de la topologie. 
-* Attribue les points des traces brutes à chaque arc de la topologie
-* Reconstruit les bons morceaux de traces candidats pour chaque arc de la topologie
-* Agrégation des morceaux de traces
-* Conflation des traces fusionnées afin d’obtenir un réseau de mobilité
 
-
-![Galery of the pipeline.\label{fig:pipeline}](pipeline.png)
 
 
 
@@ -47,6 +39,17 @@ bibliography: paper.bib
 
 ## Overview
 
+
+* Calcul d’une carte de densité à partir des traces GNSS
+
+* De la vectorisation on extrait une ligne centrée ≡ arc de la topologie. ([@Centerline2016])
+* Attribue les points des traces brutes à chaque arc de la topologie
+* Reconstruit les bons morceaux de traces candidats pour chaque arc de la topologie
+* Agrégation des morceaux de traces
+* Conflation des traces fusionnées afin d’obtenir un réseau de mobilité
+
+
+![Galery of the pipeline.\label{fig:pipeline}](pipeline.png)
 
 
 
