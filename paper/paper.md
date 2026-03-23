@@ -1,10 +1,10 @@
 ---
 title: 'OFNP: a Python package for generating outdoor activity footprint networks from GNSS trajectories'
 tags:
-  - trajectory classification
-  - mobility data
+  - Network
+  - GNSS trajectories
+  - Outdoor activity
   - Python
-  - machine learning
 authors:
   - name: Marie-Dominique Van Damme
     orcid: 0000-0002-0007-5972
@@ -59,4 +59,14 @@ bibliography: paper.bib
 
 
 
+# Acknowledgements
+
+This work was supported by the ANR under grant agreement no. ANR-23-CE55-0003 (IntForOut research Project: Multisource spatial data INTegration FOR the Monitoring of Ecosystems under the pressure of OUTdoor recreation).
+
+We thank the Pôle ressources national des sports de nature (PRNSN). L’application Outdoorvision fournit des traces GPS issus de services et d’objets connectés des pratiquants de sports et loisirs de nature
+
+
+
 # References
+
+
