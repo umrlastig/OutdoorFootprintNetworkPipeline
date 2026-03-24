@@ -7,6 +7,7 @@
 import sys
 import csv
 csv.field_size_limit(sys.maxsize)
+import time
 
 import tracklib as tkl
 from pipeline import conflateOnNetwork
@@ -20,6 +21,8 @@ from pipeline import conflateOnNetwork
 def createNetworkGeom (RESPATH, SEARCH, NB_OBS_MIN, DIST_MAX_2OBS, prefix='PT',
                        pathtraces='resample_fusion', pathtmm='tmm', pathfusion='fusion',
                        pathraccord='raccord'):
+
+    t0 = time.time()
 
     main_text   = "--------------------------------------------------------------------------------------\r\n"
     main_text  += " ETAPE 4 :                                                               \r\n"
@@ -89,6 +92,10 @@ def createNetworkGeom (RESPATH, SEARCH, NB_OBS_MIN, DIST_MAX_2OBS, prefix='PT',
         collection.addTrack(trace)
     
 
+    t1 = time.time()
+    total = t1-t0
+    print ("Temps d'exécution en s:", total)
+
 
     # =========================================================================
     #     Map-matching
@@ -106,7 +113,9 @@ def createNetworkGeom (RESPATH, SEARCH, NB_OBS_MIN, DIST_MAX_2OBS, prefix='PT',
     print ('Map-matching ended')
 
 
-
+    t1 = time.time()
+    total = t1-t0
+    print ("Temps d'exécution en s:", total)
 
 
     # =========================================================================
@@ -274,7 +283,9 @@ def createNetworkGeom (RESPATH, SEARCH, NB_OBS_MIN, DIST_MAX_2OBS, prefix='PT',
 
     print ("Mapmatched step completed")
 
-
+    t1 = time.time()
+    total = t1-t0
+    print ("Temps d'exécution en s:", total)
 
     # =========================================================================
     #     Fusion
@@ -360,6 +371,10 @@ def createNetworkGeom (RESPATH, SEARCH, NB_OBS_MIN, DIST_MAX_2OBS, prefix='PT',
     print ('Number of aggregations: ', fusions.size())
     print ("Aggregation process finished.")
 
+    t1 = time.time()
+    total = t1-t0
+    print ("Temps d'exécution en s:", total)
+
 
     # =========================================================================
     # Raccord
@@ -380,6 +395,10 @@ def createNetworkGeom (RESPATH, SEARCH, NB_OBS_MIN, DIST_MAX_2OBS, prefix='PT',
 
 
     print ("Conflation process finished.")
+
+    t1 = time.time()
+    total = t1-t0
+    print ("Temps d'exécution en s:", total)
 
     print ("Stage 4 finished: mapmatching, aggregation, conflation.")
 

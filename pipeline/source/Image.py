@@ -13,6 +13,7 @@ csv.field_size_limit(sys.maxsize)
 
 import math
 import os
+import time
 from scipy.ndimage import maximum_filter
 
 import tracklib as tkl
@@ -25,7 +26,7 @@ from pipeline import Shp2centerline
 
 
 
-def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE, prefix='PT',
+def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE, prefix='PT',
                        rep='resample_grid'):
 
     main_text   = "----------------------------------------------------------------------\r\n"
@@ -43,6 +44,7 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE, prefix='
     #       Chargement des traces GPS
     #  Ici elles sont mises dans un fichier CSV dont la géométrie de la trace est
     #  dans le format WKT
+    t0 = time.time()
 
     fmt = tkl.TrackFormat({'ext': 'CSV',
                            'srid': 'ENU',
@@ -52,11 +54,51 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE, prefix='
                            'read_all': True})
     
     resampledtracespath = RESPATH + rep + '/'
-    collection = tkl.TrackReader.readFromFile(resampledtracespath, fmt)
-    for trace in collection:
+
+    bbox = tkl.Bbox(tkl.ENUCoords(947991.025, 6510752.689),
+                    tkl.ENUCoords(951187.721, 6513143.062))
+
+    af_algos = ['uid']
+    cell_operators = [tkl.co_count_distinct]
+
+    marge = 0
+    resolutionG1 = (G1_SIZE, G1_SIZE)
+
+    rasterG1 = tkl.Raster(bbox=bbox, resolution=resolutionG1, margin=marge,
+                    align=tkl.BBOX_ALIGN_LL,
+                    novalue=tkl.NO_DATA_VALUE)
+
+
+    # Pour chaque algo-agg on crée une grille vide
+    for idx, af_algo in enumerate(af_algos):
+        aggregate = cell_operators[idx]
+        cle = tkl.AFMap.getMeasureName(af_algo, aggregate)
+        rasterG1.addAFMap(cle)
+
+
+
+    tracks = tkl.TrackSource(resampledtracespath, fmt)
+    total = len(tracks)
+    print ('Number files to load: ', total)
+
+    # collection = tkl.TrackCollection()
+    # tkl.TrackReader.readFromFile(resampledtracespath, fmt)
+
+
+    cpt = 1
+    for trace in tracks:
+
+        if cpt%500 == 0:
+            print ('    ', cpt, '/', total)
+        cpt += 1
+
         trace.uid = trace.getObsAnalyticalFeature('user_id', 0)
         trace.tid = trace.getObsAnalyticalFeature('track_id', 0)
-    print ('Number of tracks : ', collection.size())
+
+        rasterG1.addCollectionToRaster(tkl.TrackCollection([trace]))
+
+
+
 
 
 
@@ -64,15 +106,11 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE, prefix='
     #       Calcul des densités des traces GPS
 
 
-    af_algos = ['uid']
-    cell_operators = [tkl.co_count_distinct]
+    # compute aggregate
+    print ("Starting to compute aggregates ...")
+    rasterG1.computeAggregates()
 
-    marge = 0
-    resolutionG1 = (G1_SIZE, G1_SIZE)
-    bbox = collection.bbox()
-
-    rasterG1 = tkl.summarize(collection, af_algos, cell_operators, resolutionG1, marge,
-                   align=tkl.BBOX_ALIGN_CENTER)
+    
     grilleG1 = rasterG1.getAFMap('uid#co_count_distinct')
     for i in range(grilleG1.raster.nrow):
         for j in range(grilleG1.raster.ncol):
@@ -144,16 +182,20 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE, prefix='
     for i in range(raster.nrow):
         for j in range(raster.ncol):
             v = grilleK.grid[i][j]
-            if v > SEUIL:
+            if v > SEUIL_DENSITE:
                 raster.getAFMap(0).grid[i][j] = 1
             else:
                 raster.getAFMap(0).grid[i][j] = 0
     
     pathB = respath + 'B_' + prefix + '.asc'
     tkl.RasterWriter.writeMapToAscFile(pathB, raster.getAFMap(0))
-    
+
+
+    t1 = time.time()
+    total = t1-t0
+    print ("Temps d'exécution en s:", total)
     print ("Fin des calculs des cartes de densités, de constraste et binaire.")
-    
+    t0 = t1
 
     # =========================================================================
 
@@ -230,21 +272,29 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE, prefix='
     #pathdilatation = patherosion
 
     # Erosion
-    '''
-    mask = np.array([
-        [0,0,1,0,0],
-        [0,1,1,1,0],
-        [1,1,1,1,1],
-        [0,1,1,1,0],
-        [0,0,1,0,0]])
-    '''
-    mapBinaire.filter(np.array([[1]]), lambda x : 1-x)     # Dual de la carte
-    mapBinaire.filter(mask, np.max)                        # Dilatation
-    mapBinaire.filter(np.array([[1]]), lambda x : 1-x)     # Dual de la carte
-    tkl.RasterWriter.writeMapToAscFile(patherosion, mapBinaire)
+    if prefix=='PT':
+        '''
+        mask = np.array([
+            [0,0,1,0,0],
+            [0,1,1,1,0],
+            [1,1,1,1,1],
+            [0,1,1,1,0],
+            [0,0,1,0,0]])
+        '''
+        mapBinaire.filter(np.array([[1]]), lambda x : 1-x)     # Dual de la carte
+        mapBinaire.filter(mask, np.max)                        # Dilatation
+        mapBinaire.filter(np.array([[1]]), lambda x : 1-x)     # Dual de la carte
+        tkl.RasterWriter.writeMapToAscFile(patherosion, mapBinaire)
+        pathdepart = patherosion
+    else:
+        pathdepart = pathdilatation
 
 
-    pathdepart = patherosion
+    t1 = time.time()
+    total = t1-t0
+    print ("Temps d'exécution en s:", total)
+    print ("Fin de l'ouverture.")
+    t0 = t1
 
     # =========================================================================
     #   Vectorisation dans le layer surface
@@ -309,7 +359,7 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE, prefix='
     layerRoadSurface.SetAttributeFilter(None)
 
     # ------------------------------------------
-
+    #    On enlève les polygones trop petit
     fids_to_delete = []
 
     for feature in layerRoadSurface:
@@ -318,11 +368,38 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE, prefix='
             area = geom.GetArea()
             if area <= SEUIL_SURFACE:
                 fids_to_delete.append(feature.GetFID())
-            else:
-                print ("Un pplygone gardé avec comme surface", area, SEUIL_SURFACE)
+            # else:
+            #    print ("Un polygone gardé avec comme surface", area, SEUIL_SURFACE)
 
     for fid in fids_to_delete:
         layerRoadSurface.DeleteFeature(fid)
+
+
+
+
+    # ------------------------------------------
+    #   On enlève le cadre
+
+    fids_to_delete = []
+
+    minx1, maxx1, miny1, maxy1 = layerRoadSurface.GetExtent()
+    extent = bbox_to_polygon(minx1, maxx1, miny1, maxy1)
+    for feature in layerRoadSurface:
+        geom = feature.GetGeometryRef()
+        if geom is not None:
+            minx2, maxx2, miny2, maxy2 = geom.GetEnvelope()
+            envelope = bbox_to_polygon(minx2, maxx2, miny2, maxy2)
+
+            intersection = extent.Intersection(envelope)
+            union = extent.Union(envelope)
+            iou = intersection.GetArea() / union.GetArea()
+            if iou >= 0.99:
+                fids_to_delete.append(feature.GetFID())
+
+    for fid in fids_to_delete:
+        layerRoadSurface.DeleteFeature(fid)
+
+
 
 
 
@@ -347,6 +424,12 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE, prefix='
     dsRoadSurface = None
 
 
+    t1 = time.time()
+    total = t1-t0
+    print ("Temps d'exécution en s:", total)
+    print ("Fin de la vectorisation.")
+    t0 = t1
+
 
     # =========================================================================
     #   Lissage du polygone pour oublier le profil en escalier
@@ -354,6 +437,13 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE, prefix='
 
     #filtre(roadsurfpath, roadsurflissepath, shpDriver)
     dual(roadsurfpath, roadsurflissepath, shpDriver)
+
+
+    t1 = time.time()
+    total = t1-t0
+    print ("Temps d'exécution en s:", total)
+    print ("Fin du lissage de road surface.")
+    t0 = t1
 
 
     # =========================================================================
@@ -364,12 +454,30 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE, prefix='
 
     Shp2centerline(roadsurflissepath, squelettepath, interp_dist, clean_dist)
     
-
+    t1 = time.time()
+    total = t1-t0
+    print ("Temps d'exécution en s:", total)
+    print ("Fin du calcul de la center line.")
 
     # =========================================================================
 
 
     print ("Fin des calculs de vectorisation et squelette.")
+
+
+
+def bbox_to_polygon(minx, maxx, miny, maxy):
+    ring = ogr.Geometry(ogr.wkbLinearRing)
+    ring.AddPoint(minx, miny)
+    ring.AddPoint(maxx, miny)
+    ring.AddPoint(maxx, maxy)
+    ring.AddPoint(minx, maxy)
+    ring.AddPoint(minx, miny)
+
+    poly = ogr.Geometry(ogr.wkbPolygon)
+    poly.AddGeometry(ring)
+    return poly
+
 
 
 

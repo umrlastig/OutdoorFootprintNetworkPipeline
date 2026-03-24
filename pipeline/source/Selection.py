@@ -116,6 +116,11 @@ def decoup_resample(RESPATH, tracespathsource, X, Y,
     print ("Finished saving segmented tracks.")
 
 
+    # =========================================================================
+    #
+
+    
+
 
 
     # =========================================================================
@@ -192,6 +197,10 @@ def decoup_resample(RESPATH, tracespathsource, X, Y,
 
     # =========================================================================
     print ("Stage 1 finished: segmentation and resampling.")
+
+
+
+
 
 
 

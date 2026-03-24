@@ -8,6 +8,7 @@
 import fiona
 from shapely.geometry import shape
 import progressbar
+import time
 
 import tracklib as tkl
 
@@ -19,6 +20,8 @@ from pipeline import skeleton_smoothing
 
 def network(RESPATH, DIST_MIN_ARC, prefix='PT'):
 
+    t0 = time.time()
+
     # Pour la construction du réseau
     tolerance     = 0.1    # 0.05
     seuil_doublon = 0.1
@@ -29,7 +32,7 @@ def network(RESPATH, DIST_MIN_ARC, prefix='PT'):
 
     collection = tkl.TrackCollection()
 
-    squelettepath = str(RESPATH + 'network/squelette_' + prefix + '.shp')
+    squelettepath = str(RESPATH) + 'network/squelette_' + str(prefix) + '.shp'
     with fiona.open(squelettepath, 'r') as shapefile:
         for feature in shapefile:
             # 1 MultiLineString
@@ -53,7 +56,12 @@ def network(RESPATH, DIST_MIN_ARC, prefix='PT'):
     tkl.NetworkReader.counter = 1
     
     network = createNetwork(collection, tolerance)
+
+    t1 = time.time()
+    total = t1-t0
+    print ("Temps d'exécution en s:", total)
     print ('Fin construction du réseau 2/4.')
+    t0 = t1
 
 
     # =============================================================================
@@ -119,7 +127,11 @@ def network(RESPATH, DIST_MIN_ARC, prefix='PT'):
     # =========================================================================
 
 
-
+    t1 = time.time()
+    total = t1-t0
+    print ("Temps d'exécution en s:", total)
+    print ('Fin construction et nettyage du squelette.')
+    t0 = t1
 
 
 
