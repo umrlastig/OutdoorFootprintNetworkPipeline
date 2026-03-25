@@ -5,7 +5,7 @@ import tracklib as tkl
 
 
 # --------------------------------------------------------------------------------------
-# Filtre de Fourier coupe-bande sur une gÃ©omÃ©trie
+# Filtre de Fourier coupe-bande sur une géométrie
 # --------------------------------------------------------------------------------------
 # Inputs:
 #    - geom     :   trace ou edge en entrÃ©e

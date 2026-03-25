@@ -2,6 +2,7 @@
 
 '''
     Recalage des points sur le réseau
+    Fusion des traces
 '''
 
 import sys
@@ -11,10 +12,6 @@ import time
 
 import tracklib as tkl
 from pipeline import conflateOnNetwork
-
-
-
-# N;E;time;U;num;track_id;user_id;hmm_inference;mmtype;idedge
 
 
 

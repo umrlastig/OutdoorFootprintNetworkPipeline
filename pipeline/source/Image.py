@@ -29,7 +29,7 @@ from pipeline import Shp2centerline
 
 
 def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE, prefix='PT',
-                       rep='resample_grid', r=2, f=2):
+                       rep='resample_grid', f=2):
 
     main_text   = "----------------------------------------------------------------------\r\n"
     main_text  += "STAGE 2 :                                   \r\n"
@@ -340,7 +340,8 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE, 
 
 
     # =============================================================================
-    #   Squeletisation : DN=0 + filtre sur la surface + id
+    #   Squeletisation : DN=0 + filtre sur la surface + id + enleve le cadre
+    #       on corrige la géométrie
 
     dsRoadSurface = ogr.Open(roadsurfpath, 1)
     layerRoadSurface = dsRoadSurface.GetLayer()
@@ -403,11 +404,8 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE, 
 
 
 
-
-
     # -----------------------------------------
-    #   Id
-
+    #   On ajoute une colonne Id (je ne sais plus pourquoi)
 
     # Vérifier si le champ existe déjà
     layer_defn = layerRoadSurface.GetLayerDefn()
@@ -423,9 +421,20 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE, 
         layerRoadSurface.SetFeature(feature)
         i += 1
 
+
+    # -----------------------------------------
+    #   On essaie de corriger les géométries
+
+    for feature in layerRoadSurface:
+        geom = feature.GetGeometryRef()
+        geom = geom.Buffer(0)
+
     dsRoadSurface = None
 
 
+
+    # -----------------------------------------
+    #
     t1 = time.time()
     total = t1-t0
     print ("Temps d'exécution en s:", total)
@@ -440,51 +449,7 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE, 
 
     # filtre(roadsurfpath, roadsurflissepath, shpDriver)
     # dual(roadsurfpath, roadsurflissepath, shpDriver)
-
-
-
-    dsRoadSurface = ogr.Open(roadsurfpath, 0)
-    layerRoadSurface = dsRoadSurface.GetLayer()
-    for feature in layerRoadSurface:
-        geom = feature.GetGeometryRef()
-        if geom is not None:
-
-            # ==================================================================
-            # Gestion de l'extérieur
-            # ==================================================================
-            exterior_ring = geom.GetGeometryRef(0)
-            exterior = exterior_ring.GetPoints()
-            x = [p[0] for p in exterior]
-            y = [p[1] for p in exterior]
-            plt.plot(x, y, 'b-', linewidth=0.5)
-
-            # ------------------------------------------------------------------
-            # Géométrie filtrée
-            # ------------------------------------------------------------------
-            out = smoothing(exterior, r, f)
-            xout = [p[0] for p in out]
-            yout = [p[1] for p in out]
-            plt.plot(xout, yout, 'r-', linewidth=0.75)
-
-            # ==================================================================
-            # Gestion des intérieurs éventuels
-            # ==================================================================
-            for j in range(1, geom.GetGeometryCount()):
-                ring = geom.GetGeometryRef(j)
-                interior = ring.GetPoints()
-                x = [p[0] for p in interior]
-                y = [p[1] for p in interior]
-                plt.plot(x, y, 'b-', linewidth=0.5)
-                
-                # ------------------------------------------------------------------
-                # Géométrie filtrée
-                # ------------------------------------------------------------------
-                out = smoothing(interior[j], r, f)
-                xout = [p[0] for p in out]
-                yout = [p[1] for p in out]
-                plt.plot(xout, yout, 'r-', linewidth=0.75)
-
-    dsRoadSurface = None
+    filtre (roadsurfpath, roadsurflissepath, shpDriver, G1_SIZE, f)
 
 
     t1 = time.time()
@@ -527,6 +492,124 @@ def bbox_to_polygon(minx, maxx, miny, maxy):
     return poly
 
 
+
+def filtre(roadsurfpath, roadsurflissepath, shpDriver, r, f):
+
+    dsRoadSurface = ogr.Open(roadsurfpath, 1)
+    layerRoadSurface = dsRoadSurface.GetLayer()
+
+    # Créer datasource
+    dsRoadSurfaceLissee = shpDriver.CreateDataSource(roadsurflissepath)
+    
+    # Créer layer
+    layerRoadSurfaceLissee = dsRoadSurfaceLissee.CreateLayer(
+        "road_surface_lissee",
+        layerRoadSurface.GetSpatialRef(),
+        geom_type = ogr.wkbPolygon
+    )
+    
+    # copier les champs attributaires
+    src_defn = layerRoadSurface.GetLayerDefn()
+    for i in range(src_defn.GetFieldCount()):
+        field_defn = src_defn.GetFieldDefn(i)
+        layerRoadSurfaceLissee.CreateField(field_defn)
+
+    dst_defn = layerRoadSurfaceLissee.GetLayerDefn()
+
+
+    dsRoadSurface = ogr.Open(roadsurfpath, 0)
+    layerRoadSurface = dsRoadSurface.GetLayer()
+    for feature in layerRoadSurface:
+        geom = feature.GetGeometryRef().Clone()
+        if geom is None:
+            continue
+
+        polygon = ogr.Geometry(ogr.wkbPolygon)
+
+        # ==================================================================
+        # Gestion de l'extérieur
+        # ==================================================================
+        exterior_ring = geom.GetGeometryRef(0)
+        exterior = exterior_ring.GetPoints()
+        x = [p[0] for p in exterior]
+        y = [p[1] for p in exterior]
+        plt.plot(x, y, 'b-', linewidth=0.5)
+
+        # ------------------------------------------------------------------
+        # Géométrie filtrée
+        # ------------------------------------------------------------------
+        out = smoothing(exterior, r, f)
+        xout = [p[0] for p in out]
+        yout = [p[1] for p in out]
+        plt.plot(xout, yout, 'r-', linewidth=0.75)
+
+        # ------------------------------------------------------------------
+        # Construit une ligne
+        # ------------------------------------------------------------------
+        newring = ogr.Geometry(ogr.wkbLinearRing)
+        for i in range(len(xout)):
+            newring.AddPoint(xout[i], yout[i])
+        newring.CloseRings()
+        polygon.AddGeometry(newring)
+
+        # ==================================================================
+        # Gestion des intérieurs éventuels
+        # ==================================================================
+        for j in range(1, geom.GetGeometryCount()):
+            ring = geom.GetGeometryRef(j)
+            interior = ring.GetPoints()
+            is_closed = interior[0] == interior[-1]
+            if not is_closed or geom.GetArea() <= 0.001:
+                continue
+            print ('une géométrie intérieure')
+
+            x = [p[0] for p in interior]
+            y = [p[1] for p in interior]
+            plt.plot(x, y, 'b-', linewidth=0.5)
+                
+            # ------------------------------------------------------------------
+            # Géométrie filtrée
+            # ------------------------------------------------------------------
+            out = smoothing(interior, r, f)
+            xout = [p[0] for p in out]
+            yout = [p[1] for p in out]
+            plt.plot(xout, yout, 'r-', linewidth=0.75)
+
+            # ------------------------------------------------------------------
+            # Construit une ligne
+            # ------------------------------------------------------------------
+            newring = ogr.Geometry(ogr.wkbLinearRing)
+            for i in range(len(xout)):
+                newring.AddPoint(xout[i], yout[i])
+            newring.CloseRings()
+            polygon.AddGeometry(newring)
+
+
+        # =====================================================================
+        # Créer une nouvelle feature
+        # =====================================================================
+        dst_feat = ogr.Feature(dst_defn)
+        
+        # Copier les attributs
+        for i in range(dst_defn.GetFieldCount()):
+            dst_feat.SetField(i, feature.GetField(i))
+        
+        # Assigner la géométrie
+        dst_feat.SetGeometry(polygon)
+        
+        # Ajouter au layer
+        layerRoadSurfaceLissee.CreateFeature(dst_feat)
+        
+        dst_feat = None
+
+
+    dsRoadSurface = None
+    dsRoadSurfaceLissee = None
+    
+
+
+
+
 # --------------------------------------------------------------------------------------
 # Filtre de Fourier coupe-bande sur une géométrie
 # --------------------------------------------------------------------------------------
@@ -546,9 +629,9 @@ def smoothing(geom, r, f):
     x = [p[0] for p in geom]
     y = [p[1] for p in geom]
     
-    trace = trk.Track()
+    trace = tkl.Track()
     for ii in range(len(x)):
-        trace.addObs(trk.Obs(trk.ENUCoords(x[ii], y[ii], 0)))
+        trace.addObs(tkl.Obs(tkl.ENUCoords(x[ii], y[ii], 0)))
 
     N = len(trace)
     
@@ -566,8 +649,10 @@ def smoothing(geom, r, f):
     geom_in = trace + trace + trace
     
     # Filtre coupe-bande
-    signal_low_freq = trk.filter_freq(geom_in, (1.0/wl_sup), mode=trk.FILTER_SPATIAL, type=trk.FILTER_LOW_PASS , dim=trk.FILTER_XY)[N:2*N]
-    signal_hgh_freq = trk.filter_freq(geom_in, (1.0/wl_inf), mode=trk.FILTER_SPATIAL, type=trk.FILTER_HIGH_PASS, dim=trk.FILTER_XY)[N:2*N]
+    signal_low_freq = tkl.filter_freq(geom_in, (1.0/wl_sup), mode=tkl.FILTER_SPATIAL,
+                                      type=tkl.FILTER_LOW_PASS , dim=tkl.FILTER_XY)[N:2*N]
+    signal_hgh_freq = tkl.filter_freq(geom_in, (1.0/wl_inf), mode=tkl.FILTER_SPATIAL,
+                                      type=tkl.FILTER_HIGH_PASS, dim=tkl.FILTER_XY)[N:2*N]
    
     # Somme passe-haut/passe-bas
     out = trace.copy()
@@ -648,6 +733,7 @@ def dual(roadsurfpath, roadsurflissepath, shpDriver):
 
     dsRoadSurface = None
     dsRoadSurfaceLissee = None
+
 
 
 def filtre(roadsurfpath, roadsurflissepath, shpDriver):
