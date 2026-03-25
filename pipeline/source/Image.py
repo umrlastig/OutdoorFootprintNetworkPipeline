@@ -16,6 +16,8 @@ import os
 import time
 from scipy.ndimage import maximum_filter
 
+import matplotlib.pyplot as plt
+
 import tracklib as tkl
 import numpy as np
 
@@ -27,7 +29,7 @@ from pipeline import Shp2centerline
 
 
 def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE, prefix='PT',
-                       rep='resample_grid'):
+                       rep='resample_grid', r=2, f=2):
 
     main_text   = "----------------------------------------------------------------------\r\n"
     main_text  += "STAGE 2 :                                   \r\n"
@@ -431,12 +433,58 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE, 
     t0 = t1
 
 
+
+
     # =========================================================================
     #   Lissage du polygone pour oublier le profil en escalier
 
+    # filtre(roadsurfpath, roadsurflissepath, shpDriver)
+    # dual(roadsurfpath, roadsurflissepath, shpDriver)
 
-    #filtre(roadsurfpath, roadsurflissepath, shpDriver)
-    dual(roadsurfpath, roadsurflissepath, shpDriver)
+
+
+    dsRoadSurface = ogr.Open(roadsurfpath, 0)
+    layerRoadSurface = dsRoadSurface.GetLayer()
+    for feature in layerRoadSurface:
+        geom = feature.GetGeometryRef()
+        if geom is not None:
+
+            # ==================================================================
+            # Gestion de l'extérieur
+            # ==================================================================
+            exterior_ring = geom.GetGeometryRef(0)
+            exterior = exterior_ring.GetPoints()
+            x = [p[0] for p in exterior]
+            y = [p[1] for p in exterior]
+            plt.plot(x, y, 'b-', linewidth=0.5)
+
+            # ------------------------------------------------------------------
+            # Géométrie filtrée
+            # ------------------------------------------------------------------
+            out = smoothing(exterior, r, f)
+            xout = [p[0] for p in out]
+            yout = [p[1] for p in out]
+            plt.plot(xout, yout, 'r-', linewidth=0.75)
+
+            # ==================================================================
+            # Gestion des intérieurs éventuels
+            # ==================================================================
+            for j in range(1, geom.GetGeometryCount()):
+                ring = geom.GetGeometryRef(j)
+                interior = ring.GetPoints()
+                x = [p[0] for p in interior]
+                y = [p[1] for p in interior]
+                plt.plot(x, y, 'b-', linewidth=0.5)
+                
+                # ------------------------------------------------------------------
+                # Géométrie filtrée
+                # ------------------------------------------------------------------
+                out = smoothing(interior[j], r, f)
+                xout = [p[0] for p in out]
+                yout = [p[1] for p in out]
+                plt.plot(xout, yout, 'r-', linewidth=0.75)
+
+    dsRoadSurface = None
 
 
     t1 = time.time()
@@ -479,8 +527,68 @@ def bbox_to_polygon(minx, maxx, miny, maxy):
     return poly
 
 
+# --------------------------------------------------------------------------------------
+# Filtre de Fourier coupe-bande sur une géométrie
+# --------------------------------------------------------------------------------------
+# Inputs:
+#    - geom  : polygone (simple)
+#    - r     : résolution centrale de coupure (en m)
+#    - f     : facteur de coupure
+# Output: géométrie filtrée avec suppression de toutes les longueurs d'onde comprises 
+# entre r/f et r*f
+# --------------------------------------------------------------------------------------
+def smoothing(geom, r, f):
+
+    # Préparation
+    wl_sup = r*f
+    wl_inf = r/f
+    
+    x = [p[0] for p in geom]
+    y = [p[1] for p in geom]
+    
+    trace = trk.Track()
+    for ii in range(len(x)):
+        trace.addObs(trk.Obs(trk.ENUCoords(x[ii], y[ii], 0)))
+
+    N = len(trace)
+    
+    # Centrage du signal
+    trace = trace.copy()
+    c0 = trace.getCentroid(); 
+    cx = c0.E; cy = c0.N
+    trace.translate(-cx, -cy)
+    
+    # Sauvegarde des extrémités
+    ci = trace[0]
+    cf = trace[-1]
+    
+    # Periodisation du signal
+    geom_in = trace + trace + trace
+    
+    # Filtre coupe-bande
+    signal_low_freq = trk.filter_freq(geom_in, (1.0/wl_sup), mode=trk.FILTER_SPATIAL, type=trk.FILTER_LOW_PASS , dim=trk.FILTER_XY)[N:2*N]
+    signal_hgh_freq = trk.filter_freq(geom_in, (1.0/wl_inf), mode=trk.FILTER_SPATIAL, type=trk.FILTER_HIGH_PASS, dim=trk.FILTER_XY)[N:2*N]
+   
+    # Somme passe-haut/passe-bas
+    out = trace.copy()
+    for i in range(N):
+        out[i, "x"] = signal_low_freq[i, "x"] + signal_hgh_freq[i, "x"]
+        out[i, "y"] = signal_low_freq[i, "y"] + signal_hgh_freq[i, "y"] 
+        
+    # Reconstruction des extrémités 
+    out[0]  = ci
+    out[-1] = cf   
+        
+    # Decentrage du signal
+    out.translate(cx, cy)
+    
+    # Retransformation en géométrie
+    out_geom = [(obs.position.getX(), obs.position.getY()) for obs in out]
+    
+    return out_geom
 
 
+'''
 def dual(roadsurfpath, roadsurflissepath, shpDriver):
     dsRoadSurface = ogr.Open(roadsurfpath, 0)
     layerRoadSurface = dsRoadSurface.GetLayer()
@@ -597,4 +705,4 @@ def filtre(roadsurfpath, roadsurflissepath, shpDriver):
     dsRoadSurface = None
     dsRoadSurfaceLissee = None
 
-
+'''
