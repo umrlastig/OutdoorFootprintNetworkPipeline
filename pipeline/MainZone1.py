@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 
-import os
+
 import time
 
 from source.Selection import decoup_resample, second_round
 from source.Image import density_polygonize
 from source.Topology import network
 from source.Geometry import createNetworkGeom
+from util.config import setupenv
 
-STAGE = 6
+
+STAGE = 4
 
 
 """ ======================================================================= """
@@ -64,14 +66,14 @@ DIST_MAX_2OBS        = 50
 
 RESAMPLE_SIZE_GRID = 1
 
-
 G1_SIZE = 2
-G2_SIZE = 50
+G2_SIZE = 30 # 50
 
-SEUIL         = 1000  # 15
-SEUIL_SURFACE = 50000 # m2
+SEUIL_DENSITE = 360  # 15 - 1000
+SEUIL_SURFACE = 1000 # m2 - 50000 - 7000
 
-
+r = 2   # Raster resolution
+f = 2   # Cut factor
 
 
 """ ======================================================================= """
@@ -79,7 +81,8 @@ SEUIL_SURFACE = 50000 # m2
 """                                                                         """
 
 # Longueur des petits arcs à supprimer
-DIST_MIN_ARC  = 50 # 30
+# 30
+DIST_MIN_ARC  = 50
 
 
 
@@ -91,58 +94,18 @@ DIST_MIN_ARC  = 50 # 30
 RESAMPLE_SIZE_FUSION = 5
 SEARCH = 25
 
-# Aggregation
-
-
-
-
+# Agrégation
 
 
 
 """ ======================================================================= """
-"""     Preparation de l'environnelent                                      """
-"""   - création des répertoires si nécessaire                                                                      """
-"""                                                                         """
+"""     Préparation de l'environnement                                      """
+""" ======================================================================= """
 
-if not os.path.exists(RESPATH + 'decoup'):
-    os.makedirs(RESPATH + 'decoup')
-if not os.path.exists(RESPATH + 'geometry'):
-    os.makedirs(RESPATH + 'geometry')
-if not os.path.exists(RESPATH + 'image'):
-    os.makedirs(RESPATH + 'image')
-if not os.path.exists(RESPATH + 'mapmatch'):
-    os.makedirs(RESPATH + 'mapmatch')
-if not os.path.exists(RESPATH + 'network'):
-    os.makedirs(RESPATH + 'network')
-if not os.path.exists(RESPATH + 'resample_grid'):
-    os.makedirs(RESPATH + 'resample_grid')
-if not os.path.exists(RESPATH + 'resample_fusion'):
-    os.makedirs(RESPATH + 'resample_fusion')
-if not os.path.exists(RESPATH + 'mapmatch/tmm'):
-    os.makedirs(RESPATH + 'mapmatch/tmm')
-if not os.path.exists(RESPATH + 'mapmatch/tmm1'):
-    os.makedirs(RESPATH + 'mapmatch/tmm1')
-    if not os.path.exists(RESPATH + 'mapmatch/tmm2'):
-        os.makedirs(RESPATH + 'mapmatch/tmm2')
+setupenv(RESPATH)
 
-if not os.path.exists(RESPATH + 'geometry/fusion'):
-    os.makedirs(RESPATH + 'geometry/fusion')
-if not os.path.exists(RESPATH + 'geometry/fusion1'):
-    os.makedirs(RESPATH + 'geometry/fusion1')
-if not os.path.exists(RESPATH + 'geometry/fusion2'):
-    os.makedirs(RESPATH + 'geometry/fusion2')
 
-if not os.path.exists(RESPATH + 'geometry/raccord'):
-    os.makedirs(RESPATH + 'geometry/raccord')
-if not os.path.exists(RESPATH + 'geometry/raccord1'):
-    os.makedirs(RESPATH + 'geometry/raccord1')
-if not os.path.exists(RESPATH + 'geometry/raccord2'):
-    os.makedirs(RESPATH + 'geometry/raccord2')
 
-if not os.path.exists(RESPATH + 'points_not_mm_1'):
-    os.makedirs(RESPATH + 'points_not_mm_1')
-if not os.path.exists(RESPATH + 'points_not_mm_2'):
-    os.makedirs(RESPATH + 'points_not_mm_2')
 
 
 
@@ -169,25 +132,19 @@ if STAGE == 1:
 
 
 if STAGE == 2:
-    t0 = time.time()
-    density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE,
-                       prefix='PT', rep='resample_grid')
-    t1 = time.time()
-    total = t1-t0
-    print ("Temps d'exécution en s:", total)
+    density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
+                       prefix='PT', rep='resample_grid', f=2)
+
 
 
 if STAGE == 3:
-    t0 = time.time()
     network(RESPATH, DIST_MIN_ARC)
-    t1 = time.time()
-    total = t1-t0
-    print ("Temps d'exécution en s:", total)
+
 
 
 if STAGE == 4:
     t0 = time.time()
-    createNetworkGeom(RESPATH, SEARCH, NB_OBS_MIN, DIST_MAX_2OBS)
+    createNetworkGeom(RESPATH, SEARCH, NB_OBS_MIN, DIST_MAX_2OBS, t0=t0)
     t1 = time.time()
     total = t1-t0
     print ("Temps d'exécution en s:", total)
@@ -198,12 +155,12 @@ if STAGE == 5:
 
     rep='points_not_mm_1'
 
-    SEUIL = 14
+    SEUIL_DENSITE = 14
     SEUIL_SURFACE = 500
 
     second_round(RESPATH, NB_OBS_MIN, DIST_MAX_2OBS, RESAMPLE_SIZE_GRID, rep)
 
-    density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL, SEUIL_SURFACE,
+    density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
                         prefix='ST', rep=rep)
 
     network(RESPATH, DIST_MIN_ARC, prefix='ST')
@@ -239,6 +196,9 @@ if STAGE == 6:
     t1 = time.time()
     total = t1-t0
     print ("Temps d'exécution en s:", total)
+
+
+
 
 
 
