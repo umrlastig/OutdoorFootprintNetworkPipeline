@@ -10,7 +10,6 @@ import re
 import matplotlib.pyplot as plt
 
 import fiona
-import geopandas as gpd
 import rasterio
 from rasterio.plot import show
 from shapely.geometry import LineString, MultiLineString
@@ -22,11 +21,6 @@ from shapely.geometry import shape as geom_shape
 def maPlotRasterTiff(pathres, filename, append):
     with rasterio.open(pathres + filename) as src:
         show(src, ax=append, cmap="Blues")  # Greys
-
-
-def matPlotRasterShp(pathres, filename, append):
-    gdf = gpd.read_file(pathres + filename)
-    gdf.plot(ax=append)
 
 
 def matPlotShapefile(pathres, filename, append):
