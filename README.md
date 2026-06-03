@@ -2,8 +2,7 @@
 
 <p align="center">
 <table style="border:none;border:0;width:60%"><tr>
-  <td align="center" style="width:60%"><img width="800px" src="https://github.com/umrlastig/footprint2graph/blob/main/doc/source/img/footprint2graph.png" /></td>
-  <td style="padding:16px;"><label>Footprint2Graph:</label> Transforming Outdoor Recreation Footprints into Graphs.</td>
+  <td align="center"><img width="800px" src="https://github.com/umrlastig/footprint2graph/blob/main/doc/source/img/footprint2graph.png" /></td>
 </tr></table>
 </p>
 
