@@ -1,4 +1,12 @@
-# Footprint2Graph Pipeline for Outdoor Recreation 
+# Footprint2Graph
+
+<p align="center">
+<table style="border:none;border:0;width:60%"><tr>
+  <td align="center" style="width:30%"><img width="200px" src="https://github.com/umrlastig/footprint2graph/tree/main/doc/source/img/footprint2graph.png" /></td>
+  <td style="padding:16px;"><label>Footprint2Graph:</label> Transforming Outdoor Recreation Footprints into Graphs.</td>
+</tr></table>
+</p>
+
 
 [![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
 [![Documentation Status](https://readthedocs.org/projects/OutdoorFootprintNetworkPipeline/badge/?version=latest)](https://OutdoorFootprintNetworkPipeline.readthedocs.io/en/latest/?badge=latest)
@@ -7,7 +15,7 @@
 [![codecov](https://codecov.io/gh/umrlastig/Footprint2graph-pipeline/branch/main/graph/badge.svg?token=pHLaV21j2O)](https://codecov.io/gh/umrlastig/Footprint2graph-pipeline)
 
 
-Footprint2graph-pipeline is an open-source Python processing pipeline (MIT license) for generating outdoor activity footprint graphs from GNSS trajectories, representing, for example, hikers’ or runners’ footprints within a defined spatial and temporal extent. The pipeline includes several components, such as GNSS point map-matching onto a network and trajectory aggregation, both implemented using the Tracklib Python library.
+Footprint2graph is an open-source Python processing pipeline (MIT license) for generating outdoor recreation activity footprint graphs from GNSS trajectories, representing, for example, hikers’ or runners’ footprints within a defined spatial and temporal extent. The pipeline includes several components, such as GNSS point map-matching onto a network and trajectory aggregation, both implemented using the Tracklib Python library.
 
 
 ## Documentation
