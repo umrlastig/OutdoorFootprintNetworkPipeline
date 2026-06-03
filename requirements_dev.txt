@@ -1,4 +1,7 @@
 pytest
 pytest-runner
 coverage
-
+geopandas
+fiona
+rasterio
+shapely
