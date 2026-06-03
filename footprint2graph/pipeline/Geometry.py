@@ -25,15 +25,18 @@ def createNetworkGeom (RESPATH, SEARCH, BUFFER, pipeline_idx = None):
     print("Starting map-matching, aggregation, and conflation of GNSS trajectories.")
 
     idx = int (pipeline_idx)
+    prefix = str(idx)
+
     if idx == 1:
         pathtraces = 'resample_fusion'
-        pathtmm = 'tmm'
-        pathfusion = 'fusion'
-        pathraccord = 'raccord'
     else:
-        rep = 'points_not_mm_1'
+        pathtraces = 'points_not_mm_' + prefix
 
-    prefix = str(idx)
+    pathtmm = 'tmm' + prefix
+    pathfusion = 'fusion' + prefix
+    pathraccord = 'raccord' + prefix
+
+
 
 
     # =========================================================================
@@ -60,7 +63,7 @@ def createNetworkGeom (RESPATH, SEARCH, BUFFER, pipeline_idx = None):
     # =========================================================================
     #   Lecture des traces découpées et ré-échantillonnées.
     #
-    print ('Loading collection of tracks ...')
+    print ('    Loading collection of tracks ...')
     fmt = tkl.TrackFormat({'ext': 'CSV',
                            'srid': 'ENU',
                            'id_E': 1,'id_N': 0, 'id_U': 3,'id_T': 2,
@@ -79,6 +82,10 @@ def createNetworkGeom (RESPATH, SEARCH, BUFFER, pipeline_idx = None):
     collection = tkl.TrackCollection()
     for trace in collection2:
         num = trace.getObsAnalyticalFeature('TID', 0)
+        #if str(int(num)) != '228':
+        #    continue
+        # print (str(int(num)))
+
         numofnp = trace.getObsAnalyticalFeature('MID', 0)
         trace.uid = num
         trace.tid = numofnp
@@ -87,7 +94,7 @@ def createNetworkGeom (RESPATH, SEARCH, BUFFER, pipeline_idx = None):
         #           'OV_1166-v1', 'OV_1-v1', 'OV_1530-v1', 'OV_1411-v1',
         #           'OV_1012-v1', 'OV_1012-v2', 'OV_1012-v3']:
         collection.addTrack(trace)
-    print (collection.size())
+    # print ('    Number of tracks:', collection.size())
 
     t1 = time.time()
     total = t1-t0
@@ -107,7 +114,8 @@ def createNetworkGeom (RESPATH, SEARCH, BUFFER, pipeline_idx = None):
     network.prepare()
 
     # Map track on network
-    tkl.mapOnNetwork(collection, network, search_radius=SEARCH, debug=False)
+    print('    PARAMETER search_radius: ', SEARCH)
+    tkl.mapOnNetwork(collection, network, search_radius=SEARCH, debug=False, verbose=False)
     print ('    Map-matching ended.')
 
 
@@ -134,6 +142,8 @@ def createNetworkGeom (RESPATH, SEARCH, BUFFER, pipeline_idx = None):
     rmse_total = 0
     nbtj = 0
     maxd = 0
+
+    NB_PTS = 5
 
     for i in range(collection.size()):
         track = collection.getTrack(i)
@@ -192,37 +202,45 @@ def createNetworkGeom (RESPATH, SEARCH, BUFFER, pipeline_idx = None):
 
                 # l'arc precedent
                 idxp = -1
-                for k in range(j-1, -1, -1):
+                for k in range(j-1, max(-1, j-NB_PTS-1), -1):
                     idxp = int(track["hmm_inference", k][1])
                     if idxp > -1:
                         break
                 # l'arc suivant
                 idxs = -1
-                for k in range(j+1, track.size(), 1):
-                    idxs = int(track["hmm_inference", j+1][1])
+                for k in range(j+1, min(track.size(), j+NB_PTS+1), 1):
+                    idxs = int(track["hmm_inference", k][1])
                     if idxs > -1:
                         break
 
+                # print (j, idxp, idxs)
+
                 # if idxp == idxs or idxp == -1 or idxs == -1:
+                # - Il faut que ce soit le même arc, donc dans ce cas il faut
+                #   des points recalés avant et des points recalés après
                 if idxp == idxs and idxp > -1 and idxs > -1:
-                    # print (j)
-                    edgeidsupp = network.getEdgeId(idxedge)
+
+                    edgeidsupp = network.getEdgeId(idxp)
                     esupp = network.EDGES[edgeidsupp]
                     # on calcule la projection sur l'arc des points avant-apres
                     distmin, xproj, yproj, iproj = tkl.proj_polyligne(
                         esupp.geom.getX(), esupp.geom.getY(), pb.getX(), pb.getY())
+                    # print (distmin, SEARCH)
                     if distmin < SEARCH:
-                        if edgeid not in MM:
+                        if edgeidsupp not in MM:
                             MM[edgeidsupp] = {}
                         if pkid not in MM[edgeidsupp].keys():
                             MM[edgeidsupp][pkid] = []
+                        # print (j)
                         MM[edgeidsupp][pkid].append((j,pb))
+                        # print ('-----', j, edgeidsupp, pkid)
 
             elif ds > 0.01 and dt > 0.01:
                 if edgeid not in MM:
                     MM[edgeid] = {}
                 if pkid not in MM[edgeid].keys():
                     MM[edgeid][pkid] = []
+                # print ('-----', j, edgeid, pkid)
                 MM[edgeid][pkid].append((j,pb))
                 track.setObsAnalyticalFeature('mmtype', j, 'EDGE')
                 track.setObsAnalyticalFeature('idedge', j, edgeid)
@@ -254,23 +272,31 @@ def createNetworkGeom (RESPATH, SEARCH, BUFFER, pipeline_idx = None):
         MSE = sqrt(MSE / track.size())
         rmse_total += MSE**2
 
-    rmse_total = sqrt(rmse_total/nbtj)
+    if nbtj == 0:
+        rmse_total = -1
+    else:
+        rmse_total = sqrt(rmse_total/nbtj)
 
+    # print (MM['23'])
 
     if RESPATH is not None:
-        af_names = ['TID', 'MID', 'hmm_inference', 'mmtype', 'idedge']
+        af_names = ['TID', 'MID', 'hmm_inference', 'mmtype', 'idedge', 'obs_noise', 'hmm_cost']
         mmtracespath = RESPATH + 'mapmatch/' + pathtmm + '/'
         tkl.TrackWriter.writeToFiles(collection, mmtracespath,
                                  id_E=1, id_N=0, id_U=3, id_T=2,
                                  h=1, separator=";", af_names=af_names)
         print ('    Map-matching results exported.')
 
-        percentMM = (nbmm / nbpt * 100)
-        print ('Number of map-matched points = ' + str(nbmm) + ' (' + str(round(percentMM, 2)) + ' %)')
-        percentHP = (nbhp / nbpt * 100)
+        if nbpt == 0:
+            percentMM = 0
+            percentHP = 0
+        else:
+            percentMM = (nbmm / nbpt * 100)
+            print ('    Number of map-matched points = ' + str(nbmm) + ' (' + str(round(percentMM, 2)) + ' %)')
+            percentHP = (nbhp / nbpt * 100)
         print ('    Map-matching results restructuring completed.')
 
-        log_event(RESPATH + "mapmatch_" + prefix + ".json", {
+        log_event(RESPATH + "mapmatch" + prefix + ".json", {
             "Search radius (m)": SEARCH,
             "Number of map-matched points": nbmm,
             "Percentage of map-matched points (%)": str(round(percentMM, 2)),
@@ -299,6 +325,10 @@ def createNetworkGeom (RESPATH, SEARCH, BUFFER, pipeline_idx = None):
     #
 
     print ("Starting aggregation ...")
+    NBAP30 = 0
+    NBAM30 = 0
+    MIN    = 100000
+    MOY    = 0
 
     geompath = RESPATH + 'geometry/' + pathfusion + '/'
     
@@ -318,11 +348,13 @@ def createNetworkGeom (RESPATH, SEARCH, BUFFER, pipeline_idx = None):
             line = s.split(";")
             if len(line) < 1:
                 continue
-        
-            edgeid = line[0]
-            e = network.EDGES[edgeid]
 
-            if edgeprevious != edgeid:
+            #  "EDGE_ID; TID; MID; WKT
+            edgeid = line[0]
+
+            if edgeprevious != edgeid and edgeprevious != -1:
+
+                e = network.EDGES[edgeprevious]
 
                 if e.geom.length() <= SEARCH:
                     print ("    No merge for arc number (length too small):", edgeprevious)
@@ -338,9 +370,15 @@ def createNetworkGeom (RESPATH, SEARCH, BUFFER, pipeline_idx = None):
                     f.write(str(edgeprevious) + ";" + str(len(TRACES)) + ";" + central.toWKT() + "\n")
                     f.close()
 
-                elif edgeprevious != -1 and len(TRACES) > 1:
+                elif len(TRACES) >= 1:
                     print ("    Aggregation for arc number:", edgeprevious)
                     central = _fusion(e, TRACES, SEARCH)
+                    MIN = min([MIN, len(TRACES)])
+                    MOY += len(TRACES)
+                    if len(TRACES) > 30:
+                        NBAP30 += 1
+                    else:
+                        NBAM30 += 1
                     if central is not None:
                         central.createAnalyticalFeature('edgeid', edgeprevious)
                         central.tid = edgeprevious
@@ -361,6 +399,7 @@ def createNetworkGeom (RESPATH, SEARCH, BUFFER, pipeline_idx = None):
             track = tkl.TrackReader.parseWkt(wkt)
             track.tid = mid
             track.uid = tid
+            # print (track.uid, track.size(), edgeid)
             if track.size() > 3:
                 TRACES.append(track)
 
@@ -368,8 +407,8 @@ def createNetworkGeom (RESPATH, SEARCH, BUFFER, pipeline_idx = None):
 
 
     # dernière trace
-    if len(TRACES) > 1:
-
+    if len(TRACES) >= 1:
+        e = network.EDGES[edgeprevious]
         if e.geom.length() <= SEARCH:
             print ("    No merge for arc number (length too small):", edgeprevious)
             central = e.geom.copy()
@@ -387,6 +426,12 @@ def createNetworkGeom (RESPATH, SEARCH, BUFFER, pipeline_idx = None):
         else:
             print ("    Aggregation for arc number:", edgeprevious)
             central = _fusion(e, TRACES, SEARCH)
+            MIN = min([MIN, len(TRACES)])
+            MOY += len(TRACES)
+            if len(TRACES) > 30:
+                NBAP30 += 1
+            else:
+                NBAM30 += 1
             if central is not None:
                 central.createAnalyticalFeature('edgeid', edgeprevious)
                 central.tid = edgeprevious
@@ -401,6 +446,14 @@ def createNetworkGeom (RESPATH, SEARCH, BUFFER, pipeline_idx = None):
 
 
     print ('    Number of aggregations:', fusions.size())
+    print ("    Number of aggregations with 30 traces:", NBAP30)
+    print ("    Number of aggregations with fewer than 30 traces:", NBAM30)
+    print ("    Minimum number of traces in aggregation:", MIN)
+    if fusions.size() == 0:
+        avg = 0
+    else:
+        avg = round(MOY/fusions.size())
+    print ("    Average number of traces in aggregation:", avg)
     print ("    Aggregation process finished.")
 
     t1 = time.time()
@@ -408,15 +461,32 @@ def createNetworkGeom (RESPATH, SEARCH, BUFFER, pipeline_idx = None):
     print ("    Execution time (seconds):", total)
     t0 = t1
 
+    try:
+        log_event(RESPATH + "aggregate" + str(prefix) + ".json", {
+            "Number of aggregations": fusions.size(),
+            "Number of aggregations with 30 traces": NBAP30,
+            "Number of aggregations with fewer than 30 traces": NBAM30,
+            "Minimum number of traces in aggregation": MIN,
+            "Average number of traces in aggregation": avg,
+            "ts": time.time()
+        })
+    except Exception as e:
+        print (e)
+        print ('Error while writing aggregate information to log.')
+
 
     # =========================================================================
     # Raccord
 
     print ("Starting conflation ...")
 
-    threshold=50
-    h=30
-    conflated = conflateOnNetwork(fusions, network, threshold, h, RESPATH, verbose=False)
+    threshold = 20 # 50
+    h = 20
+    conflated = conflateOnNetwork(fusions, network,
+                                  threshold, h,
+                                  RESPATH,
+                                  prefix,
+                                  verbose=False)
 
     # enregistrer conflation
     raccordpath = RESPATH + 'geometry/' + pathraccord + '/'
@@ -436,7 +506,7 @@ def createNetworkGeom (RESPATH, SEARCH, BUFFER, pipeline_idx = None):
     print ("    Execution time (seconds):", total)
     t0 = t1
 
-    
+
     # =========================================================================
     # Fin
     
@@ -493,6 +563,7 @@ def _fusion (e, TRACES, SEARCH):
         # print ('        Aggregation ended.')
         return centralDTW
     elif candidats.size() == 1:
+        print ('    Only one trajectory available for aggregation: no processing required')
         centralDTW = candidats.getTrack(0)
         return centralDTW
 

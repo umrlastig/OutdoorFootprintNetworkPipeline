@@ -44,17 +44,17 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
 
     idx = int (pipeline_idx)
 
-    main_text  = "Starting rasterization and vectorization (iteration " + str(idx) + ") \n"
-    print(main_text, end='')
+    print("Starting rasterization and vectorization (iteration " + str(idx) + ") \n")
 
     respath = RESPATH + 'image/'
 
+    prefix = str(idx)
     if idx == 1:
         rep = 'resample_grid'
     else:
-        rep = 'points_not_mm_1'
+        rep = 'points_not_mm_' + prefix
 
-    prefix = str(idx)
+
 
 
     # =============================================================================
@@ -473,6 +473,10 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
         n_features = len(shapefile)
 
     try:
+        if NB_PS == 0:
+            moy = 0
+        else:
+            moy = round(MOY_PS / NB_PS)
         log_event(RESPATH + "image"+ str(prefix) + ".json", {
             "High-resolution grid cell size (m)": G1_SIZE,
             "Low-resolution grid cell size (m)": G2_SIZE,
@@ -480,7 +484,7 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
             "Cell cluster size threshold for filling or removal (m2)": asize,
             "Number of polygonize features": NB_TOT,
             "Number of small polygonized features": NB_PS,
-            "Average area of small polygons (m2)": round(MOY_PS / NB_PS),
+            "Average area of small polygons (m2)": moy,
             "Number of polygonized features above threshold": NB_GS,
             "Number of edges in the skeleton": n_features,
             "ts": time.time()

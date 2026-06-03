@@ -8,9 +8,6 @@ Introduction
 =============
 
 
-
-
-
 .. list-table::
    :widths: 50 50
 

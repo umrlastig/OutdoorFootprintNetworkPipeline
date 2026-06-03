@@ -49,39 +49,30 @@ def setupEnv(respath, iteration_index = -1):
             os.makedirs(respath + 'network')
         if not os.path.exists(respath + 'mapmatch'):
             os.makedirs(respath + 'mapmatch')
-        if not os.path.exists(respath + 'mapmatch/tmm'):
-            os.makedirs(respath + 'mapmatch/tmm')
+        if not os.path.exists(respath + 'mapmatch/tmm1'):
+            os.makedirs(respath + 'mapmatch/tmm1')
         if not os.path.exists(respath + 'geometry'):
             os.makedirs(respath + 'geometry')
-        if not os.path.exists(respath + 'geometry/fusion'):
-            os.makedirs(respath + 'geometry/fusion')
-        if not os.path.exists(respath + 'geometry/raccord'):
-            os.makedirs(respath + 'geometry/raccord')
+        if not os.path.exists(respath + 'geometry/fusion1'):
+            os.makedirs(respath + 'geometry/fusion1')
+        if not os.path.exists(respath + 'geometry/raccord1'):
+            os.makedirs(respath + 'geometry/raccord1')
 
-    '''
-    
-    
-    if not os.path.exists(RESPATH + 'mapmatch/tmm1'):
-        os.makedirs(RESPATH + 'mapmatch/tmm1')
-        if not os.path.exists(RESPATH + 'mapmatch/tmm2'):
-            os.makedirs(RESPATH + 'mapmatch/tmm2')
 
-    if not os.path.exists(RESPATH + 'geometry/fusion1'):
-        os.makedirs(RESPATH + 'geometry/fusion1')
-    if not os.path.exists(RESPATH + 'geometry/fusion2'):
-        os.makedirs(RESPATH + 'geometry/fusion2')
+    if idx > 1:
+        pathnotmm = respath + 'points_not_mm_' + str(idx)
+        if not os.path.exists(pathnotmm):
+            os.makedirs(pathnotmm)
 
-    
-    if not os.path.exists(RESPATH + 'geometry/raccord1'):
-        os.makedirs(RESPATH + 'geometry/raccord1')
-    if not os.path.exists(RESPATH + 'geometry/raccord2'):
-        os.makedirs(RESPATH + 'geometry/raccord2')
-
-    if not os.path.exists(RESPATH + 'points_not_mm_1'):
-        os.makedirs(RESPATH + 'points_not_mm_1')
-    if not os.path.exists(RESPATH + 'points_not_mm_2'):
-        os.makedirs(RESPATH + 'points_not_mm_2')
-    '''
+        pathtmm = respath + 'mapmatch/tmm' + str(idx)
+        if not os.path.exists(pathtmm):
+            os.makedirs(pathtmm)
+        pathfusion = respath + 'geometry/fusion' + str(idx)
+        if not os.path.exists(pathfusion):
+            os.makedirs(pathfusion)
+        pathracc = respath + 'geometry/raccord' + str(idx)
+        if not os.path.exists(pathracc):
+            os.makedirs(pathracc)
 
 
 def logEnv(RESPATH):
@@ -106,15 +97,6 @@ def logEnv(RESPATH):
 
 
 
-def STEnv(RESPATH, collection):
-    try:
-        bbox = collection.bbox()
-        log_event(RESPATH + "stac.json", {
-            "bbox": "bbox"
-        })
-    except Exception as e:
-        print (e)
-        print ('ERROR in Environment Information.')
 
 
 

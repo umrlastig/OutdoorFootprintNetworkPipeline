@@ -7,6 +7,7 @@
 
 import fiona
 from shapely.geometry import shape
+import os
 import progressbar
 import time
 import matplotlib.pyplot as plt
@@ -62,11 +63,22 @@ def addTopologyToNetwork(RESPATH, SEARCH, h=10, pipeline_idx = None):
     #
 
     input_file = str(RESPATH) + 'network/tmp_in.csv'
+    output_file = str(RESPATH) + 'network/tmp_out.csv'
+    try:
+        os.remove(input_file)
+    except FileNotFoundError:
+        print ('    ' + input_file + " not exists")
+    try:
+        os.remove(output_file)
+    except FileNotFoundError:
+        print ('    ' + output_file + " not exists")
+
+
     with open(input_file, "w") as f:
         for track in collection:
             f.write(track.toWKT() + ";" + str(track.tid) + "\n")
 
-    output_file = str(RESPATH) + 'network/tmp_out.csv'
+
     tkl.Topology.create_topology(input_file, '2154', output_file)
     fmt = tkl.NetworkFormat({
            "pos_edge_id": 0,
@@ -136,7 +148,7 @@ def addTopologyToNetwork(RESPATH, SEARCH, h=10, pipeline_idx = None):
             f.write(track.toWKT() + ";" + str(track.tid) + "\n")
 
     output_file = str(RESPATH) + 'network/squelette_topology_simplifie_' + prefix + '.csv'
-    tkl.Topology.create_topology(input_file, '2154', output_file)
+    tkl.Topology.create_topology(input_file, '2154', output_file, tbp=0.001)
 
     fmt = tkl.NetworkFormat({
            "pos_edge_id": 0,
@@ -190,7 +202,8 @@ def addTopologyToNetwork(RESPATH, SEARCH, h=10, pipeline_idx = None):
         #plt.ylim([6542975, 6543056])
         #plt.show()
 
-    print ('Nb arcs après la conflation =', len(network.getIndexEdges()))
+    # network.simplify(0, tkl.MODE_SIMPLIFY_REM_POS_DUP)
+    print ('    Edge count after conflation:', len(network.getIndexEdges()))
 
 
     # =========================================================================

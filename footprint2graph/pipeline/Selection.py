@@ -190,7 +190,7 @@ def segmentation_resample(RESPATH, collection, fmt,
     xmax = bbox[1]
     ymin = bbox[2]
     ymax = bbox[3]
-    bboxtxt =  "XMin = " + str(xmin) + ", YMin = " + str(ymin)
+    bboxtxt =  "  XMin = " + str(xmin) + ", YMin = " + str(ymin)
     bboxtxt += ", XMax = " + str(xmax) + ", YMax = " + str(ymax)
 
     try:
@@ -218,8 +218,7 @@ def segmentation_resample(RESPATH, collection, fmt,
 
 
 
-def second_round(RESPATH, NB_OBS_MIN = 10, DIST_MAX_2OBS = 50, RESAMPLE_SIZE_GRID = 1,
-                 rep='points_not_mm_1', pathtmm='tmm'):
+def second_round(RESPATH, pipeline_idx, NB_OBS_MIN = 10, DIST_MAX_2OBS = 50, RESAMPLE_SIZE_GRID = 1):
     '''
     
     Doit créer un nouveau jeu de traces à partir des points non matchés.
@@ -230,19 +229,23 @@ def second_round(RESPATH, NB_OBS_MIN = 10, DIST_MAX_2OBS = 50, RESAMPLE_SIZE_GRI
 
     '''
 
-    #buffer_size = 5
-    #k = 0.6
+    # buffer_size = 5
+    # k = 0.6
 
     OPT_PLUS_PTS = True
     NB_PTS = 5
 
+    pidx = str(pipeline_idx-1)
+    mmtrackpath = RESPATH + 'mapmatch/tmm' + pidx + '/'
+    pidx = str(pipeline_idx)
+    newtrackspath = RESPATH + 'points_not_mm_' + pidx + '/'
 
     # =========================================================================
-    #   Lecture des traces découpées et ré-échantillonnées.
+    #   Lecture des traces appariées.
     #
 
     collection = tkl.TrackCollection()
-    mmtrackpath = RESPATH + '/mapmatch/' + pathtmm + '/'
+
     for mmfilename in os.listdir(mmtrackpath):
         #N;E;time;U;num;track_id;user_id;hmm_inference;mmtype;idedge
         fmt = tkl.TrackFormat({'ext': 'CSV',
@@ -255,9 +258,6 @@ def second_round(RESPATH, NB_OBS_MIN = 10, DIST_MAX_2OBS = 50, RESAMPLE_SIZE_GRI
         trace = tkl.TrackReader.readFromFile(mmtrackpath + mmfilename, fmt)
         collection.addTrack(trace)
     print ('Number of tracks map matched :', collection.size())
-
-
-
 
 
 
@@ -296,7 +296,7 @@ def second_round(RESPATH, NB_OBS_MIN = 10, DIST_MAX_2OBS = 50, RESAMPLE_SIZE_GRI
                 # je prends les 4 points précédents s'ils sont recalés sinon j'arrête
                 # (il est déjà pris)
                 o1 = obs
-                for k in range(j-1, j-NB_PTS-1, -1):
+                for k in range(j-1, max(-1, j-NB_PTS-1), -1):
                     o2 = track[k]
                     if o1.distance2DTo(o2) <= DIST_MAX_2OBS:
                         if str(track["mmtype", k]) != "NOT":
@@ -413,12 +413,14 @@ def second_round(RESPATH, NB_OBS_MIN = 10, DIST_MAX_2OBS = 50, RESAMPLE_SIZE_GRI
                 print ('----')
             cutCollection.addTrack(newtrack)
 
+    print (cutCollection.size())
 
     # On enregistre
     af_names = ['TID', 'MID']
 
-    tracespath = RESPATH + rep + "/"
-    #tkl.TrackWriter.writeToFiles(cutCollection, tracespath,
-    #                             id_E=1, id_N=0, id_U=3, id_T=2,
-    #                             h=1, separator=";", af_names=af_names)
+    tkl.TrackWriter.writeToFiles(cutCollection, newtrackspath,
+                                 id_E=1, id_N=0, id_U=3, id_T=2,
+                                 h=1, separator=";", af_names=af_names)
+
+
 

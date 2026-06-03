@@ -21,7 +21,7 @@ sys.path.append(os.path.abspath("../../footprint2graph"))
 
 # -- Project information -----------------------------------------------------
 
-project = "Footprint2Graph-pipeline"
+project = "footprint2graph"
 copyright = (
     "2026, LASTIG lab, French National Institute of Geographic and Forest Information"
 )
@@ -85,7 +85,7 @@ html_theme_options = {
             # Label for this link
             "name": "GitHub",
             # URL where the link will redirect
-            "url": "https://github.com/umrlastig/OutdoorFootprintNetworkPipeline",  # required
+            "url": "https://github.com/umrlastig/footprint2graph",  # required
             # Icon class (if "type": "fontawesome"), or path to local image (if "type": "local")
             "icon": "fa-brands fa-square-github",
             # The type of image to be used (see below for details)
@@ -96,7 +96,7 @@ html_theme_options = {
 
 
 #html_static_path = ['_static']
-html_logo = "_static/Footprint2graph.png"
+html_logo = "_static/footprint2graph.png"
 
 
 

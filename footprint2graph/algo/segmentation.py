@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
+import time
 
 import tracklib as tkl
+from footprint2graph import log_event
 
 
 
-def candidates_for_aggregate(track_segment, edge, SEARCH):
+def candidates_for_aggregate(track_segment, edge, BUFFER):
     '''
     Fonction utilitaire.
     
@@ -41,19 +43,19 @@ def candidates_for_aggregate(track_segment, edge, SEARCH):
     
     Zone = 'N'
     p1 = track_segment.getFirstObs().position
-    if p1.distance2DTo(s) < SEARCH:
+    if p1.distance2DTo(s) < BUFFER:
         Zone = 'S'
-    if p1.distance2DTo(t) < SEARCH:
+    if p1.distance2DTo(t) < BUFFER:
         Zone = 'T'
 
-    while p1.distance2DTo(s) >= SEARCH and p1.distance2DTo(t) >= SEARCH:
+    while p1.distance2DTo(s) >= BUFFER and p1.distance2DTo(t) >= BUFFER:
         BEGIN += 1
         if BEGIN > END-1:
             break
         p1 = track_segment.getObs(BEGIN).position
-        if p1.distance2DTo(t) < SEARCH:
+        if p1.distance2DTo(t) < BUFFER:
             Zone = 'T'
-        if p1.distance2DTo(s) < SEARCH:
+        if p1.distance2DTo(s) < BUFFER:
             Zone = 'S'
 
     if Zone == 'N':
@@ -77,9 +79,9 @@ def candidates_for_aggregate(track_segment, edge, SEARCH):
         # On retourne la trace
         new_track_segment = track_segment.reverse()
         p1 = new_track_segment.getFirstObs().position
-        if p1.distance2DTo(t) < SEARCH:
+        if p1.distance2DTo(t) < BUFFER:
             Zone = 'T'
-        elif p1.distance2DTo(s) < SEARCH:
+        elif p1.distance2DTo(s) < BUFFER:
             Zone = 'S'
         else:
             Zone = 'N'
@@ -100,8 +102,8 @@ def candidates_for_aggregate(track_segment, edge, SEARCH):
     # premier morceau
     '''
     p2 = track_segment.getLastObs().position
-    if p1.distance2DTo(s) >= SEARCH:
-        if p2.distance2DTo(s) < SEARCH:
+    if p1.distance2DTo(s) >= BUFFER:
+        if p2.distance2DTo(s) < BUFFER:
             # sens inverse
             track_segment = track_segment.reverse()
             p1 = track_segment.getFirstObs().position
@@ -122,13 +124,13 @@ def candidates_for_aggregate(track_segment, edge, SEARCH):
     start = Zone
     for idx, o in enumerate(new_track_segment):
 
-        if start == 'S' and o.position.distance2DTo(t) < SEARCH:
+        if start == 'S' and o.position.distance2DTo(t) < BUFFER:
             atteint = True
 
-        if start == 'T' and o.position.distance2DTo(s) < SEARCH:
+        if start == 'T' and o.position.distance2DTo(s) < BUFFER:
             atteint = True
 
-        if atteint and o.position.distance2DTo(t) > SEARCH and start == 'S':
+        if atteint and o.position.distance2DTo(t) > BUFFER and start == 'S':
             # la deuxième partie de la trace est sortie
             morceau = new_track_segment.extract(dd, idx-1)
             morceaux.addTrack(morceau)
@@ -136,7 +138,7 @@ def candidates_for_aggregate(track_segment, edge, SEARCH):
             atteint = False
             start = 'T'
 
-        if atteint and o.position.distance2DTo(s) > SEARCH and start == 'T':
+        if atteint and o.position.distance2DTo(s) > BUFFER and start == 'T':
             # la deuxième partie de la trace est sortie
             morceau = new_track_segment.extract(dd, idx-1).reverse()
             morceaux.addTrack(morceau)
@@ -152,7 +154,7 @@ def candidates_for_aggregate(track_segment, edge, SEARCH):
             morceaux.addTrack(morceau)
 
 
-    if edge.geom.length() < 2*SEARCH:
+    if edge.geom.length() < 2*BUFFER:
         for morceau in morceaux:
             morceau.resample(1, mode=tkl.MODE_SPATIAL)
 
@@ -177,8 +179,8 @@ def getcandidates(MM, network, collection, BUFFER=15, RESPATH=None, prefix=None)
     print ('Starting construction of candidate trajectory segments for each topology edge ...')
 
     if RESPATH is not None:
-        mmpath = RESPATH + 'mapmatch/resultmm_' + prefix + '.csv'
-        allmmpath = RESPATH + 'mapmatch/resultallmm_' + prefix + '.csv'
+        mmpath = RESPATH + 'mapmatch/resultmm_' + str(prefix) + '.csv'
+        allmmpath = RESPATH + 'mapmatch/resultallmm_' + str(prefix) + '.csv'
         f1 = open(mmpath,'w')
         f1.write("EDGE_ID;TRACK_ID;OFNP_ID;WKT\n")
         f2 = open(allmmpath,'w')
@@ -186,9 +188,13 @@ def getcandidates(MM, network, collection, BUFFER=15, RESPATH=None, prefix=None)
 
 
     TRACES = {}
+    MIN = 100000
+    MAX = 0
+    NBC = 0
+    MOYC = 0
     for edgeid, tobstrack in MM.items():
-
-        #if edgeid != '81':
+        # print (edgeid)
+        #if edgeid != '23':
         #    continue
 
         if not edgeid in TRACES:
@@ -202,10 +208,12 @@ def getcandidates(MM, network, collection, BUFFER=15, RESPATH=None, prefix=None)
             #if trackid != '121.0-v1':
             #    continue
 
-            track = collection.getTrackWithTid(trackid)
-            tid = str(track.getObsAnalyticalFeature('TID', 0))
-            mid = str(track.getObsAnalyticalFeature('MID', 0))
+            #print (tobs)
 
+            track = collection.getTrackWithTid(trackid)
+            tid = str(int(track.getObsAnalyticalFeature('TID', 0)))
+            mid = str(track.getObsAnalyticalFeature('MID', 0))
+            #print ('------')
             points_sorted = sorted(tobs, key=lambda x: x[0])
 
             regrouper = tkl.TrackCollection()
@@ -215,10 +223,11 @@ def getcandidates(MM, network, collection, BUFFER=15, RESPATH=None, prefix=None)
             idxp1 = -1
             for p in points_sorted:
                 idxp2 = p[0]
+                #print (idxp2)
                 p2 = p[1]
                 if p1 is not None:
                     if idxp1 + 1 < idxp2:
-                        # print ('?!?!?!?!?!?!?!?!?!?!', idxp1, idxp2)
+                        #print ('?!?!?!?!?!?!?!?!?!?!', idxp1, idxp2, tn.size())
                         # On coupe la trace pour créer un nouveau morceau ?
                         # Oui si zone de départ/arrivée
                         cb = candidates_for_aggregate(tn, e, BUFFER)
@@ -234,7 +243,7 @@ def getcandidates(MM, network, collection, BUFFER=15, RESPATH=None, prefix=None)
                                 f1.write(str(edgeid) + ";" 
                                          + str(tid) + ";" + str(mid) + ";"
                                          + tb.toWKT() + "\n")
-                            # print ('+++++')
+                            # print ('+++++', tb.size())
                             trace = tkl.TrackReader.parseWkt(tb.toWKT(), 'ENU')
                             trace.tid = mid
                             trace.uid = tid
@@ -256,7 +265,9 @@ def getcandidates(MM, network, collection, BUFFER=15, RESPATH=None, prefix=None)
 
 
             # dernier morceau de trace
+            #print (tn.size())
             cb = candidates_for_aggregate(tn, e, BUFFER)
+            # print (cb.size())
             if cb.size() <= 0:
                 regrouper.addTrack(tn)
             for tb in cb:
@@ -280,9 +291,34 @@ def getcandidates(MM, network, collection, BUFFER=15, RESPATH=None, prefix=None)
             if RESPATH is not None:
                 f2.write(str(edgeid) + ";" + str(trackid) + ";" + tn.toWKT() + "\n")
 
+        n = len(TRACES[edgeid])
+        print ('   ', n, ' candidates for edge', edgeid)
+        NBC += 1
+        MIN = min([MIN,n])
+        MAX = max([MAX,n])
+        MOYC += n
+
+
     if RESPATH is not None:
         f1.close()
         f2.close()
+
+    try:
+        print ("    Number of processed edges: ", NBC)
+        print ("    Minimum number of candidate tracks per edge: ", MIN)
+        print ("    Maximum number of candidate traces per edge: ", MAX)
+        print ("    Average number of candidate tracks per edge: ", round(MOYC/NBC))
+
+        log_event(RESPATH + "candidate" + str(prefix) + ".json", {
+            "Number of processed edges": NBC,
+            "Minimum number of candidate traces per edge": MIN,
+            "Maximum number of candidate traces per edge": MAX,
+            "Average number of candidate tracks per edge": round(MOYC/NBC),
+            "ts": time.time()
+        })
+    except Exception as e:
+        print (e)
+        print ('Error while writing candidate information to log.')
 
     print ("    Segment construction completed.")
 

@@ -24,7 +24,8 @@ from footprint2graph import log_event
 # Conflation is performed with 'colocation least squares' method and gaussian 
 # covariogram of standard deviation h
 # ---------------------------------------------------------------------------------
-def conflateOnNetwork(geom, network, threshold=1e300, h=30, RESPATH=None, verbose=True):
+def conflateOnNetwork(geom, network, threshold=1e300, h=30,
+                      RESPATH=None, prefix=None, verbose=True):
     
     out = TrackCollection()
     if (verbose):
@@ -76,14 +77,14 @@ def conflateOnNetwork(geom, network, threshold=1e300, h=30, RESPATH=None, verbos
             print("Number of conflated segments :     ",   matched, "      ({:2.2f}%)".format(matched/len(geom)*100))
             print("Total distorsion RMSE        :  {:6.3f} m     (MAX: {:6.3f} m)".format(rmse_total, max_total))
 
-            if RESPATH is not None:
-                log_event(RESPATH + "conflate_" + prefix + ".json", {
-                    "Number of conflated segments": matched,
-                    "Percent of conflated segments": matched/len(geom)*100,
-                    "Total distorsion RMSE (m)": rmse_total,
-                    "MAX distorsion RMSE (%)": max_total,
-                    "ts": time.time()
-                })
+        if RESPATH is not None:
+            log_event(RESPATH + "conflate" + prefix + ".json", {
+                "Number of conflated segments": matched,
+                "Percent of conflated segments": matched/len(geom)*100,
+                "Total distorsion RMSE (m)": rmse_total,
+                "MAX distorsion RMSE (%)": max_total,
+                "ts": time.time()
+            })
 
 
     if (verbose):
