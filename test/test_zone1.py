@@ -11,6 +11,7 @@ from footprint2graph import prepareEnv, setupEnv
 from footprint2graph import run_iteration
 from footprint2graph.util.PlotRes import plotMM
 from footprint2graph import second_round
+from footprint2graph import read_config
 
 
 class TestZone1(unittest.TestCase):
@@ -22,8 +23,12 @@ class TestZone1(unittest.TestCase):
 
     def setUp (self):
         resource_path = os.path.join(os.path.split(__file__)[0], "..")
-        self.RESPATH = os.path.join(resource_path, './test/result1/')
 
+        config_path = os.path.join(resource_path, 'data/config_zone1.yml')
+        self.config = read_config(config_path)
+
+        self.RESPATH = os.path.join(resource_path, './test/result1/')
+        self.config["output"]["RESULT_PATH"] = self.RESPATH
 
 
     def testPipeline(self):
@@ -32,8 +37,7 @@ class TestZone1(unittest.TestCase):
 
 
         # =====================================================================
-        #    Iteration 1
-
+        #
         iteration_index = 1
         setupEnv(self.RESPATH, iteration_index)
 
@@ -49,31 +53,36 @@ class TestZone1(unittest.TestCase):
                "header": 1})
 
         self.network = tkl.NetworkReader.readFromFile(netpath, fmt, verbose=False)
+        self.assertEqual(len(self.network.EDGES), 7, 'Number of edges=')
+        self.assertEqual(len(self.network.NODES), 8 ,'Number of nodes')
+
+        # ---------------------------------------------------------------------
 
         # Génération des traces réalistes synthétiques
         tkl.stochastics.seed(333)
         noiser = tkl.NoiseProcess(amps=2.5, kernels=tkl.ExponentialKernel(80))
 
-
         # generate simulated trajectories from the network
-        collection = tkl.generateTracksOnNetwork(self.network, N=500, p_round_trip=0.05, p_cplx_trip=0.10, resolution=1, noiser=noiser)
+        collection = tkl.generateTracksOnNetwork(self.network, N=500,
+                                                 p_round_trip=0.05, p_cplx_trip=0.10,
+                                                 resolution=1, noiser=noiser)
         # add 3 attributes
         for idx, track in enumerate(collection):
             track.createAnalyticalFeature('TID', idx+1)
             track.createAnalyticalFeature('MID', idx+1)
 
-        self.collection = collection
-
-        self.assertEqual(len(self.network.EDGES), 7, 'Number of edges=')
-        self.assertEqual(len(self.network.NODES), 8 ,'Number of nodes')
-
-        # run pipeline for the first iteration
-        run_iteration(iteration_index, self.RESPATH, self.collection)
-
 
 
         # =====================================================================
+        #    Iteration 1
         #
+
+        # run pipeline for the first iteration
+        run_iteration(iteration_index, self.config, collection)
+
+
+        # =====================================================================
+        #    Plots
 
         from footprint2graph.util.PlotRes import plotSegmentsConstruction
         import matplotlib.pyplot as plt
@@ -103,13 +112,16 @@ class TestZone1(unittest.TestCase):
         #
 
 
-
+    def testParam(self):
+        self.assertEqual(self.config["graph_construction"]["NUM_ITERATIONS"], 1)
+        self.assertEqual(self.config["iterations"][0]["SEUIL_DENSITE"], 25)
 
 
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
     suite.addTest(TestZone1("testPipeline"))
+    suite.addTest(TestZone1("testParam"))
     runner = unittest.TextTestRunner()
     runner.run(suite)
 

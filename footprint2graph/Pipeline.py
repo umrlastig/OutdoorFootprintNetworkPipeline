@@ -10,30 +10,8 @@ from footprint2graph import addTopologyToNetwork
 from footprint2graph import createNetworkGeom
 
 
-# Paramètre : Nombre de points minimum pour un morceau de trace au moment du découpage
-#             si le nombre n'est pas atteint, le morceau de trace est oublié
-NB_OBS_MIN           = 10 # il faudrait qu'une trace fasse au moins 50m
 
-
-# Paramètre : Distance en mètres entre 2 points,
-#             si supérieure au seuil on coupe la trace
-DIST_MAX_2OBS        = 50
-
-
-# Pour des raisons logistiques, on sur-échantillone la trace :
-#   - 1m pour le traitement d'images
-#   - 5m pour la fusion
-RESAMPLE_SIZE_GRID   = 1
-RESAMPLE_SIZE_FUSION = 5
-
-
-# Définition des grilles géométrique et contraste
-G1_SIZE              = 2
-G2_SIZE              = 30
-
-
-
-def run_iteration(pipeline_idx, respath, collection=None):
+def run_iteration(pipeline_idx, config, collection=None):
     '''
     En entrée une collection de traces avec un TID
 
@@ -66,6 +44,7 @@ def run_iteration(pipeline_idx, respath, collection=None):
     print ('-------------------------------------------------------------------------------')
     print ('-------------------------------------------------------------------------------')
 
+    respath = config["output"]["RESULT_PATH"]
 
     if pipeline_idx == 1:
         logEnv(respath)
@@ -85,7 +64,13 @@ def run_iteration(pipeline_idx, respath, collection=None):
     #
     #  uniquement pour la première itération
     #
+
+    NB_OBS_MIN           = config['graph_construction']['NB_OBS_MIN']
+    DIST_MAX_2OBS        = config['graph_construction']['DIST_MAX_2OBS']
+    RESAMPLE_SIZE_GRID   = config['graph_construction']['RESAMPLE_SIZE_GRID']
+
     if collection is not None and pipeline_idx == 1:
+        RESAMPLE_SIZE_FUSION = config['graph_construction']['RESAMPLE_SIZE_FUSION']
         segmentation_resample(respath, collection, fmt, NB_OBS_MIN, DIST_MAX_2OBS,
                     RESAMPLE_SIZE_GRID, RESAMPLE_SIZE_FUSION)
 
@@ -100,18 +85,14 @@ def run_iteration(pipeline_idx, respath, collection=None):
     # -------------------------------------------------------------------------
     #    STEP 1 : IMAGE
     #
-    '''
-    SEUIL_DENSITE = 25    # 20-24-34 - 450 - 360 - 500 - 280 - 15 - 1000
-    SEUIL_SURFACE = 1000  # m2 - 50000 - 7000
-    cut_factor    = 5
-    interp_dist   = 5
-    clean_dist    = 0
-    '''
-    SEUIL_DENSITE = 40    # 20-24-34 - 450 - 360 - 500 - 280 - 15 - 1000
-    SEUIL_SURFACE = 200   # m2 - 50000 - 7000
-    cut_factor    = 5
-    interp_dist   = 5
-    clean_dist    = 0
+    G1_SIZE       = config["graph_construction"]["G1_SIZE"]
+    G2_SIZE       = config["graph_construction"]["G2_SIZE"]
+    SEUIL_DENSITE = config["iterations"][0]["SEUIL_DENSITE"]
+    SEUIL_SURFACE = config["iterations"][0]["SEUIL_SURFACE"]
+    cut_factor    = config["iterations"][0]["CUT_FACTOR"]
+    interp_dist   = config["iterations"][0]["INTERP_DIST"]
+    clean_dist    = config["iterations"][0]["CLEAN_DIST"]
+
     density_polygonize(respath, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
                        pipeline_idx,
                        cut_factor=cut_factor, interp_dist=interp_dist, clean_dist=clean_dist)
@@ -119,24 +100,19 @@ def run_iteration(pipeline_idx, respath, collection=None):
     # -------------------------------------------------------------------------
     #    STEP 2 : TOPOLOGY
     #
-    '''
-    SEARCH = 25 # 50
-    h      = 5  # 10
-    '''
-    SEARCH = 25
-    h = 10
+
+    SEARCH = config["iterations"][0]["CURVE_HEIGHT"]
+    h      = config["iterations"][0]["CURVEH_WAVE_LENGTH"]
+    
     addTopologyToNetwork(respath, SEARCH, h, pipeline_idx)
 
 
     # -------------------------------------------------------------------------
     #    STEP 3 : GEOMETRY
     #
-    '''
-    SEARCH = 50 # 20
-    BUFFER = 20 # 15
-    '''
-    SEARCH = 50
-    BUFFER = 10
+    SEARCH = config["iterations"][0]["SEARCH"]
+    BUFFER = config["iterations"][0]["BUFFER"]
+
     createNetworkGeom(respath, SEARCH, BUFFER, pipeline_idx)
 
 

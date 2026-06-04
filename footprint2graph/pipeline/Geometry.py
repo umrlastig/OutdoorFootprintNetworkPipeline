@@ -73,7 +73,11 @@ def createNetworkGeom (RESPATH, SEARCH, BUFFER, pipeline_idx = None):
                            'cmt': '#',
                            'read_all': True})
     tracespath = RESPATH + '/' + pathtraces + '/'
-    collection2 = tkl.TrackReader.readFromFile(tracespath, fmt)
+    try:
+        collection2 = tkl.TrackReader.readFromFile(tracespath, fmt)
+    except Exception as e:
+        print (e)
+        print (tracespath)
     print ('    Number of tracks:', collection2.size())
 
 

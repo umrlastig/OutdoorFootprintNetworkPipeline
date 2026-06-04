@@ -6,8 +6,19 @@ import platform
 import psutil
 import shutil
 import time
+import yaml
+
 
 from . import log_event
+
+
+
+def read_config(paramfile):
+    with open(paramfile) as f:
+        config = yaml.safe_load(f)
+
+    return config
+
 
 
 def prepareEnv(respath, iteration_index = None):
