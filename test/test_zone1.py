@@ -10,7 +10,6 @@ import tracklib as tkl
 from footprint2graph import prepareEnv, setupEnv
 from footprint2graph import run_iteration
 from footprint2graph.util.PlotRes import plotMM
-from footprint2graph import second_round
 from footprint2graph import read_config
 
 
@@ -108,6 +107,21 @@ class TestZone1(unittest.TestCase):
         plt.show()
 
 
+        # =====================================================================
+        # On teste quelques résultats intermédiaires
+        '''
+        # nombre de traces en point d'entrée
+        fmt = tkl.TrackFormat({'ext': 'CSV',
+                               'srid': 'ENU',
+                               'id_E': 1,'id_N': 0, 'id_U': 3,'id_T': 2,
+                               'separator': ';',
+                               'header': 1,
+                               'read_all': True})
+        resampledtracespath = self.RESPATH + 'resample_grid' + '/'
+        tracks = tkl.TrackReader.readFromFile(resampledtracespath, fmt, verbose=False)
+        self.assertEqual(len(tracks), 444, 'Number of tracks after segmentation=')
+        '''
+        
         # =====================================================================
         #
 

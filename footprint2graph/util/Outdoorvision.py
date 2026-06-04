@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
+import os
 import sys
 import csv
 csv.field_size_limit(sys.maxsize)
@@ -39,7 +40,7 @@ def load_raw_tracks_split(RESPATH, tracespathsource, fmt, X, Y):
     """                                                                         """
     print ('Starting split ...')
 
-    metacollectionpath = RESPATH + 'metadata_collection.csv'
+    metacollectionpath = resultpath = os.path.join(RESPATH, 'metadata_collection.csv')
     f1 = open(metacollectionpath,'w')
     f1.write("ID;NUM;TRACK_ID;USER_ID\n")
 

@@ -87,11 +87,11 @@ def run_iteration(pipeline_idx, config, collection=None):
     #
     G1_SIZE       = config["graph_construction"]["G1_SIZE"]
     G2_SIZE       = config["graph_construction"]["G2_SIZE"]
-    SEUIL_DENSITE = config["iterations"][0]["SEUIL_DENSITE"]
-    SEUIL_SURFACE = config["iterations"][0]["SEUIL_SURFACE"]
-    cut_factor    = config["iterations"][0]["CUT_FACTOR"]
-    interp_dist   = config["iterations"][0]["INTERP_DIST"]
-    clean_dist    = config["iterations"][0]["CLEAN_DIST"]
+    SEUIL_DENSITE = config["iterations"][pipeline_idx-1]["SEUIL_DENSITE"]
+    SEUIL_SURFACE = config["iterations"][pipeline_idx-1]["SEUIL_SURFACE"]
+    cut_factor    = config["iterations"][pipeline_idx-1]["CUT_FACTOR"]
+    interp_dist   = config["iterations"][pipeline_idx-1]["INTERP_DIST"]
+    clean_dist    = config["iterations"][pipeline_idx-1]["CLEAN_DIST"]
 
     density_polygonize(respath, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
                        pipeline_idx,
@@ -101,8 +101,8 @@ def run_iteration(pipeline_idx, config, collection=None):
     #    STEP 2 : TOPOLOGY
     #
 
-    SEARCH = config["iterations"][0]["CURVE_HEIGHT"]
-    h      = config["iterations"][0]["CURVEH_WAVE_LENGTH"]
+    SEARCH = config["iterations"][pipeline_idx-1]["CURVE_HEIGHT"]
+    h      = config["iterations"][pipeline_idx-1]["CURVEH_WAVE_LENGTH"]
     
     addTopologyToNetwork(respath, SEARCH, h, pipeline_idx)
 
@@ -110,8 +110,8 @@ def run_iteration(pipeline_idx, config, collection=None):
     # -------------------------------------------------------------------------
     #    STEP 3 : GEOMETRY
     #
-    SEARCH = config["iterations"][0]["SEARCH"]
-    BUFFER = config["iterations"][0]["BUFFER"]
+    SEARCH = config["iterations"][pipeline_idx-1]["SEARCH"]
+    BUFFER = config["iterations"][pipeline_idx-1]["BUFFER"]
 
     createNetworkGeom(respath, SEARCH, BUFFER, pipeline_idx)
 
