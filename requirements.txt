@@ -2,4 +2,4 @@ tracklib
 fiona
 shapely
 psutil
-yaml
+pyyaml
