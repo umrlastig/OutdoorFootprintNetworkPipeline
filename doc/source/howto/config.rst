@@ -11,7 +11,7 @@ Ce document décrit la structure et le rôle du fichier de configuration utilis�
 
 Le fichier est écrit au format **YAML**, un format de configuration lisible permettant de structurer des données hiérarchiques sous forme de paires clé/valeur.
 
-Un exemple de fichier de configuration est disponible dans le répertoire **data** de la bibliothèque *footprint2graph* sur GitHub, sous .. _config_zone1.yml: <https://github.com/umrlastig/footprint2graph/blob/main/data/config_zone1.yml>.
+Un exemple de fichier de configuration est disponible dans le répertoire **data** de la bibliothèque *footprint2graph* sur GitHub, sous config_zone1.yml: <https://github.com/umrlastig/footprint2graph/blob/main/data/config_zone1.yml>.
 
 Ce fichier est obligatoire pour l’exécution du pipeline footprint2graph. Il peut être enregistré à l’emplacement de votre choix.
 
