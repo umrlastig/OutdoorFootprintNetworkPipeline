@@ -11,7 +11,7 @@ Ce document décrit la structure et le rôle du fichier de configuration utilis�
 
 Le fichier est écrit au format **YAML**, un format de configuration lisible permettant de structurer des données hiérarchiques sous forme de paires clé/valeur.
 
-Un exemple de fichier de configuration est disponible dans le répertoire **data** de la bibliothèque *footprint2graph* sur GitHub, sous .. _<config_zone1.yml>: <https://github.com/umrlastig/footprint2graph/blob/main/data/config_zone1.yml>.
+Un exemple de fichier de configuration est disponible dans le répertoire **data** de la bibliothèque *footprint2graph* sur GitHub, sous .. _config_zone1.yml: <https://github.com/umrlastig/footprint2graph/blob/main/data/config_zone1.yml>.
 
 Ce fichier est obligatoire pour l’exécution du pipeline footprint2graph. Il peut être enregistré à l’emplacement de votre choix.
 
@@ -53,8 +53,8 @@ Le répertoire de sortie est automatiquement nettoyé au démarrage du pipeline 
 
 
 
-3. Section "Paramètres généraux"
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+3. "Paramètres généraux"
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Cette section regroupe les paramètres généraux liés à la définition des traces, à leur échantillonnage ainsi qu'aux résolutions spatiales des grilles de densité utilisées par les traitements. Ces paramètres sont appliqués de manière identique à toutes les itérations du pipeline.
 
@@ -146,8 +146,8 @@ Chaque entrée correspond à un jeu de paramètres utilisé lors d’une exécut
        BUFFER: 20
 
 
-4.1 Filtres sur les images
-"""""""""""""""""""""""""""
+4.1 Filtres dans les images
+""""""""""""""""""""""""""""
 
 *SEUIL_DENSITE* : seuil n utilisé pour construire la grille binaire à partir de la grille de contraste K=G1/G2. Cette grille met en évidence les zones où la densité observée dans une cellule de G1 est élevée relativement à la densité de son voisinage dans G2. Les pixels dont le contraste dépasse le seuil sont considérés comme des maxima locaux potentiels.
 
@@ -156,29 +156,32 @@ Chaque entrée correspond à un jeu de paramètres utilisé lors d’une exécut
 
 
 
-*CUT_FACTOR* : facteur de découpage des segments.
+4.2 Calcul de la centerline
+""""""""""""""""""""""""""""
 
-*INTERP_DIST* : distance d’interpolation entre points.
+*CUT_FACTOR* : facteur de coupure dans le filtre de fourrier
 
-*CLEAN_DIST* : distance utilisée pour le nettoyage des données.
+*INTERP_DIST* : interpolation distance (m)
+
+*CLEAN_DIST*  : cleaning distance (m)
 
 
 
-4.2 Construction de la topologie du squelette
+4.3 Construction de la topologie du squelette
 """""""""""""""""""""""""""""""""""""""""""""""
 
-*CURVE_HEIGHT* : seuil de détection des courbures.
+*CURVE_HEIGHT* : longueur maximale pour qu'un arc du squelette soit considéré comme une arrête terminale d'un sommet de virage.
 
-*CURVEH_WAVE_LENGTH* : longueur d’onde utilisée pour l’analyse de courbure.
+*CURVEH_WAVE_LENGTH* : propagation en mètre pour confondre le point de courbure maximale avec le sommet d'une arête terminale
 
 
 
 4.4 Recalage et Fusion
 """"""""""""""""""""""""
 
-*SEARCH* : rayon de recherche utilisé dans certaines opérations spatiales.
+*SEARCH* : rayon de recherche en mètre pour le recalage des observations GNSS sur le squelette
 
-*BUFFER* : distance de tampon appliquée autour des entités.
+*BUFFER* : pour la construction des morceaux de traces candidats à la fusion: on les découpe autant de fois qu'elle passe proche (dans la zone de tampon définit par le paramètre BUFFER) d'une extrémité de l'arc du squelette
 
 
 
