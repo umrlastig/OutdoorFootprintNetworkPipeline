@@ -4,8 +4,20 @@
 :Date: 08/04/2026
 
 
-Footprint2graph-pipeline’s documentation
-=========================================
+Footprint2graph’s documentation
+================================
+
+.. image:: https://img.shields.io/github/languages/top/umrlastig/footprint2graph
+   :alt: GitHub top language
+   :target: https://github.com/umrlastig/footprint2graph
+.. image:: https://www.repostatus.org/badges/latest/wip.svg
+   :alt: WIP – Initial development is in progress, but there has not yet been a stable
+   :target: https://www.repostatus.org/#wip
+.. image:: https://img.shields.io/badge/Licence-MIT-brightgreen.svg?style=flat
+   :alt: Software License
+   :target: https://github.com/umrlastig/footprint2graph/blob/main/LICENCE
+
+.
 
 **Footprint2Graph Pipeline for Outdoor Recreation** (*Footprint2graph-pipeline*) is an open-source Python
 processing pipeline (MIT license) for generating outdoor activity footprint graphs
@@ -27,16 +39,6 @@ effectively used by practitioners.
 
 
 
-Table of Contents
-------------------
-
-.. toctree::
-  :maxdepth: 1
-  
-  User Guide <user_guide/index>
-  End-to-End Examples <examples/index>
-
-
 History and acknowledgement
 -----------------------------
 
@@ -55,10 +57,22 @@ to generate different graphs for various activities across diverse spatial and t
 
 
 How to Cite Footprint2graph-pipeline
-======================================
+-------------------------------------
 
 To be completed
 
 
+
+
+Table of Contents
+------------------
+
+.. toctree::
+  :maxdepth: 1
+
+  Installation <install>
+  Examples <examples/index>
+  How-to Guides <howto/index>
+  Concepts <concepts/index>
 
 
