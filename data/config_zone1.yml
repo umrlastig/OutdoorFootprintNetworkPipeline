@@ -34,7 +34,7 @@ iterations:
     INTERP_DIST: 5
     CLEAN_DIST: 0
     CURVE_HEIGHT: 25
-    CURVEH_WAVE_LENGTH: 5
+    CURVE_WAVE_LENGTH: 5
     SEARCH: 50
     BUFFER: 20
 

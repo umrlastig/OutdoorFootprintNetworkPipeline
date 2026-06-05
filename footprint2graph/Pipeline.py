@@ -102,7 +102,7 @@ def run_iteration(pipeline_idx, config, collection=None):
     #
 
     SEARCH = config["iterations"][pipeline_idx-1]["CURVE_HEIGHT"]
-    h      = config["iterations"][pipeline_idx-1]["CURVEH_WAVE_LENGTH"]
+    h      = config["iterations"][pipeline_idx-1]["CURVE_WAVE_LENGTH"]
     
     addTopologyToNetwork(respath, SEARCH, h, pipeline_idx)
 
