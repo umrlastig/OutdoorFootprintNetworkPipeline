@@ -4,14 +4,14 @@
 :Date: 08/04/2026
 
 
-Configurer le fichier de paramètres 
-====================================
+Fichier de paramètres 
+======================
 
 Ce document décrit la structure et le rôle du fichier de configuration utilisé pour paramétrer l’exécution du pipeline.
 
 Le fichier est écrit au format **YAML**, un format de configuration lisible permettant de structurer des données hiérarchiques sous forme de paires clé/valeur.
 
-Un exemple de fichier de configuration est disponible dans le répertoire **data** de la bibliothèque *footprint2graph* sur GitHub, sous config_zone1.yml: <https://github.com/umrlastig/footprint2graph/blob/main/data/config_zone1.yml>.
+Un exemple de fichier de configuration est disponible dans le répertoire **data** de la bibliothèque *footprint2graph* sur GitHub, sous config_zone1.yml: https://github.com/umrlastig/footprint2graph/blob/main/data/config_zone1.yml.
 
 Ce fichier est obligatoire pour l’exécution du pipeline footprint2graph. Il peut être enregistré à l’emplacement de votre choix.
 
