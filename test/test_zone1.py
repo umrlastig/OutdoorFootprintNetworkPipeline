@@ -148,7 +148,6 @@ class TestZone1(unittest.TestCase):
         plt.show()
         '''
         # ---------------------------------------------------------------------
-        plt.figure(figsize=(8, 8))
         chemin = self.RESPATH + 'image/G1_1.asc'
         rasterG1 = tkl.RasterReader.readFromAscFile(chemin, name='G1', separator='\t')
         mapGeomDensity = rasterG1.getAFMap('G1')
@@ -157,9 +156,9 @@ class TestZone1(unittest.TestCase):
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
-    #suite.addTest(TestZone1("testParam"))
-    #suite.addTest(TestZone1("testPipeline"))
-    #suite.addTest(TestZone1("testPrintLog"))
+    suite.addTest(TestZone1("testParam"))
+    suite.addTest(TestZone1("testPipeline"))
+    suite.addTest(TestZone1("testPrintLog"))
     suite.addTest(TestZone1("testPlot"))
     runner = unittest.TextTestRunner()
     runner.run(suite)
