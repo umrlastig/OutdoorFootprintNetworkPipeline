@@ -4,14 +4,11 @@
 :Date: 08/04/2026
 
 
-Concepts / Explanation
-=======================
+Concepts et Principes
+======================
 
-.. This user guide provides an overview of *OFNP* and describes its key features.
+La section Concepts et Principes permet de comprendre le fonctionnement interne de la librairie. Elle décrit les concepts fondamentaux, le fonctionnement des algorithmes et les principaux points d’attention pouvant affecter la qualité des résultats.
 
-
-Table of Contents
--------------------
 
 .. toctree::
   :maxdepth: 1
@@ -21,3 +18,6 @@ Table of Contents
   Pipeline overview <overview>  
   Points d'attention <caslim>
 
+
+
+.. Les données vont définir quel type de réseau va être construit puisqu'il dépend des traces laissées par l’homme suivant une ou plusieurs  activité. La période temporelle de relevé des observations des traces va aussi définir la période

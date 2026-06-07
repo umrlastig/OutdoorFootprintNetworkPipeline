@@ -9,8 +9,10 @@ import tracklib as tkl
 
 from footprint2graph import prepareEnv, setupEnv
 from footprint2graph import run_iteration
-from footprint2graph.util.PlotRes import plotMM
-from footprint2graph import read_config
+from footprint2graph import read_config, report_file
+
+from footprint2graph import (plotMM,
+                             plotSegmentsConstruction)
 
 
 class TestZone1(unittest.TestCase):
@@ -83,28 +85,7 @@ class TestZone1(unittest.TestCase):
         # =====================================================================
         #    Plots
 
-        from footprint2graph.util.PlotRes import plotSegmentsConstruction
-        import matplotlib.pyplot as plt
 
-        fmt = tkl.NetworkFormat({
-           "pos_edge_id": 0,
-           "pos_source": 1,
-           "pos_target": 2,
-           "pos_wkt": 4,
-           "srid": "ENU",
-           "separator": ",",
-           "header": 1})
-
-        networkpath = self.RESPATH + 'network/reseau_1.csv'
-        squelette = tkl.NetworkReader.readFromFile(networkpath, fmt, verbose=False)
-
-        plt.figure(figsize=(8, 8))
-        ax1 = plt.subplot2grid((1, 1), (0, 0))
-        plotSegmentsConstruction(self.RESPATH, ax1, squelette)
-        plt.show()
-
-        plotMM(self.RESPATH, None)
-        plt.show()
 
 
         # =====================================================================
@@ -131,11 +112,55 @@ class TestZone1(unittest.TestCase):
         self.assertEqual(self.config["iterations"][0]["SEUIL_DENSITE"], 25)
 
 
+    def testPrintLog(self):
+        report_file(self.RESPATH, 'env.json')
+        report_file(self.RESPATH, 'rawdata.json')
+        report_file(self.RESPATH, 'image1.json')
+        report_file(self.RESPATH, 'topology1.json')
+        report_file(self.RESPATH, 'mapmatch1.json')
+        report_file(self.RESPATH, 'candidate1.json')
+        report_file(self.RESPATH, 'aggregate1.json')
+        report_file(self.RESPATH, 'conflate1.json')
+
+
+    def testPlot(self):
+        '''
+        fmt = tkl.NetworkFormat({
+           "pos_edge_id": 0,
+           "pos_source": 1,
+           "pos_target": 2,
+           "pos_wkt": 4,
+           "srid": "ENU",
+           "separator": ",",
+           "header": 1})
+
+        networkpath = self.RESPATH + 'network/reseau_1.csv'
+        squelette = tkl.NetworkReader.readFromFile(networkpath, fmt, verbose=False)
+
+        # ---------------------------------------------------------------------
+        plotMM(self.RESPATH, squelette)
+        plt.show()
+
+        # ---------------------------------------------------------------------
+        plt.figure(figsize=(8, 8))
+        ax1 = plt.subplot2grid((1, 1), (0, 0))
+        plotSegmentsConstruction(self.RESPATH, ax1, squelette)
+        plt.show()
+        '''
+        # ---------------------------------------------------------------------
+        plt.figure(figsize=(8, 8))
+        chemin = self.RESPATH + 'image/G1_1.asc'
+        rasterG1 = tkl.RasterReader.readFromAscFile(chemin, name='G1', separator='\t')
+        mapGeomDensity = rasterG1.getAFMap('G1')
+        mapGeomDensity.plotAsImage(cmap='jet', vmin=0)
+
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
-    suite.addTest(TestZone1("testPipeline"))
-    suite.addTest(TestZone1("testParam"))
+    #suite.addTest(TestZone1("testParam"))
+    #suite.addTest(TestZone1("testPipeline"))
+    #suite.addTest(TestZone1("testPrintLog"))
+    suite.addTest(TestZone1("testPlot"))
     runner = unittest.TextTestRunner()
     runner.run(suite)
 

@@ -7,13 +7,12 @@
 How-to Guide
 =============
 
-.. This user guide provides an overview of *OFNP* and describes its key features.
+.. its key features.
+
+Cette section de la documentation *How-to* est dédiée à la mise en œuvre concrète de différentes opérations. Elle décrit, étape par étape, comment utiliser la bibliothèque pour atteindre les objectifs souhaités.
 
 
 
-
-Table of Contents
--------------------
 
 .. toctree::
   :maxdepth: 1
@@ -21,5 +20,9 @@ Table of Contents
   Fichier de configuration <config>
   Préparer les données pour le pipeline <preparedata>
   Lancement d'un pipeline <pipeline>
-  Reprise après interruption <reprise> 
-  
+  Visualiser les résultats <vizres>
+  Lire les résultats des traitements <metadata>
+
+
+.. Reprise après interruption <reprise>   
+.. Reprendre le pipeline après interruption

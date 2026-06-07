@@ -1,7 +1,7 @@
 :Author: Marie-Dominique Van Damme
 :Version: 1.0
 :License: --
-:Date: 08/04/2026
+:Date: 05/06/2026
 
 
 Fichier de paramètres 
@@ -179,9 +179,9 @@ Chaque entrée correspond à un jeu de paramètres utilisé lors d’une exécut
 4.4 Recalage et Fusion
 """"""""""""""""""""""""
 
-*SEARCH* : rayon de recherche en mètre pour le recalage des observations GNSS sur le squelette
+*SEARCH* : distance maximale autour du squelette dans laquelle les observations GNSS sont recherchées comme candidats afin d'être recalées sur le réseau.
 
-*BUFFER* : pour la construction des morceaux de traces candidats à la fusion: on les découpe autant de fois qu'elle passe proche (dans la zone de tampon définit par le paramètre BUFFER) d'une extrémité de l'arc du squelette
+*BUFFER* : distance définissant la zone tampon autour des extrémités des arcs du squelette. Lorsqu'une trace traverse cette zone, elle est découpée afin de générer les segments candidats à la fusion.
 
 
 

@@ -114,4 +114,6 @@ autodoc_default_options = {
 }
 
 
-autodoc_mock_imports = []
+autodoc_mock_imports = [
+    "tracklib"
+]

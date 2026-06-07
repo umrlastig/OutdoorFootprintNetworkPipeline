@@ -20,7 +20,18 @@ Pré-conditions
 Sortie du pipeline
 -------------------
 
-La méthode renvoie ....
+La méthode ne renvoie rien, tous les résultats (données et métadonnées) sont directement stockés dans des fichiers.
+
+
+
+Itérations et embranchements
+-----------------------------
+
+.. figure:: ../img/pipeline.png
+  :width: 1000
+  :align: center
+
+  **Figure 2.** 
 
 
 
@@ -28,14 +39,7 @@ La méthode renvoie ....
 Mise en place du pipeline
 --------------------------
 
-Le lancement du pipeline se fait à partir de la méthode xxx
-
-
-
-
-
-
-
+Le lancement du pipeline se fait à partir de la méthode run_iteration(pipeline_idx, config, collection)
 
 
 

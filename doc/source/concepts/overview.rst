@@ -7,77 +7,43 @@
 Pipeline overview
 ==================
 
-Le pipeline est composé de 5 briques à exécuter une par une:
-
-+------------------------+---------------------------------+--------------------+
-|                        | DESCRIPTION                     | OUTPUT DIR         |
-+========================+=================================+====================+
-| Script 1               | filtre, decoup, resample        | decoup, resample   |
-+------------------------+---------------------------------+--------------------+
-| Script 2               | création et traitement images   | image, network     |
-+------------------------+---------------------------------+--------------------+
-| Script 3               | topologie                       | network            |
-+------------------------+---------------------------------+--------------------+
-| Script 4               | recalage, fusion et raccord     | mapmatch, geometry |
-+------------------------+---------------------------------+--------------------+
-| Script 5               | 2ème itération                  |                    |
-+------------------------+---------------------------------+--------------------+
+Approche itérative
 
 
 
-Les scripts se lancent dans une console Python. 
+
+Première itération & Principe
+------------------------------
+
+.. Déroulement d'une itération du pipeline
+.. Première itération : principe de fonctionnement
 
 
-Préparation des traces brutes
-Création des cartes de pratiques sportives et extrait du réseau
-Calcul de la topologie du réseau
-Calcul de la géométrie des arcs du réseau
-Second pass
-
-
-.. image:: ../img/pipeline.png
+.. figure:: ../img/workflow.png
   :width: 1000
   :align: center
 
+  **Figure 1.** À partir des traces GNSS brutes, une carte de densité est construite afin d'extraire un squelette central servant de référence topologique. Les traces sont ensuite découpées en segments candidats à la fusion, regroupées pour calculer des trajectoires médianes, puis assemblées pour produire le réseau de mobilité final.
+
+
+Les différentes étapes de l'algorithme, décrites après, peuvent être résumées ainsi:
+
+1. Calcul d’une carte de densité à partir des traces GNSS
+2. De la vectorisation, on extrait une ligne centrée ≡ arc de la topologie.
+3. Attribue les points des traces brutes à chaque arc de la topologie
+4. Reconstruit les bons morceaux de traces candidats pour chaque arc de la topologie puis agrégation des morceaux de traces
+5. Conflation des traces fusionnées afin d’obtenir un réseau de mobilit
 
 
 
 
 
-Paramètres à renseigner :
---------------------------
-
-* Le répertoire qui contient les traces au format CSV (un fichier par trace)
-    
-        tracescsvpath = r'/home/md_vandamme/5_GPS/OV/BAUGES/run/'
-
-* Le répertoire qui va contenir tous les résultats : 
-
-        tracespath = r'/home/md_vandamme/4_RESEAU/ExampleRunning/traces/'. 
-
-  Chaque script lit et enregistre (col 3) des résultats dans un répertoire ou plusieurs répertoires. 
-
-* Limites de la zone d'étude sous forme de coordonnées des sommets des vertex d'un polygone:
-
-  X = [945878, 956330, 955879, 954402, 952511, 950389, 948774, 945857, 945878]
-
-  Y = [6516870, 6516805, 6508417, 6506849, 6506503, 6505649, 6504150, 6503762, 6516870]
-
-* RESAMPLE_SIZE = 1
-
-* NB_OBS_MIN    = 10 # nombre de points minimum pour une trace
-
-* DIST_MAX_2OBS = 50 # si supérieur on coupe la trace. Par exemple : a stop can create a break in the trajectory
+  
 
 
 
 
 
-
-
-<br/>
-
-Ci-dessous un détail de chaque brique: 
 
 
 
@@ -141,6 +107,8 @@ avec Filtre morphologique, Vectorisation, Squeletisation
 
 
 
-
-
+<br/>
+<!-- ===================================================================================================== -->
+<!-- ===================================================================================================== -->
+CORRECTION ELASTIQUE DE LA GEOMETRIE DU RESEAU
 

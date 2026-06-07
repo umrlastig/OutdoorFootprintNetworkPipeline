@@ -29,10 +29,10 @@ Ces deux exemples contiennent le code source qui a permis de générer deux jeux
 `Recherche Data Gouv <https://entrepot.recherche.data.gouv.fr/dataverse/intforout>`_  et qui sont situés dans deux petites zones situées dans le Parc Régional des Bauges et dans la vallée de Chamonix. Ces deux exemples font partie d'un livrable du Work Package 2 du `IntForOut research Project <https://www.umr-lastig.fr/intforout/>`_ .
 
 
-.. nbgallery::
-    :name: code-gallery
-    :glob:
 
-    HikersFootprintBaugesArea
-    HikersFootprintChamonixArea
+..    :name: code-gallery
+..    :glob:
+
+..    HikersFootprintBaugesArea
+..    HikersFootprintChamonixArea
 

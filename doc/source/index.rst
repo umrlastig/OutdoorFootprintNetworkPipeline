@@ -74,5 +74,5 @@ Table of Contents
   Examples <examples/index>
   How-to Guides <howto/index>
   Concepts <concepts/index>
-
+  Reference <reference/index>
 
