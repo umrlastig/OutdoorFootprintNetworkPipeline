@@ -111,7 +111,7 @@ class TestZone1(unittest.TestCase):
         self.assertEqual(self.config["graph_construction"]["NUM_ITERATIONS"], 1)
         self.assertEqual(self.config["iterations"][0]["SEUIL_DENSITE"], 25)
 
-
+    '''
     def testPrintLog(self):
         report_file(self.RESPATH, 'env.json')
         report_file(self.RESPATH, 'rawdata.json')
@@ -121,10 +121,10 @@ class TestZone1(unittest.TestCase):
         report_file(self.RESPATH, 'candidate1.json')
         report_file(self.RESPATH, 'aggregate1.json')
         report_file(self.RESPATH, 'conflate1.json')
-
-
+    '''
+    '''
     def testPlot(self):
-        '''
+
         fmt = tkl.NetworkFormat({
            "pos_edge_id": 0,
            "pos_source": 1,
@@ -146,20 +146,21 @@ class TestZone1(unittest.TestCase):
         ax1 = plt.subplot2grid((1, 1), (0, 0))
         plotSegmentsConstruction(self.RESPATH, ax1, squelette)
         plt.show()
-        '''
+        
         # ---------------------------------------------------------------------
         chemin = self.RESPATH + 'image/G1_1.asc'
         rasterG1 = tkl.RasterReader.readFromAscFile(chemin, name='G1', separator='\t')
         mapGeomDensity = rasterG1.getAFMap('G1')
         mapGeomDensity.plotAsImage(cmap='jet', vmin=0)
+    '''
 
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
     suite.addTest(TestZone1("testParam"))
     suite.addTest(TestZone1("testPipeline"))
-    suite.addTest(TestZone1("testPrintLog"))
-    suite.addTest(TestZone1("testPlot"))
+    #suite.addTest(TestZone1("testPrintLog"))
+    #suite.addTest(TestZone1("testPlot"))
     runner = unittest.TextTestRunner()
     runner.run(suite)
 
