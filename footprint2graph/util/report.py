@@ -10,7 +10,7 @@ import os
 
 def log_event(RESPATH, event):
     path = RESPATH
-    with open(path, "a") as f:
+    with open(path, "w") as f:
         f.write(json.dumps(event) + "\n")
 
 
@@ -174,6 +174,7 @@ def _topology(d, idxiter):
 
     print ('--------------------------------------------------')
     print ("Number of edges in the skeleton :     ", d['Number of edges in the skeleton'])
+    print ("Number of skeleton edges removed for being too short : ", d['Number of skeleton edges removed for being too short'])
     print ('')
 
 
