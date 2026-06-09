@@ -211,7 +211,7 @@ def getcandidates(MM, network, collection, BUFFER=15, RESPATH=None, prefix=None)
             #print (tobs)
 
             track = collection.getTrackWithTid(trackid)
-            tid = str(int(track.getObsAnalyticalFeature('TID', 0)))
+            tid = str(track.getObsAnalyticalFeature('TID', 0))
             mid = str(track.getObsAnalyticalFeature('MID', 0))
             #print ('------')
             points_sorted = sorted(tobs, key=lambda x: x[0])
