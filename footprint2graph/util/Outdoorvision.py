@@ -42,7 +42,7 @@ def load_raw_tracks_split(RESPATH, tracespathsource, fmt, X, Y):
 
     metacollectionpath = resultpath = os.path.join(RESPATH, 'metadata_collection.csv')
     f1 = open(metacollectionpath,'w')
-    f1.write("ID;NUM;TRACK_ID;USER_ID\n")
+    f1.write("ID;NUM;TRACK_ID;USER_ID;DATE_START\n")
 
     cpt = 1
     cutCollection = tkl.TrackCollection()
@@ -57,7 +57,9 @@ def load_raw_tracks_split(RESPATH, tracespathsource, fmt, X, Y):
         num = str(int(track.getObsAnalyticalFeature('num', 0)))
         uid = str(int(track.getObsAnalyticalFeature('user_id', 0)))
         tid = str(int(track.getObsAnalyticalFeature('track_id', 0)))
-        f1.write(ID + ";" + str(num) + ";" + str(tid) + ";" + str(uid) + "\n")
+        dstart = str(track.getObsAnalyticalFeature('date_start', 0))
+
+        f1.write(ID + ";" + str(int(num)) + ";" + str(tid) + ";" + str(uid) + ";" + dstart + "\n")
 
         selection = constraintBBox.select(tkl.TrackCollection([track]))
         if len(selection) <= 0:
