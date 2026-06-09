@@ -222,6 +222,7 @@ def second_round(RESPATH, pipeline_idx, NB_OBS_MIN = 10, DIST_MAX_2OBS = 50, RES
     '''
     
     Doit créer un nouveau jeu de traces à partir des points non matchés.
+    On prend aussi les points map-matchés au noeud.
     
     - Quand c'est fait, ils sont enregistrés dans la destination : rep
     - Les résultats du MM sont dans la source pathtmm
@@ -280,7 +281,7 @@ def second_round(RESPATH, pipeline_idx, NB_OBS_MIN = 10, DIST_MAX_2OBS = 50, RES
         for j in range(track.size()):
             obs = track.getObs(j)
 
-            if str(track["mmtype", j]) == "NOT":
+            if str(track["mmtype", j]) == "NOT" or str(track["mmtype", j]) == "SOURCE" or str(track["mmtype", j]) == "TARGET":
                 PRIS.append(j)
                 POINTS.append((j, tkl.Obs(tkl.ENUCoords(obs.position.getX(), obs.position.getY()),
                                         tkl.ObsTime())))
@@ -391,10 +392,9 @@ def second_round(RESPATH, pipeline_idx, NB_OBS_MIN = 10, DIST_MAX_2OBS = 50, RES
                         newtrack.createAnalyticalFeature('MID', version)
                         newtrack.uid = tid
                         newtrack.tid = version
-                        if newtrack.size() < NB_OBS_MIN:
-                            print ('----')
-                        cutCollection.addTrack(newtrack)
-                        idxSelect += 1
+                        if newtrack.size() >= NB_OBS_MIN:
+                            cutCollection.addTrack(newtrack)
+                            idxSelect += 1
                     newtrack = tkl.Track()
                     #newtrack.uid = uid
                     #newtrack.tid = tid
@@ -409,9 +409,9 @@ def second_round(RESPATH, pipeline_idx, NB_OBS_MIN = 10, DIST_MAX_2OBS = 50, RES
             newtrack.createAnalyticalFeature('MID', version)
             newtrack.uid = tid
             newtrack.tid = version
-            if newtrack.size() < NB_OBS_MIN:
-                print ('----')
-            cutCollection.addTrack(newtrack)
+            if newtrack.size() >= NB_OBS_MIN:
+                cutCollection.addTrack(newtrack)
+                idxSelect += 1
 
     print (cutCollection.size())
 
