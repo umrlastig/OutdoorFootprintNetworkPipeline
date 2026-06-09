@@ -403,6 +403,7 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
                         elongation = max(width, height) / min(width, height)
                         if elongation < 5 and geom.GetArea() < 250:
                             # on s'approche d'un carré
+                            print ('    Small geometry is approximately square.')
                             continue
 
                         # print ('pas cadre')
