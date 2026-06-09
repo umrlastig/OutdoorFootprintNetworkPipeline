@@ -34,7 +34,7 @@ def run_iteration(pipeline_idx, config, collection=None):
         print ('ERROR : variable pipeline_idx need to be integer')
         return
 
-    if pipeline_idx <=0 or pipeline_idx > 10:
+    if pipeline_idx < 0 or pipeline_idx > 10:
         print ('ERROR : variable pipeline_idx need to be integer')
         return
 
@@ -46,8 +46,16 @@ def run_iteration(pipeline_idx, config, collection=None):
 
     respath = config["output"]["RESULT_PATH"]
 
-    if pipeline_idx == 1:
+    if collection is not None and pipeline_idx == 1:
+        # Cas du début
+        prepareEnv(config['output']['RESULT_PATH'])
         logEnv(respath)
+
+    # prépare les répertoires pour les enregistrements
+    if collection is not None and pipeline_idx == 1 or pipeline_idx > 1:
+        setupEnv(respath, pipeline_idx)
+
+
 
     #  On définit un format pour le stockage des traces modifiées dans le pipeline
     fmt = tkl.TrackFormat({'ext': 'CSV',
@@ -114,7 +122,7 @@ def run_iteration(pipeline_idx, config, collection=None):
     BUFFER = config["iterations"][pipeline_idx-1]["BUFFER"]
 
     createNetworkGeom(respath, SEARCH, BUFFER, pipeline_idx)
-
+    
 
 
 
