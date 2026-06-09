@@ -14,7 +14,7 @@ La section Concepts et Principes permet de comprendre le fonctionnement interne 
   :maxdepth: 1
 
   Introduction <intro>
-  Vocabulaire <vocab>
+  Entités et artefacts <vocab>
   Pipeline overview <overview>  
   Points d'attention <caslim>
 

@@ -8,61 +8,44 @@
 Installation
 =============
 
-*OFNP* is supported on Python versions 3.10+.
-
+**footprint2graph** is supported on Python versions 3.10+.
 
 
 Dependencies
--------------
+^^^^^^^^^^^^^
 
-OutdoorFootprintNetworkPipeline requires the following Python packages:
+**footprint2graph** depends on the following Python packages (installed automatically with the library):
 
-* `tracklib <https://pypi.org/project/tracklib/>`_ - tracklib for the variety of tools, operators and functions to manipulate GPS trajectories.
+* `tracklib <https://pypi.org/project/tracklib/>`_ : a GPS trajectory processing library used for filtering, resampling, summarization, selection, generalization, map matching and trajectory aggregation.
 * `matplotlib <https://pypi.org/project/matplotlib/>`_ - Used for colormaps and 2D plotting.
 * osgeo : gdal, ogr, osr (pour la partie vectorisation)
 * Shapely (centerline et smooth)
-* Fiona, Rasterio, Geopandas
-
-.. Environment Setup
+* Fiona, Rasterio pour charger des données (SHP et TIF).
 
 
+Install standard release
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Users can install footprint2graph from PyPI using the pip package manager (`PyPI <https://pypi.org/project/footprint2graph/>`_). To install the latest stable release, run:
+
+.. code-block:: bash
+
+   pip install footprint2graph
 
 
 
 
 
 
+Install as an editable library
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+*Coming soon*
+
+.. Obtain the source code
+.. """""""""""""""""""""""
 
 
-.. ## "Just want to run the pipeline on a use case" Environment Setup
-.. 
-.. 1. Install tracklib
-.. 
-.. 
-.. 2. Configuer dans QGis la librairie tracklib:
-.. 
-.. Cliquer dans la barre de menu sur Préférences >> Options >> Système >> 
-.. 
-.. Puis dans le bloc "Environnement", ajouter une variable personnalisée:
-.. 
-.. *Appliquer* : ajouter au début
-.. *Variable*  : PYTHONPATH
-.. *Valeur*    : /home/glagaffe/7_LIB/tracklib
-.. 
-.. 
-.. 
-.. ## How to Run the Code
-.. 
-.. 
-.. 
-.. ### Input
-.. 
-.. A GNSS trace dataset in CSV format is required.
-.. 
-.. 
-.. ### Execution
-.. 
-.. Run this source code in the Python console. Execute MainWorkflow.py to start the creation scripts.
 
 
 

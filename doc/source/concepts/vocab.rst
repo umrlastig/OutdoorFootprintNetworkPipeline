@@ -5,8 +5,11 @@
 
 
 
-Vocabulaire
-============
+Entités et artefacts
+=====================
+
+Cette section présente les principales entités et artefacts manipulés par le pipeline, depuis les traces brutes en entrée jusqu'au réseau de mobilité en sortie. Elle décrit également les différents modèles de données utilisés au cours du traitement, notamment les représentations en grille et vectorielles.
+
 
 | :ref:`F <gloss-f>` | :ref:`G <gloss-g>` | :ref:`L <gloss-l>` | :ref:`R <gloss-r>` | :ref:`S <gloss-s>` | :ref:`T <gloss-t>` |
 

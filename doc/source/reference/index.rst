@@ -7,6 +7,13 @@
 footprint2graph
 ===============
 
+.. figure:: ../img/pipeline.png
+  :width: 1000
+  :align: center
+
+  **Figure 2.** 
+  
+
 
 .. toctree::
    :maxdepth: 4

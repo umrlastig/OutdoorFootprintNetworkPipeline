@@ -27,11 +27,7 @@ La méthode ne renvoie rien, tous les résultats (données et métadonnées) son
 Itérations et embranchements
 -----------------------------
 
-.. figure:: ../img/pipeline.png
-  :width: 1000
-  :align: center
 
-  **Figure 2.** 
 
 
 

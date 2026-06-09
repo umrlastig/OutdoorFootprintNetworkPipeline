@@ -172,7 +172,7 @@ Chaque entrée correspond à un jeu de paramètres utilisé lors d’une exécut
 
 *CURVE_HEIGHT* : longueur maximale pour qu'un arc du squelette soit considéré comme une arrête terminale d'un sommet de virage.
 
-*CURVEH_WAVE_LENGTH* : propagation en mètre pour confondre le point de courbure maximale avec le sommet d'une arête terminale
+*CURVE_WAVE_LENGTH* : propagation en mètre pour confondre le point de courbure maximale avec le sommet d'une arête terminale
 
 
 
