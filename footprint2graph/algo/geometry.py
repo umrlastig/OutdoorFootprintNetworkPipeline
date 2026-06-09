@@ -44,10 +44,13 @@ def nearest_points(track1, track2):
     return (idxi, idxj)
 
 
+
 def snap_lines_to_connect(collection, tolerance=1):
     """
     
     """
+
+    # TODO : indexation
 
     cptTrack = collection.size() + 1
 
