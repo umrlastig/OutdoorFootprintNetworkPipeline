@@ -3,7 +3,8 @@
 
 import tracklib as tkl
 
-from footprint2graph import logEnv
+
+from footprint2graph import prepareEnv, setupEnv, logEnv
 from footprint2graph import segmentation_resample, second_round
 from footprint2graph import density_polygonize
 from footprint2graph import addTopologyToNetwork
@@ -122,7 +123,7 @@ def run_iteration(pipeline_idx, config, collection=None):
     BUFFER = config["iterations"][pipeline_idx-1]["BUFFER"]
 
     createNetworkGeom(respath, SEARCH, BUFFER, pipeline_idx)
-    
+
 
 
 
