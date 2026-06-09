@@ -41,7 +41,7 @@ def run_iteration(pipeline_idx, config, collection=None):
 
     print ('-------------------------------------------------------------------------------')
     print ('-------------------------------------------------------------------------------')
-    print ('            ITERATION ' , pipeline_idx)
+    print ('              ITERATION ' , pipeline_idx)
     print ('-------------------------------------------------------------------------------')
     print ('-------------------------------------------------------------------------------')
 
@@ -55,7 +55,7 @@ def run_iteration(pipeline_idx, config, collection=None):
 
 
     # prépare les répertoires pour les enregistrements
-    if collection is not None and pipeline_idx == 1 or pipeline_idx > 1:
+    if pipeline_idx >= 1:
         setupEnv(respath, pipeline_idx)
 
     #  On définit un format pour le stockage des traces modifiées dans le pipeline
@@ -109,11 +109,13 @@ def run_iteration(pipeline_idx, config, collection=None):
     # -------------------------------------------------------------------------
     #    STEP 2 : TOPOLOGY
     #
-
+    RESAMPLE_SIZE_FUSION = config['graph_construction']['RESAMPLE_SIZE_FUSION']
     SEARCH = config["iterations"][pipeline_idx-1]["CURVE_HEIGHT"]
     h      = config["iterations"][pipeline_idx-1]["CURVE_WAVE_LENGTH"]
     
-    addTopologyToNetwork(respath, SEARCH, h, pipeline_idx)
+    addTopologyToNetwork(respath, SEARCH, h, NB_OBS_MIN, RESAMPLE_SIZE_FUSION, pipeline_idx)
+
+
 
 
     # -------------------------------------------------------------------------
@@ -132,7 +134,7 @@ def run_iteration(pipeline_idx, config, collection=None):
     # fusionpath2 = RESPATH + '/geometry/raccord1/'
     # mergeNetwork(RESPATH, fusionpath1, fusionpath2)
 
-
+    
 
 
 

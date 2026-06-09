@@ -19,7 +19,9 @@ from footprint2graph import skeleton_smoothing, conflateTurnOnTerminalEdge, snap
 from footprint2graph import log_event
 
 
-def addTopologyToNetwork(RESPATH, SEARCH, h=10, pipeline_idx = None):
+def addTopologyToNetwork(RESPATH, SEARCH, h=10,
+                         NB_OBS_MIN = 10, RESAMPLE_SIZE_FUSION = 5,
+                         pipeline_idx = None):
 
     t0 = time.time()
     print("Starting topology creation for the network")
@@ -51,8 +53,17 @@ def addTopologyToNetwork(RESPATH, SEARCH, h=10, pipeline_idx = None):
                     track.tid = cptTrack
                     cptTrack += 1
                     collection.addTrack(track)
-            if geom.geom_type == "LineString":
-                return
+            elif geom.geom_type == "LineString":
+                print (geom.geom_type)
+                track = tkl.TrackReader().parseWkt(geom.wkt)
+                if track.length() < tolerance/2:
+                    continue
+                track.tid = cptTrack
+                cptTrack += 1
+                collection.addTrack(track)
+            else:
+                print (geom.geom_type)
+
 
     NB_EDGES = collection.size()
     print ('    Number of edges in the skeleton:', collection.size())
@@ -111,7 +122,7 @@ def addTopologyToNetwork(RESPATH, SEARCH, h=10, pipeline_idx = None):
     for track in collection:
         track = tkl.simplify(track, tolerance, tkl.MODE_SIMPLIFY_REM_POS_DUP,
                              verbose=False)
-    print ('Finished removing hooked parts of the skeleton.')
+    print ('    Finished removing hooked parts of the skeleton.')
 
 
     # =========================================================================
@@ -130,7 +141,7 @@ def addTopologyToNetwork(RESPATH, SEARCH, h=10, pipeline_idx = None):
     for track in collection:
         track = tkl.simplify(track, tolerance, tkl.MODE_SIMPLIFY_DOUGLAS_PEUCKER,
                              verbose=False)
-    print ('Finished simplification of the skeleton.')
+    print ('    Finished simplification of the skeleton.')
 
 
 
@@ -138,7 +149,12 @@ def addTopologyToNetwork(RESPATH, SEARCH, h=10, pipeline_idx = None):
     #          SNAPPING
     #
     tolerance = 1
+    NB_START = collection.size()
     collection = snap_lines_to_connect(collection, tolerance)
+    NB_END = collection.size()
+    print ('    Number of edges in the skeleton (after snapping):', collection.size())
+    print ('    Edge count difference after snapping : ', NB_END - NB_START)
+
 
 
 
@@ -167,14 +183,37 @@ def addTopologyToNetwork(RESPATH, SEARCH, h=10, pipeline_idx = None):
     print ('    Number of edges in the simplified skeleton:', len(network.getIndexEdges()))
     print ('    Number of nodes:', len(network.getIndexNodes()))
 
+
+
+
+    # =========================================================================
+    #          Suppression des petits arcs ISOLES
+    #
+    long_min = NB_OBS_MIN * RESAMPLE_SIZE_FUSION
+    print ('     Shortest edges limit : ', long_min)
+
+    CPT_LEN_TOO_SHORT = 0
+    for edge in network:
+        test1 = edge.geom.length() < long_min
+        test2 = len(network.getIncidentEdges(edge.source.id)) <= 1
+        test3 = len(network.getIncidentEdges(edge.target.id)) <= 1
+        if test1 and test2 and test3:
+            network.removeEdge(edge)
+            # pas besoin de supprimer des noeuds puisque isolés
+            CPT_LEN_TOO_SHORT += 1
+    print ('    Number of edges in the skeleton (after removing the shortest edges):', CPT_LEN_TOO_SHORT)
+
+
     TE = list(map(int, network.getIndexEdges()))
     tkl.NetworkReader.counter = max(TE) + 1
 
 
 
     # =========================================================================
-    #          Conflation
-    #
+    #          "Déformation des virages s'ils suivent un pattern
+    #   sous forme d'un T à l'envers , dont la longeur du tronc pas trop longue
+    #                                  et dont le noeud terminal est 'isolé'
+    #   et les deux autres arcs de la base plus longues que le tronc
 
     cpt = 0
     HC = []
@@ -224,6 +263,8 @@ def addTopologyToNetwork(RESPATH, SEARCH, h=10, pipeline_idx = None):
     try:
         log_event(RESPATH + "topology"+ str(idx) + ".json", {
             "Number of edges in the skeleton": NB_EDGES,
+            "Number of skeleton edges removed for being too short": CPT_LEN_TOO_SHORT,
+            "Edge count difference after snapping": NB_END - NB_START,
             "ts": time.time()
         })
     except Exception as e:
