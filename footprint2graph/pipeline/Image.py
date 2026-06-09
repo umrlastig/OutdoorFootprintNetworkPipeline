@@ -397,9 +397,8 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
                     if iou < 0.99:
                         cpt += 1
 
-                        minx, miny, maxx, maxy = envelope.bounds
-                        width = maxx - minx
-                        height = maxy - miny
+                        width = maxx2 - minx2
+                        height = maxy2 - miny2
                         elongation = max(width, height) / min(width, height)
                         if elongation < 5 and geom.GetArea() < 250:
                             # on s'approche d'un carré
