@@ -20,9 +20,9 @@ Cette section de la documentation *How-to* est dédiée à la mise en œuvre con
   Fichier de configuration <config>
   Préparer les données pour le pipeline <preparedata>
   Lancement d'un pipeline <pipeline>
+  Reprendre une exécution <reprise>
   Visualiser les résultats <vizres>
   Lire les résultats des traitements <metadata>
 
 
-.. Reprise après interruption <reprise>   
-.. Reprendre le pipeline après interruption
+
