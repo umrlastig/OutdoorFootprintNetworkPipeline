@@ -11,6 +11,7 @@ import os
 import progressbar
 import time
 import matplotlib.pyplot as plt
+import sys
 
 import tracklib as tkl
 
@@ -56,6 +57,9 @@ def addTopologyToNetwork(RESPATH, SEARCH, h=10, pipeline_idx = None):
     NB_EDGES = collection.size()
     print ('    Number of edges in the skeleton:', collection.size())
     print ('    Finished loaded skeleton.')
+
+    if collection.size() == 0:
+        sys.exit("Fin du programme le squelette est vide.")
 
 
     # =========================================================================
