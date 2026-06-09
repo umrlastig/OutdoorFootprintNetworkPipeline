@@ -217,6 +217,7 @@ footprint2graph/test/
 test/result1/
 test/result2/
 MainZone1.py
+MainZone2.py
 tmp/
 
 

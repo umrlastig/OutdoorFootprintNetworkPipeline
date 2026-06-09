@@ -7,8 +7,9 @@
 Pipeline overview
 ==================
 
-Approche itérative
+.. Approche itérative
 
+TODO
 
 
 
@@ -23,15 +24,16 @@ Première itération & Principe
   :width: 1000
   :align: center
 
-  **Figure 1.** À partir des traces GNSS brutes, une carte de densité est construite afin d'extraire un squelette central servant de référence topologique. Les traces sont ensuite découpées en segments candidats à la fusion, regroupées pour calculer des trajectoires médianes, puis assemblées pour produire le réseau de mobilité final.
+  **Figure 1.** À partir des traces GNSS brutes, une carte de densité est construite afin d'extraire un squelette central servant de référence topologique. Les traces sont ensuite découpées en segments candidats à la fusion, regroupés pour calculer des trajectoires médianes, puis assemblées pour produire le réseau de mobilité final.
 
 
 Les différentes étapes de l'algorithme, décrites après, peuvent être résumées ainsi:
 
-1. Calcul d’une carte de densité à partir des traces GNSS
+0. Préparation des traces brutes
+1. Calcul de cartes de densité à partir des traces GNSS
 2. De la vectorisation, on extrait une ligne centrée ≡ arc de la topologie.
-3. Attribue les points des traces brutes à chaque arc de la topologie
-4. Reconstruit les bons morceaux de traces candidats pour chaque arc de la topologie puis agrégation des morceaux de traces
+3. Attributione des points des traces brutes à chaque arc de la topologie
+4. Construction de bons morceaux de traces candidats pour chaque arc de la topologie puis agrégation des morceaux de traces
 5. Conflation des traces fusionnées afin d’obtenir un réseau de mobilit
 
 
@@ -39,19 +41,8 @@ Les différentes étapes de l'algorithme, décrites après, peuvent être résum
 
 
   
-
-
-
-
-
-
-
-
-<br/>
-<!-- ===================================================================================================== -->
-<!-- ===================================================================================================== -->
-
-## Script 1: *Préparation des traces brutes*
+*Préparation des traces brutes*
+"""""""""""""""""""""""""""""""""
 
 Ce script prend en entrée des traces brutes en entrée du pipeline. A la fin du script un nouveau jeu de traces est produit, extraites, découpées et sélectionnées si elle traverse une figure géométrique, résolues spatialement à 1 mètre.
 
@@ -64,13 +55,8 @@ Découpage et ré-échantillonnage des traces brutes
 
 
 
-
-<br/>
-<!-- ===================================================================================================== -->
-<!-- ===================================================================================================== -->
-
-## Script 2: *Création des cartes de pratiques sportives et extrait du réseau*
-
+*Calcul d’une carte de densité à partir des traces GNSS*
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 Calculs des cartes de densité, de contraste et binaire à partir des traces GNSS 
 
@@ -83,32 +69,23 @@ avec Filtre morphologique, Vectorisation, Squeletisation
 
 
 
-   
-   
+*Calcul de la topologie du réseau*
+""""""""""""""""""""""""""""""""""""
 
 
 
-<br/>
-<!-- ===================================================================================================== -->
-<!-- ===================================================================================================== -->
-
-## Script 3: *Calcul de la topologie du réseau*
+*Calcul de la géométrie des arcs du réseau*
+""""""""""""""""""""""""""""""""""""""""""""
 
 
 
+*Conflation des traces fusionnées*
+"""""""""""""""""""""""""""""""""""
 
-<br/>
-<!-- ===================================================================================================== -->
-<!-- ===================================================================================================== -->
-
-## Script 4: *Calcul de la géométrie des arcs du réseau*
+Correction élastique de la géométrie du réseau
 
 
 
-
-
-<br/>
-<!-- ===================================================================================================== -->
-<!-- ===================================================================================================== -->
-CORRECTION ELASTIQUE DE LA GEOMETRIE DU RESEAU
+Itérations et embranchements
+------------------------------
 
