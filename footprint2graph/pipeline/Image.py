@@ -273,12 +273,11 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
     # =========================================================================
     #   Dilatation + Erosion
 
-    print ("Starting morphological closingImage ...")
-
+    print ("    Starting morphological closing image ...")
     mask = np.array([
-            [0,1,0],
-            [1,1,1],
-            [0,1,0]])
+                [0,1,0],
+                [1,1,1],
+                [0,1,0]])
 
     # Dilatation
     mapBinaire.filter(mask, np.max)
@@ -398,6 +397,14 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
                     if iou < 0.99:
                         cpt += 1
 
+                        minx, miny, maxx, maxy = envelope.bounds
+                        width = maxx - minx
+                        height = maxy - miny
+                        elongation = max(width, height) / min(width, height)
+                        if elongation < 5 and geom.GetArea() < 250:
+                            # on s'approche d'un carré
+                            continue
+
                         # print ('pas cadre')
                         g = geom.Clone()
                         if not g.IsValid():
@@ -455,7 +462,7 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
     # =========================================================================
     #   Squeletisation : centerline
 
-    print ('Starting centerline computation ...')
+    print ('    Starting centerline computation ...')
 
     Shp2centerline(roadsurflissepath, squelettepath, interp_dist, clean_dist, verbose=False)
 
