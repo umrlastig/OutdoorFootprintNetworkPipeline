@@ -18,7 +18,7 @@ try:
     import shapely
     from shapely.ops import unary_union
     from shapely.geometry import mapping, shape
-    from shapely.geometry import LineString, Point
+    from shapely.geometry import LineString, Point, MultiLineString
     from shapely.geometry import MultiPolygon
 except ImportError:
     print ('Code running in a no shapely environment')
@@ -292,6 +292,9 @@ class Shp2centerline(object):
                 geom = self.dct_centerlines[key]
                 if geom.length <= 0.0:
                     continue
+
+                if geom.geom_type == 'LineString':
+                    geom = MultiLineString([geom])
                 #print(shapely.is_valid(geom))
                 #print (geom.length)
                 #print (geom.geom_type)
