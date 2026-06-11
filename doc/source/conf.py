@@ -42,6 +42,7 @@ extensions = [
     "sphinx.ext.todo",
     "sphinx.ext.viewcode",
     "sphinx_autodoc_typehints",
+    "sphinx.ext.autosummary",
 	"nbsphinx",
     "autodocsumm",
     "IPython.sphinxext.ipython_console_highlighting"
@@ -117,3 +118,6 @@ autodoc_default_options = {
 autodoc_mock_imports = [
     "tracklib"
 ]
+
+
+add_module_names = False
