@@ -220,21 +220,21 @@ def segmentation_resample(RESPATH, collection, fmt,
 
 def second_round(RESPATH, pipeline_idx, NB_OBS_MIN = 10, DIST_MAX_2OBS = 50, RESAMPLE_SIZE_GRID = 1):
     '''
-    
     Doit créer un nouveau jeu de traces à partir des points non matchés.
     On prend aussi les points map-matchés au noeud.
     
     - Quand c'est fait, ils sont enregistrés dans la destination : rep
     - Les résultats du MM sont dans la source pathtmm
     - Un post-traitement : resample 
-
     '''
 
     # buffer_size = 5
     # k = 0.6
 
     OPT_PLUS_PTS = True
-    NB_PTS = 5
+
+    NB_PTS_N = 5
+    NB_PTS_O = 1
 
     pidx = str(pipeline_idx-1)
     mmtrackpath = RESPATH + 'mapmatch/tmm' + pidx + '/'
@@ -282,6 +282,12 @@ def second_round(RESPATH, pipeline_idx, NB_OBS_MIN = 10, DIST_MAX_2OBS = 50, RES
             obs = track.getObs(j)
 
             if str(track["mmtype", j]) == "NOT" or str(track["mmtype", j]) == "SOURCE" or str(track["mmtype", j]) == "TARGET":
+                if str(track["mmtype", j]) == 'NOT':
+                    NB_PTS = NB_PTS_N
+                if str(track["mmtype", j]) == "SOURCE" or str(track["mmtype", j]) == "TARGET":
+                    NB_PTS = NB_PTS_O
+
+
                 PRIS.append(j)
                 POINTS.append((j, tkl.Obs(tkl.ENUCoords(obs.position.getX(), obs.position.getY()),
                                         tkl.ObsTime())))

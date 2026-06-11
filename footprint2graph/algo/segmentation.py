@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 
+from math import *
+import sys
+import csv
+csv.field_size_limit(sys.maxsize)
 import time
+
 
 import tracklib as tkl
 from footprint2graph import log_event
@@ -323,6 +328,188 @@ def getcandidates(MM, network, collection, BUFFER=15, RESPATH=None, prefix=None)
     print ("    Segment construction completed.")
 
     return TRACES
+
+
+
+def prepareMapMatchResultForCreateCandidates(collection, network, SEARCH, NB_PTS = 5,
+                                             RESPATH=None, prefix=None):
+
+    # On construit un dictionnaire qui va contenir l'ensemble des points MM
+    #    avec  leurs séquences afin de reconstuire des traces candidates
+    #    pour la fusion:
+    #        la trace doit être proche de la source de l'arc et
+    #                           proche de la target de l'arc
+    #        sans trou (index manquant)
+    #        géométrie dans le même que celui de l'arc
+    #
+
+    MM = {}   #  [ide][pkid] : liste des observations
+
+    nbpt = 0
+    nbmm = 0
+    nbhp = 0
+    rmse_total = 0
+    nbtj = 0
+    maxd = 0
+
+    for i in range(collection.size()):
+        track = collection.getTrack(i)
+        nbtj += 1
+        MSE = 0
+
+        # print (track.getListAnalyticalFeatures())
+        # print (track.getObsAnalyticalFeature('TID', 0))
+        track.createAnalyticalFeature('mmtype', 'NOT')
+        track.createAnalyticalFeature('idedge', -1)
+        pkid = track.tid
+        # print (pkid)
+
+        #if track.size() != 309: # and track.size() != 309:
+        #    continue
+
+
+        for j in range(track.size()):
+            nbpt += 1
+
+            pb  = track[j].position
+            ds = float(track["hmm_inference", j][2])
+            dt = float(track["hmm_inference", j][3])
+            idxedge = int(track["hmm_inference", j][1])
+
+            if idxedge > -1:
+                nbmm += 1
+                xraw = track[j].position.getX()
+                yraw = track[j].position.getY()
+                xmm = track["hmm_inference", j][0].getX()
+                ymm = track["hmm_inference", j][0].getY()
+                ecartpos = sqrt((xraw-xmm)**2 + (yraw-ymm)**2)
+                MSE += ecartpos**2
+                if ecartpos > maxd:
+                    maxd = ecartpos
+            else:
+                nbhp += 1
+
+            # print (idxedge)
+
+            edgeid = network.getEdgeId(idxedge)
+            #if edgeid != '79':
+            #    continue
+            #print (edgeid)
+            #print ('+++++', idxedge, ds, dt)
+            e = network.EDGES[edgeid]
+
+            if idxedge == -1:
+                track.setObsAnalyticalFeature('mmtype', j, 'NOT')
+                track.setObsAnalyticalFeature('idedge', j, -1)
+
+                # On s'autorise à combler les petits trous avec des points non appariés
+                # s'ils ont une distance à l'arc petite
+                # Pour connaitre l'arc, il faut passer par les points précédents
+                # et les points suivants
+
+                # l'arc precedent
+                idxp = -1
+                for k in range(j-1, max(-1, j-NB_PTS-1), -1):
+                    idxp = int(track["hmm_inference", k][1])
+                    if idxp > -1:
+                        break
+                # l'arc suivant
+                idxs = -1
+                for k in range(j+1, min(track.size(), j+NB_PTS+1), 1):
+                    idxs = int(track["hmm_inference", k][1])
+                    if idxs > -1:
+                        break
+
+                # print (j, idxp, idxs)
+
+                # if idxp == idxs or idxp == -1 or idxs == -1:
+                # - Il faut que ce soit le même arc, donc dans ce cas il faut
+                #   des points recalés avant et des points recalés après
+                if idxp == idxs and idxp > -1 and idxs > -1:
+
+                    edgeidsupp = network.getEdgeId(idxp)
+                    esupp = network.EDGES[edgeidsupp]
+                    # on calcule la projection sur l'arc des points avant-apres
+                    distmin, xproj, yproj, iproj = tkl.proj_polyligne(
+                        esupp.geom.getX(), esupp.geom.getY(), pb.getX(), pb.getY())
+                    # print (distmin, SEARCH)
+                    if distmin < SEARCH:
+                        if edgeidsupp not in MM:
+                            MM[edgeidsupp] = {}
+                        if pkid not in MM[edgeidsupp].keys():
+                            MM[edgeidsupp][pkid] = []
+                        # print (j)
+                        MM[edgeidsupp][pkid].append((j,pb))
+                        # print ('-----', j, edgeidsupp, pkid)
+
+            elif ds > 0.01 and dt > 0.01:
+                if edgeid not in MM:
+                    MM[edgeid] = {}
+                if pkid not in MM[edgeid].keys():
+                    MM[edgeid][pkid] = []
+                # print ('-----', j, edgeid, pkid)
+                MM[edgeid][pkid].append((j,pb))
+                track.setObsAnalyticalFeature('mmtype', j, 'EDGE')
+                track.setObsAnalyticalFeature('idedge', j, edgeid)
+            elif abs(ds) < 0.01:
+                idnode = e.source.id
+                edgesid = network.getIncidentEdges(idnode)
+                for eid in edgesid:
+                    if eid not in MM:
+                        MM[eid] = {}
+                    if pkid not in MM[eid].keys():
+                        MM[eid][pkid] = []
+                    MM[eid][pkid].append((j,pb))
+                track.setObsAnalyticalFeature('mmtype', j, 'SOURCE')
+                track.setObsAnalyticalFeature('idedge', j, idnode)
+            elif abs(dt) < 0.01:
+                idnode = e.target.id
+                edgesid = network.getIncidentEdges(idnode)
+                for eid in edgesid:
+                    if eid not in MM:
+                        MM[eid] = {}
+                    if pkid not in MM[eid].keys():
+                        MM[eid][pkid] = []
+                    MM[eid][pkid].append((j,pb))
+                track.setObsAnalyticalFeature('mmtype', j, 'TARGET')
+                track.setObsAnalyticalFeature('idedge', j, idnode)
+            else:
+                print ('????')
+
+        MSE = sqrt(MSE / track.size())
+        rmse_total += MSE**2
+
+    if nbtj == 0:
+        rmse_total = -1
+    else:
+        rmse_total = sqrt(rmse_total/nbtj)
+
+    # print (MM['23'])
+
+
+    if RESPATH is not None:
+
+        if nbpt == 0:
+            percentMM = 0
+            percentHP = 0
+        else:
+            percentMM = (nbmm / nbpt * 100)
+            print ('    Number of map-matched points = ' + str(nbmm) + ' (' + str(round(percentMM, 2)) + ' %)')
+            percentHP = (nbhp / nbpt * 100)
+        print ('    Map-matching results restructuring completed.')
+
+        log_event(RESPATH + "mapmatch" + prefix + ".json", {
+            "Search radius (m)": SEARCH,
+            "Number of map-matched points": nbmm,
+            "Percentage of map-matched points (%)": str(round(percentMM, 2)),
+            "Number of off-track points": nbhp,
+            "Percentage of off_track points (%)": str(round(percentHP, 2)),
+            "Root Mean Square Error (m)": round(rmse_total),
+            "Maximal displacement (m)": maxd,
+            "ts": time.time()
+        })
+
+    return MM
 
 
 

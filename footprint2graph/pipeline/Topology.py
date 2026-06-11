@@ -122,6 +122,8 @@ def addTopologyToNetwork(RESPATH, SEARCH, h=10,
     for track in collection:
         track = tkl.simplify(track, tolerance, tkl.MODE_SIMPLIFY_REM_POS_DUP,
                              verbose=False)
+    print ('')
+
     print ('    Finished removing hooked parts of the skeleton.')
 
 

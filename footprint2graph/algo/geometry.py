@@ -4,44 +4,7 @@ import tracklib as tkl
 
 
 
-def segment_distance(a1, a2, b1, b2):
-    return min (
-        tkl.distance_to_segment(a1.getX(), a1.getY(), b1.getX(), b1.getY(), b2.getX(), b2.getY()),
-        tkl.distance_to_segment(a2.getX(), a2.getY(), b1.getX(), b1.getY(), b2.getX(), b2.getY()),
-        tkl.distance_to_segment(b1.getX(), b1.getY(), a1.getX(), a1.getY(), a2.getX(), a2.getY()),
-        tkl.distance_to_segment(b2.getX(), b2.getY(), a1.getX(), a1.getY(), a2.getX(), a2.getY()),
-    )
 
-
-def line_distance(track1, track2):
-    min_dist = float('inf')
-
-    for i in range(track1.size() - 1):
-        p1i = track1.getObs(i).position
-        p1i1 = track1.getObs(i+1).position
-        for j in range(track2.size() - 1):
-            p2j = track2.getObs(j).position
-            p2j1 = track2.getObs(j+1).position
-            d = segment_distance (p1i, p1i1, p2j, p2j1)
-            min_dist = min(min_dist, d)
-
-    return min_dist
-
-
-def nearest_points(track1, track2):
-    maxd = float('inf')
-    idxi = -1
-    idxj = -1
-    for i in range(track1.size()):
-        o1 = track1.getObs(i)
-        for j in range(track2.size()):
-            o2 = track2.getObs(j)
-            d = o1.position.distance2DTo(o2.position)
-            if d < maxd:
-                idxi = i
-                idxj = j
-                maxd = d
-    return (idxi, idxj)
 
 
 
@@ -112,4 +75,49 @@ def snap_lines_to_connect(collection, tolerance=1):
 
 
     return collection
+
+
+
+
+def segment_distance(a1, a2, b1, b2):
+    return min (
+        tkl.distance_to_segment(a1.getX(), a1.getY(), b1.getX(), b1.getY(), b2.getX(), b2.getY()),
+        tkl.distance_to_segment(a2.getX(), a2.getY(), b1.getX(), b1.getY(), b2.getX(), b2.getY()),
+        tkl.distance_to_segment(b1.getX(), b1.getY(), a1.getX(), a1.getY(), a2.getX(), a2.getY()),
+        tkl.distance_to_segment(b2.getX(), b2.getY(), a1.getX(), a1.getY(), a2.getX(), a2.getY()),
+    )
+
+
+def line_distance(track1, track2):
+    min_dist = float('inf')
+
+    for i in range(track1.size() - 1):
+        p1i = track1.getObs(i).position
+        p1i1 = track1.getObs(i+1).position
+        for j in range(track2.size() - 1):
+            p2j = track2.getObs(j).position
+            p2j1 = track2.getObs(j+1).position
+            d = segment_distance (p1i, p1i1, p2j, p2j1)
+            min_dist = min(min_dist, d)
+
+    return min_dist
+
+
+def nearest_points(track1, track2):
+    maxd = float('inf')
+    idxi = -1
+    idxj = -1
+    for i in range(track1.size()):
+        o1 = track1.getObs(i)
+        for j in range(track2.size()):
+            o2 = track2.getObs(j)
+            d = o1.position.distance2DTo(o2.position)
+            if d < maxd:
+                idxi = i
+                idxj = j
+                maxd = d
+    return (idxi, idxj)
+
+
+
 

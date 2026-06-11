@@ -4,16 +4,32 @@
 import tracklib as tkl
 
 
-# -----------------------------------------------------------------------------
-#   Filtre de Fourier coupe-bande sur une géométrie
-# -----------------------------------------------------------------------------
-# Inputs:
-#    - geom     : trace ou edge en entrée
-#    - wl_inf   : longueur d'onde de coupure inférieure (en mètres)
-#    - wl_sup   : longueur d'onde de coupure supérieure (en mètres)
-# Output: trace filtrée
-# -----------------------------------------------------------------------------
+"""
+smoothing ! filtering, simplifcation
+
+
+"""
+
+
 def skeleton_smoothing(geom, wl_inf, wl_sup):
+    '''
+    Filtre de Fourier coupe-bande sur une géométrie.
+
+    Parameters
+    ----------
+    geom : Track
+        trace ou edge en entrée.
+    wl_inf : float
+        longueur d'onde de coupure inférieure (en mètres).
+    wl_sup : float
+        longueur d'onde de coupure supérieure (en mètres).
+
+    Returns
+    -------
+    Track
+        trace filtrée.
+
+    '''
     
     N = len(geom)
     
