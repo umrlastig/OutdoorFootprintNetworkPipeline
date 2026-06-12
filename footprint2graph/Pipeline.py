@@ -115,9 +115,6 @@ def run_iteration(pipeline_idx, config, collection=None):
     
     addTopologyToNetwork(respath, SEARCH, h, NB_OBS_MIN, RESAMPLE_SIZE_FUSION, pipeline_idx)
 
-
-
-
     # -------------------------------------------------------------------------
     #    STEP 3 : GEOMETRY
     #
@@ -130,9 +127,7 @@ def run_iteration(pipeline_idx, config, collection=None):
     # -------------------------------------------------------------------------
     #    STEP 4 :  FUSION RESULTS
 
-    # fusionpath1 = RESPATH + '/geometry/raccord/'
-    # fusionpath2 = RESPATH + '/geometry/raccord1/'
-    # mergeNetwork(RESPATH, fusionpath1, fusionpath2)
+
 
     
 
