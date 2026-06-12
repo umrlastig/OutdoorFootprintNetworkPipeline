@@ -24,7 +24,8 @@ doc_requirements = (
     "sphinx-autodoc-typehints",
 	"nbsphinx",
 	"ipykernel",
-    "autodocsumm"
+    "autodocsumm",
+    "tracklib"
 )
 
 setup (
