@@ -122,7 +122,11 @@ autodoc_mock_imports = [
     "psutil",
     "pyyaml",
     "progressbar",
-    "rasterio"
+    "rasterio",
+    "osgeo",
+    "gdal",
+    "ogr",
+    "osr"
 ]
 
 
