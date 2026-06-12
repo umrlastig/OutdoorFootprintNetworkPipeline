@@ -8,3 +8,8 @@ nbsphinx
 autodocsumm
 pygments
 nbconvert
+tracklib
+fiona
+shapely
+psutil
+pyyaml
