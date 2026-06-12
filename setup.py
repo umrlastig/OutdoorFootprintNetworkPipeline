@@ -25,7 +25,11 @@ doc_requirements = (
 	"nbsphinx",
 	"ipykernel",
     "autodocsumm",
-    "tracklib"
+    "tracklib",
+    "fiona",
+    "shapely",
+    "psutil",
+    "pyyaml"
 )
 
 setup (
