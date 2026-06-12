@@ -85,6 +85,10 @@ def setupEnv(respath, iteration_index = -1):
         if not os.path.exists(pathracc):
             os.makedirs(pathracc)
 
+        pathmerge = respath + 'merge_' + str(idx)
+        if not os.path.exists(pathmerge):
+            os.makedirs(pathmerge)
+
 
 def logEnv(RESPATH):
     try:
