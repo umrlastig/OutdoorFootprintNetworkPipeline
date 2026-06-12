@@ -14,3 +14,4 @@ shapely
 psutil
 pyyaml
 rasterio
+GDAL
