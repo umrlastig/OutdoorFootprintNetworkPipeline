@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import math
 import tracklib as tkl
 
 
@@ -148,4 +149,36 @@ def decoupe_trace(track, I):
         s2 = track.extract(i1, track.size()-1)
 
     return (s1, s2)
+
+
+
+def extend_endpoint(track, length=50):
+
+    p1 = track[-2]
+    p2 = track[-1]
+
+    dx = p2.position.getX() - p1.position.getX()
+    dy = p2.position.getY() - p1.position.getY()
+
+    norm = math.hypot(dx, dy)
+
+    dx /= norm
+    dy /= norm
+
+    p3 = (
+        p2.position.getX() + length * dx,
+        p2.position.getY() + length * dy
+    )
+
+    track = tkl.Track()
+    c2 = tkl.ENUCoords(p2.position.getX(), p2.position.getY())
+    track.addObs(tkl.Obs(c2, tkl.ObsTime()))
+    c3 = tkl.ENUCoords(p3[0], p3[1])
+    track.addObs(tkl.Obs(c3, tkl.ObsTime()))
+
+    return track
+
+
+
+
 
