@@ -29,7 +29,8 @@ doc_requirements = (
     "fiona",
     "shapely",
     "psutil",
-    "pyyaml"
+    "pyyaml",
+    "rasterio"
 )
 
 setup (

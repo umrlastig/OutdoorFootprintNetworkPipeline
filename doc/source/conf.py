@@ -121,7 +121,8 @@ autodoc_mock_imports = [
     "shapely",
     "psutil",
     "pyyaml",
-    "progressbar"
+    "progressbar",
+    "rasterio"
 ]
 
 

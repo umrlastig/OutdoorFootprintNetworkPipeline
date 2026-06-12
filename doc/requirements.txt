@@ -13,3 +13,4 @@ fiona
 shapely
 psutil
 pyyaml
+rasterio
