@@ -116,7 +116,11 @@ autodoc_default_options = {
 
 
 autodoc_mock_imports = [
-    "tracklib"
+    "tracklib",
+    "fiona",
+    "shapely",
+    "psutil",
+    "pyyaml"
 ]
 
 
