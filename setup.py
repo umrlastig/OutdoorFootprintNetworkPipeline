@@ -11,28 +11,6 @@ requirements = (
     "psutil"
 )
 
-dev_requirements = (
-    "pytest",
-    "pytest-runner",
-    "coverage"
-)
-
-doc_requirements = (
-    "sphinx",
-    "sphinx_rtd_theme",
-    "recommonmark",
-    "sphinx-autodoc-typehints",
-	"nbsphinx",
-	"ipykernel",
-    "autodocsumm",
-    "tracklib",
-    "fiona",
-    "shapely",
-    "psutil",
-    "pyyaml",
-    "rasterio"
-)
-
 setup (
     name="footprint2graph",
     version="1.0.0",
@@ -54,7 +32,5 @@ setup (
     install_requires=requirements,
     test_suite="tests",
     extras_require={
-        "dev": dev_requirements,
-        "doc": doc_requirements
     },
 )
