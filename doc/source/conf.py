@@ -120,7 +120,8 @@ autodoc_mock_imports = [
     "fiona",
     "shapely",
     "psutil",
-    "pyyaml"
+    "pyyaml",
+    "progressbar"
 ]
 
 
