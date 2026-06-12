@@ -222,13 +222,10 @@ def addTopologyToNetwork(RESPATH, SEARCH, h=10,
     while True and cpt <= len(network.NODES):
         cpt += 1
 
-        # network.plot('k-', '', 'g-', 'r-', 0.5, plt)
-
         # 1. trouver les noeuds de degré 3
         nodes_deg3 = [nid for nid in network.getIndexNodes() if network.degree(nid) == 3]
         nodes_deg3 = [x for x in nodes_deg3 if x not in HC]
         # print (len(nodes_deg3), "/", len(network.getIndexNodes()))
-        # print (nodes_deg3)
 
         if not nodes_deg3:
             break
@@ -240,12 +237,6 @@ def addTopologyToNetwork(RESPATH, SEARCH, h=10,
         r = conflateTurnOnTerminalEdge(network, nid, SEARCH, h)
         if r is None:
             HC.append(nid)
-
-        #plt.xlim([996515.3862920341, 996844.4314068498])
-        #plt.ylim([6542969.360779692, 6543146.613248566])
-        #plt.xlim([996780, 996850])
-        #plt.ylim([6542975, 6543056])
-        #plt.show()
 
     # network.simplify(0, tkl.MODE_SIMPLIFY_REM_POS_DUP)
     print ('    Edge count after conflation:', len(network.getIndexEdges()))
