@@ -4,6 +4,18 @@ import math
 import tracklib as tkl
 
 
+"""
+
+- snap_lines_to_connect
+
+- line_distance
+- nearest_points
+
+- segment_distance
+
+
+"""
+
 
 def snap_lines_to_connect(collection, tolerance=1):
     """
@@ -122,6 +134,16 @@ def nearest_points(track1, track2):
     return (idxi, idxj)
 
 
+def distance_point_track(o, track):
+    pos = 0
+    d = o.distanceTo(track.getFirstObs())
+
+    for i in range(1, track.size()):
+        if o.distanceTo(track.getObs(i)) < d:
+            pos = i
+            d = o.distanceTo(track.getObs(i))
+    return (d, pos)
+
 
 def decoupe_trace(track, I):
     '''
@@ -141,21 +163,57 @@ def decoupe_trace(track, I):
     # On remplace dans la trace le point d'intersection
     track.setObs(i1, tkl.Obs(I.position.copy(), tkl.ObsTime()))
 
+    s1 = None
+    s2 = None
+
     # On coupe la trace à ce nouveau point d'intersection
     if i1 > 0 and i1 < track.size()-1:
-        print ('        Splitting track')
         # on crée 2 nouvelles traces
         s1 = track.extract(0, i1)
         s2 = track.extract(i1, track.size()-1)
+    elif i1 == 0:
+        s1 = None
+        s2 = track
+    elif i1 == track.size()-1:
+        s1 = track
+        s2 = None
 
     return (s1, s2)
 
 
 
-def extend_endpoint(track, length=50):
+def extend_extremity(track, length=50, pos='END'):
+    '''
+    Extend start point or end point 
 
-    p1 = track[-2]
-    p2 = track[-1]
+    Parameters
+    ----------
+    track : TYPE
+        DESCRIPTION.
+    length : TYPE, optional
+        DESCRIPTION. The default is 50.
+    pos : {'START', 'END'}, optional
+        DESCRIPTION. The default is 'END'.
+
+    Returns
+    -------
+    track : TYPE
+        DESCRIPTION.
+
+    '''
+
+    track.removePosDup()
+
+    if pos == 'END':
+        p1 = track[-2]
+        p2 = track[-1]
+    else:
+        p1 = track[1]
+        p2 = track[0]
+
+    if p1.position == p2.position:
+        print ('points identiques')
+        return None
 
     dx = p2.position.getX() - p1.position.getX()
     dy = p2.position.getY() - p1.position.getY()
@@ -178,6 +236,82 @@ def extend_endpoint(track, length=50):
 
     return track
 
+
+def get_final_edges(edge_id, splits):
+    '''
+    Récupére les arcs terminaux de edge_id dans l'arbre de découpage SPLITS
+
+    Parameters
+    ----------
+    edge_id : TYPE
+        DESCRIPTION.
+    splits : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    TYPE
+        DESCRIPTION.
+
+    '''
+
+    if edge_id not in splits:
+        return [edge_id]
+
+    result = []
+
+    for child in splits[edge_id]:
+        result.extend(get_final_edges(child, splits))
+
+    return result
+
+
+
+def find_connection_candidate(network, edge, extension, side):
+    """
+    Search for the closest intersection between an extension and a neighboring edge.
+    """
+
+    if side == "START":
+        ref_pos = edge.geom.getFirstObs().position
+    else:
+        ref_pos = edge.geom.getLastObs().position
+
+    point_inters = None
+    edge_to_split = None
+    min_dist = float("inf")
+
+    neighbor_idxs = network.spatial_index.neighborhood(edge.geom, unit=-1)
+
+    for idx in neighbor_idxs:
+
+        neighbor = network[idx]
+
+        if neighbor.id == edge.id:
+            continue
+
+        intersections = tkl.intersection(extension, neighbor.geom, withTime=-1)
+
+        for intersec in intersections:
+
+            dist = intersec.position.distance2DTo(ref_pos)
+
+            if dist < min_dist:
+                min_dist = dist
+                point_inters = intersec
+                edge_to_split = neighbor
+
+    if edge_to_split is None:
+        return None
+
+    return {
+        "edge": edge.id,
+        "side": side,
+        "intersection": point_inters,
+        "edge_to_split": edge_to_split.id,
+        "extension": extension,
+        "dist": min_dist
+    }
 
 
 

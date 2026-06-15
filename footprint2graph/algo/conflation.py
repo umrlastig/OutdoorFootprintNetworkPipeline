@@ -259,7 +259,8 @@ def conflateTurnOnTerminalEdge(network, nid, SEARCH, h = 10):
     n = getAutreNoeud(network, idx2, node)[0]
     noeudFin = tkl.Node(n.id, s.getLastObs().position.copy())
 
-    # On supprime les 3 arcs et le noeud
+    # On supprime les 3 arcs en commencant par les noeuds
+    #     (ce n'est plus nécessaire)
     # network.removeNode(node)
     #if n1.id in network.getNodesId():
     #    network.removeNode(n1)
@@ -380,34 +381,6 @@ def getAutreNoeud(network, eid, node):
     if node.id == na.id:
         return (nd, 0)
     return None
-
-
-
-
-def mergeNetwork(respath, fusionpath1, fusionpath2):
-    '''
-    
-
-    Parameters
-    ----------
-    respath : TYPE
-        DESCRIPTION.
-    fusionpath1 : TYPE
-        DESCRIPTION.
-    fusionpath2 : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    None.
-
-    '''
-
-    collection = tkl.TrackCollection()
-
-
-
-
 
 
 

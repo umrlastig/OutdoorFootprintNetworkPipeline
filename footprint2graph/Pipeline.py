@@ -9,6 +9,7 @@ from footprint2graph import segmentation_resample, second_round
 from footprint2graph import density_polygonize
 from footprint2graph import addTopologyToNetwork
 from footprint2graph import createNetworkGeom
+from footprint2graph import mergeNetwork
 
 
 
@@ -39,11 +40,11 @@ def run_iteration(pipeline_idx, config, collection=None):
         print ('ERROR : variable pipeline_idx need to be integer')
         return
 
-    print ('-------------------------------------------------------------------------------')
-    print ('-------------------------------------------------------------------------------')
+    print ('-----------------------------------------------------------------')
+    print ('-----------------------------------------------------------------')
     print ('              ITERATION ' , pipeline_idx)
-    print ('-------------------------------------------------------------------------------')
-    print ('-------------------------------------------------------------------------------')
+    print ('-----------------------------------------------------------------')
+    print ('-----------------------------------------------------------------')
 
     respath = config["output"]["RESULT_PATH"]
 
@@ -122,11 +123,17 @@ def run_iteration(pipeline_idx, config, collection=None):
     BUFFER = config["iterations"][pipeline_idx-1]["BUFFER"]
 
     createNetworkGeom(respath, SEARCH, BUFFER, pipeline_idx)
-
+    
 
     # -------------------------------------------------------------------------
     #    STEP 4 :  FUSION RESULTS
+    #
+    PPV_SEUIL = 20
+    ELASTIC_COV_DISTANCE = 20
+    EXTENSION = 50
 
+    if pipeline_idx > 1:
+        mergeNetwork(respath, pipeline_idx, PPV_SEUIL, ELASTIC_COV_DISTANCE, EXTENSION)
 
 
     
