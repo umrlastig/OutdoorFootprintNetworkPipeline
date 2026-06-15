@@ -8,31 +8,34 @@ End-to-End Examples
 ====================
 
 
-With Simulated Trajectories
-----------------------------
+À partir de trajectoires synthétiques
+--------------------------------------
 
-This example is a quick way to get started with *OFNP*. It lets users test the pipeline and become familiar with its main steps and parameters. It relies on the generation of simulated trajectories from a network, making it easy and fast to experiment with as soon as a network is available in the form of a list of edge geometries.
+Cet exemple, décliné en une version *quickstart* et une version détaillée, offre une introduction rapide à **footprint2graph**. Il permet aux utilisateurs d’expérimenter la chaîne de traitement et de se familiariser avec ses principales étapes et paramètres. Il s’appuie sur la génération de trajectoires simulées à partir d’un réseau, ce qui facilite les tests dès lors qu’un réseau est disponible sous la forme d’un ensemble de géométries représentant les arêtes du graphe.
 
 
 .. nbgallery::
     :name: quickstart-gallery
     :glob:
 
+    Quickstart
     Simulated-Traj_Example
 
 
 
-Code for Generating Published Datasets
+Génération des jeux de données publiés
 ---------------------------------------
 
 Ces deux exemples contiennent le code source qui a permis de générer deux jeux de données publiés dans l'entrepot de données 
-`Recherche Data Gouv <https://entrepot.recherche.data.gouv.fr/dataverse/intforout>`_  et qui sont situés dans deux petites zones situées dans le Parc Régional des Bauges et dans la vallée de Chamonix. Ces deux exemples font partie d'un livrable du Work Package 2 du `IntForOut research Project <https://www.umr-lastig.fr/intforout/>`_ .
+`Recherche Data Gouv <https://entrepot.recherche.data.gouv.fr/dataverse/intforout>`_  et qui sont situés dans deux petites zones situées dans le Parc Régional des Bauges et dans la vallée de Chamonix. Ces deux exemples font partie d'un livrable du Work Package 2 du `projet de recherche IntForOut <https://www.umr-lastig.fr/intforout/>`_ .
+
+Les données GNSS ont été produites et délivrées par la plateforme **Outdoorvision** (service fournissant des traces partagées volontairement par des utilisateurs lors de leurs activités de plein air), plateforme soutenue par le *Pôle Ressources National Sports de Nature* (**PRNSN**). Dans le cadre du projet de recherche IntForOut, les traces ont été extraites de la plateforme, après nettoyage, filtrage et anonymisation.
 
 
+.. nbgallery::
+    :name: intforout-gallery
+    :glob:
 
-..    :name: code-gallery
-..    :glob:
+    HikersFootprintBaugesArea
 
-..    HikersFootprintBaugesArea
-..    HikersFootprintChamonixArea
 
