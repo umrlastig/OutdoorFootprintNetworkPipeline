@@ -23,8 +23,8 @@ function that performs track segment merging using the tracklib library.
 
 
 
-aggregate\_track\_segments\_by\_edge
--------------------------------------
+Aggregate by edge
+-------------------
 
 .. currentmodule:: algo.fusion
 
@@ -32,9 +32,10 @@ aggregate\_track\_segments\_by\_edge
 
 
 
-aggregate\_track\_segments\_on\_edge
+Aggregate track segments for an edge
 --------------------------------------
 
 .. currentmodule:: algo.fusion
 
 .. autofunction:: aggregate_track_segments_on_edge
+
