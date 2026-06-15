@@ -260,13 +260,13 @@ def conflateTurnOnTerminalEdge(network, nid, SEARCH, h = 10):
     noeudFin = tkl.Node(n.id, s.getLastObs().position.copy())
 
     # On supprime les 3 arcs et le noeud
-    network.removeNode(node)
-    if n1.id in network.getNodesId():
-        network.removeNode(n1)
-    if noeudIni.id in network.getNodesId():
-        network.removeNode(noeudIni)
-    if noeudFin.id in network.getNodesId():
-        network.removeNode(noeudFin)
+    # network.removeNode(node)
+    #if n1.id in network.getNodesId():
+    #    network.removeNode(n1)
+    #if noeudIni.id in network.getNodesId():
+    #    network.removeNode(noeudIni)
+    #if noeudFin.id in network.getNodesId():
+    #    network.removeNode(noeudFin)
 
     network.removeEdge(network.EDGES[EID0])
     network.removeEdge(network.EDGES[EID1])
