@@ -159,8 +159,8 @@ def _rawdata(d):
     print ("Moyenne du nombre de points :          ", d['Moyenne du nombre de points'])
     print ('')
 
-    print ('Emprise spatiale')
     print ('--------------------------------------------------')
+    print ('Emprise spatiale')
     print (d['Emprise spatiale'])
 
     print ('')
