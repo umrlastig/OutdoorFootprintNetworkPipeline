@@ -3,7 +3,7 @@
 #
 
 output:
-  RESULT_PATH: "aaa"
+  RESULT_PATH: "/home/md_vandamme/7_LIB/footprint2graph/test/result1/"
 
 graph_construction:
   NUM_ITERATIONS: 1
