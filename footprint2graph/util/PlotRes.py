@@ -19,11 +19,6 @@ from shapely.geometry import LineString, MultiLineString, Polygon
 from shapely.geometry import shape as geom_shape
 
 
-'''
-def matPlotRasterShp(pathres, filename, append):
-    gdf = gpd.read_file(pathres + filename)
-    gdf.plot(ax=append)
-'''
 
 
 def maPlotRasterTiff(pathres, filename, append):
@@ -280,6 +275,75 @@ def plotSqueletteTopo(pathres, ax):
     network.plot('k-', nodes='ko', size=0.8, append=ax)
 
 
+
+def plotResultatFinal(pathres):
+    fig, ax = plt.subplots(figsize=(20, 16))
+    cmap = 'turbo'
+    vmin = 0
+
+
+    # ==========================================================
+
+    chemin = pathres + 'image/G1_1.asc'
+    rasterG1 = tkl.RasterReader.readFromAscFile(chemin, name='G1', separator='\t')
+    afmap = rasterG1.getAFMap('G1')
+
+
+    matrice = np.full((afmap.raster.nrow, afmap.raster.ncol),
+                      afmap.raster.getNoDataValue(), dtype=np.float32)
+    for i in range(afmap.raster.nrow):
+        for j in range(afmap.raster.ncol):
+            val = float(afmap.grid[i][j])
+            if val != afmap.raster.getNoDataValue():
+                matrice[i][j] = val
+    if afmap.raster.getNoDataValue() != None:
+        matrice[matrice == afmap.raster.getNoDataValue()] = np.nan
+
+    if cmap is None:
+        cmap = getOffsetColorMap(color1, color2, 0)
+        cmap.set_bad(color=novaluecolor)
+
+
+    extent = [
+        afmap.raster.xmin,
+        afmap.raster.xmax,
+        afmap.raster.ymin,
+        afmap.raster.ymax
+    ]
+
+    im = plt.imshow(matrice, cmap=cmap, vmin=vmin, extent=extent, origin='upper')
+    plt.title(afmap.getName())
+
+
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes('right', size='5%', pad=0.1)
+    if fig != None:
+        fig.colorbar(im, cax=cax, orientation='vertical', fraction=0.046)
+
+
+    # ==========================================================
+
+    fmt = tkl.NetworkFormat({
+               "pos_edge_id": 0,
+               "pos_source": 1,
+               "pos_target": 2,
+               "pos_wkt": 4,
+               "srid": "ENU",
+               "separator": ",",
+               "header": 1})
+    networkpath = pathres + 'merge_2/reseau_mobilite_2.csv'
+    squelette = tkl.NetworkReader.readFromFile(networkpath, fmt, verbose=False)
+
+
+    L = list(squelette.EDGES.items())
+    for i in range(len(L)):
+        x1d = []
+        y1d = []
+        edge = L[i][1]
+        for j in range(edge.geom.size()):
+            x1d.append(edge.geom.getX()[j])
+            y1d.append(edge.geom.getY()[j])
+        ax.plot(x1d, y1d, 'r-', linewidth=1)
 
 
 

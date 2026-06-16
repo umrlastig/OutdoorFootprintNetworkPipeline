@@ -51,9 +51,20 @@ def mergeNetwork(RESPATH, pipeline_idx = 2, PPV_SEUIL = 20,
             # EDGE_ID;WKT
             line = file.readline()
             line = file.readline()
+
             wkt = line.split(";")[1].strip()
             track = tkl.TrackReader().parseWkt(wkt)
-            collection1.addTrack(track)
+            compare = False
+            dmin = float('inf')
+            for t in collection1:
+                d = tkl.compare(t, track, tkl.MODE_COMPARISON_NN, p=2, verbose=False)
+                if d < dmin:
+                    dmin = d
+            #print (dmin)
+            if line.split(";")[0] == '154' or line.split(";")[0] == '152':
+                print (dmin)
+            if dmin > 1:
+                collection1.addTrack(track)
     
     GEOMS = tkl.Topology.create_geoms_topology(collection1, 1)
     network = tkl.NetworkReader.readNetworkFromListTuple(GEOMS)
@@ -79,6 +90,8 @@ def mergeNetwork(RESPATH, pipeline_idx = 2, PPV_SEUIL = 20,
     cptEdge = max(values) + 1
     values = [int(x) for x in network.getIndexNodes()]
     cptNode = max(values) + 1
+
+
     
     
     # -----------------------------------------------------------------
@@ -347,6 +360,13 @@ def mergeNetwork(RESPATH, pipeline_idx = 2, PPV_SEUIL = 20,
                 # print ('    ', idedge2)
                 edge2 = network.EDGES[idedge2]
                 (d, pos) = distance_point_track(point_inters, edge2.geom)
+                '''
+# 
+  File ~/7_LIB/footprint2graph/footprint2graph/algo/geometry.py:139 in distance_point_track
+    d = o.distanceTo(track.getFirstObs())
+
+AttributeError: 'NoneType' object has no attribute 'distanceTo'
+                '''
                 if d < dinf:
                     idedge = idedge2
                     dinf = d
@@ -446,7 +466,9 @@ def mergeNetwork(RESPATH, pipeline_idx = 2, PPV_SEUIL = 20,
             network.spatial_index.removeFeature(idx)
             network.spatial_index.addFeature(edge1.geom, idx)
     
-    
+        index = tkl.SpatialIndex(network, verbose=False)
+        network.spatial_index = index
+
         # ---------------------------------------------------
         #print (SPLITS)
         #if edge1.id == '23':

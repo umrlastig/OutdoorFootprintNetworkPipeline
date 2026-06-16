@@ -281,17 +281,16 @@ def find_connection_candidate(network, edge, extension, side):
     edge_to_split = None
     min_dist = float("inf")
 
-    neighbor_idxs = network.spatial_index.neighborhood(edge.geom, unit=-1)
+    neighbor_idxs1 = network.spatial_index.neighborhood(edge.geom, unit=-1)
+    neighbor_idxs2 = network.spatial_index.neighborhood(extension, unit=-1)
+    neighbor_idxs = set(neighbor_idxs1) | set(neighbor_idxs2)
 
     for idx in neighbor_idxs:
-
         neighbor = network[idx]
-
         if neighbor.id == edge.id:
             continue
 
         intersections = tkl.intersection(extension, neighbor.geom, withTime=-1)
-
         for intersec in intersections:
 
             dist = intersec.position.distance2DTo(ref_pos)
