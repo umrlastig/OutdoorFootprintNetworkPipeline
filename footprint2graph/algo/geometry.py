@@ -182,7 +182,7 @@ def decoupe_trace(track, I):
 
 
 
-def extend_extremity(track, length=50, pos='END'):
+def extend_extremity(track, length=50, pos='END', verbose=True):
     '''
     Extend start point or end point 
 
@@ -203,6 +203,10 @@ def extend_extremity(track, length=50, pos='END'):
     '''
 
     track.removePosDup()
+    if track.size() < 2:
+        if verbose:
+            print ("        Track contains too few points (" + str(track.size()) + ")")
+        return None
 
     if pos == 'END':
         p1 = track[-2]
@@ -212,7 +216,8 @@ def extend_extremity(track, length=50, pos='END'):
         p2 = track[0]
 
     if p1.position == p2.position:
-        print ('points identiques')
+        if verbose:
+            print ("        Track contains same points.")
         return None
 
     dx = p2.position.getX() - p1.position.getX()

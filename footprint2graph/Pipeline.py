@@ -123,7 +123,6 @@ def run_iteration(pipeline_idx, config, collection=None):
     BUFFER = config["iterations"][pipeline_idx-1]["BUFFER"]
 
     createNetworkGeom(respath, SEARCH, BUFFER, pipeline_idx)
-    
 
     # -------------------------------------------------------------------------
     #    STEP 4 :  FUSION RESULTS
@@ -133,7 +132,8 @@ def run_iteration(pipeline_idx, config, collection=None):
     EXTENSION = 50
 
     if pipeline_idx > 1:
-        mergeNetwork(respath, pipeline_idx, PPV_SEUIL, ELASTIC_COV_DISTANCE, EXTENSION)
+        mergeNetwork(respath, pipeline_idx, PPV_SEUIL, ELASTIC_COV_DISTANCE, EXTENSION,
+                     RESAMPLE_SIZE_FUSION)
 
 
 

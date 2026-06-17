@@ -14,7 +14,8 @@ from footprint2graph import find_connection_candidate
 
 
 def mergeNetwork(RESPATH, pipeline_idx = 2, PPV_SEUIL = 20,
-                 ELASTIC_COV_DISTANCE = 20, EXTENSION = 50):
+                 ELASTIC_COV_DISTANCE = 20, EXTENSION = 50,
+                 RESAMPLE_SIZE_FUSION = 5):
     '''
     
 
@@ -213,8 +214,12 @@ def mergeNetwork(RESPATH, pipeline_idx = 2, PPV_SEUIL = 20,
                 pointsI = tkl.intersection(edge1.geom, edge2.geom, withTime=-1)
     
                 for intersec in pointsI:
-                    extrema1 = intersec.distanceTo(edge1.geom.getFirstObs()) < 0.1 or intersec.distanceTo(edge1.geom.getLastObs()) < 0.1
-                    extrema2 = intersec.distanceTo(edge2.geom.getFirstObs()) < 0.1 or intersec.distanceTo(edge2.geom.getLastObs()) < 0.1
+                    d1 = intersec.distanceTo(edge1.geom.getFirstObs())
+                    d2 = intersec.distanceTo(edge1.geom.getLastObs())
+                    extrema1 = d1 < 2*RESAMPLE_SIZE_FUSION or d2 < 2*RESAMPLE_SIZE_FUSION
+                    d3 = intersec.distanceTo(edge2.geom.getFirstObs())
+                    d4 = intersec.distanceTo(edge2.geom.getLastObs())
+                    extrema2 = d3 < 2*RESAMPLE_SIZE_FUSION or d4 < 2*RESAMPLE_SIZE_FUSION
                     if extrema1 and extrema2:
                         continue
     
@@ -531,7 +536,9 @@ AttributeError: 'NoneType' object has no attribute 'distanceTo'
 
 
     GEOMS = tkl.Topology.create_geoms_topology(network.getAllEdgeGeoms(), 0.5)
+    print ('Nombre de géométries : ', len(GEOMS))
     network = tkl.NetworkReader.readNetworkFromListTuple(GEOMS)
+
     print ('Size of reseau de mobilité: ', network.size())
 
     name = 'reseau_mobilite_' + str(pidx) + '.csv'
