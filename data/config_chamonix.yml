@@ -1,0 +1,65 @@
+#
+#
+#
+
+output:
+  # Répertoire des résultats où les données en sortie vont être enregistrées
+  #    ces données servent comme entrée dans l'étape suivante
+  RESULT_PATH: '/home/md_vandamme/4_RESEAU/ZTEMPZ2/'
+
+graph_construction:
+  NUM_ITERATIONS: 3
+
+  # Paramètre : Nombre de points minimum pour un morceau de trace au moment du découpage
+  #             si le nombre n'est pas atteint, le morceau de trace est oublié
+  NB_OBS_MIN: 10 # il faudrait qu'une trace fasse au moins 50m
+
+  # Paramètre : Distance en mètres entre 2 points,
+  #             si supérieure au seuil on coupe la trace
+  DIST_MAX_2OBS: 50
+
+  # Pour des raisons logistiques, on sur-échantillone la trace :
+  #   - 1m pour le traitement d'images
+  #   - 5m pour la fusion
+  RESAMPLE_SIZE_GRID: 1
+  RESAMPLE_SIZE_FUSION: 5
+
+  # Définition des grilles géométrique et contexte
+  G1_SIZE: 2
+  G2_SIZE: 30
+
+
+iterations:
+  - SEUIL_DENSITE: 25 # 40, 30, 25
+    SEUIL_SURFACE: 1000
+    CUT_FACTOR: 5
+    INTERP_DIST: 5
+    CLEAN_DIST: 0
+    CURVE_HEIGHT: 50
+    CURVE_WAVE_LENGTH: 10
+    SEARCH: 25
+    BUFFER: 15
+
+  - SEUIL_DENSITE: 25   # 20
+    SEUIL_SURFACE: 300  # 150
+    CUT_FACTOR: 5
+    INTERP_DIST: 5
+    CLEAN_DIST: 0
+    CURVE_HEIGHT: 25
+    CURVE_WAVE_LENGTH: 10
+    SEARCH: 25
+    BUFFER: 10
+
+  - SEUIL_DENSITE: 20
+    SEUIL_SURFACE: 150
+    CUT_FACTOR: 5
+    INTERP_DIST: 5
+    CLEAN_DIST: 0
+    CURVE_HEIGHT: 25
+    CURVE_WAVE_LENGTH: 10
+    SEARCH: 25
+    BUFFER: 10
+
+
+
+
