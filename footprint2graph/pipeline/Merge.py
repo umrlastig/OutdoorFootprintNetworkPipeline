@@ -37,8 +37,9 @@ def mergeNetwork(RESPATH, pipeline_idx = 2, PPV_SEUIL = 20,
 
     '''
 
-
     pidx = int (pipeline_idx)
+
+    print("Merging the mobility network with the result of iteration " + str(pipeline_idx) + ".")
 
     if pidx == 2:
         fusionpath1 = RESPATH + '/geometry/raccord' + str(pidx-1) + '/'
@@ -100,7 +101,7 @@ def mergeNetwork(RESPATH, pipeline_idx = 2, PPV_SEUIL = 20,
             track.createAnalyticalFeature('EDGE_ID', line.split(";")[0])
             collection2.addTrack(track)
     
-    print ('Size of collection In  : ', collection1.size())
+    print ('Size of collection In  : ', network.size())
     print ('Size of collection In+1: ', collection2.size())
     
     
@@ -243,15 +244,21 @@ def mergeNetwork(RESPATH, pipeline_idx = 2, PPV_SEUIL = 20,
                     cptNode += 1
     
                     # On supprime les 2 arcs
-                    network.removeEdge(network.EDGES[edge1.id])
-                    network.removeEdge(network.EDGES[edge2.id])
+                    if edge1.id in network.EDGES:
+                        network.removeEdge(network.EDGES[edge1.id])
+                    if edge2.id in network.EDGES:
+                        network.removeEdge(network.EDGES[edge2.id])
                     # print ('    remove edges:', edge1.id, edge2.id)
     
                     # On ajoute les 4 arcs
-                    network.addEdge(e1, n1, nI)
-                    network.addEdge(e2, nI, n2)
-                    network.addEdge(e3, n3, nI)
-                    network.addEdge(e4, nI, n4)
+                    if e1.geom is not None:
+                        network.addEdge(e1, n1, nI)
+                    if e2.geom is not None:
+                        network.addEdge(e2, nI, n2)
+                    if e3.geom is not None:
+                        network.addEdge(e3, n3, nI)
+                    if e4.geom is not None:
+                        network.addEdge(e4, nI, n4)
     
     
     
@@ -532,4 +539,5 @@ AttributeError: 'NoneType' object has no attribute 'distanceTo'
     tkl.NetworkWriter.writeToCsv(network, netwokpath)
 
 
-
+    print("End building the mobility network.")
+    print ('==================================================================')
