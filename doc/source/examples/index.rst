@@ -19,7 +19,8 @@ Cet exemple, décliné en une version *quickstart* et une version détaillée, o
     :glob:
 
     Quickstart
-    PedestrianGraphPlanDeLaLimace
+    DetailedQuickstart
+    
 
 
 Génération des jeux de données publiés
@@ -35,6 +36,6 @@ Les données GNSS ont été produites et délivrées par la plateforme **Outdoor
     :name: intforout-gallery
     :glob:
 
-    HikersFootprintBaugesArea
+    PedestrianGraphPlanDeLaLimace
 
 
