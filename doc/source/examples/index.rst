@@ -19,8 +19,7 @@ Cet exemple, décliné en une version *quickstart* et une version détaillée, o
     :glob:
 
     Quickstart
-    Simulated-Traj_Example
-
+    PedestrianGraphPlanDeLaLimace
 
 
 Génération des jeux de données publiés
