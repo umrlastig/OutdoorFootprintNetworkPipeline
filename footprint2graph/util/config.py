@@ -29,11 +29,11 @@ def prepareEnv(respath, iteration_index = None):
         for filename in os.listdir(respath):
             file_path = os.path.join(respath, filename)
             if os.path.isfile(file_path) or os.path.islink(file_path):
-                os.unlink(file_path)
+                filename = os.path.basename(file_path)
+                if filename != "metadata_collection.csv":
+                    os.unlink(file_path)
             elif os.path.isdir(file_path):
                 shutil.rmtree(file_path)
-    else:
-        idx = int (iteration_index)
 
 
 
