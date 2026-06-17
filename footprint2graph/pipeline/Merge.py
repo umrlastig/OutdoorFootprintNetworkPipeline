@@ -40,35 +40,53 @@ def mergeNetwork(RESPATH, pipeline_idx = 2, PPV_SEUIL = 20,
 
     pidx = int (pipeline_idx)
 
-    fusionpath1 = RESPATH + '/geometry/raccord' + str(pidx-1) + '/'
-    fusionpath2 = RESPATH + '/geometry/raccord' + str(pidx) + '/'
+    if pidx == 2:
+        fusionpath1 = RESPATH + '/geometry/raccord' + str(pidx-1) + '/'
+        fusionpath2 = RESPATH + '/geometry/raccord' + str(pidx) + '/'
 
+        # On charge network1
+        collection1 = tkl.TrackCollection()
+        for fusionfilename in os.listdir(fusionpath1):
+            with open(fusionpath1 + fusionfilename, 'r') as file:
+                # EDGE_ID;WKT
+                line = file.readline()
+                line = file.readline()
 
-    # On charge network1
-    collection1 = tkl.TrackCollection()
-    for fusionfilename in os.listdir(fusionpath1):
-        with open(fusionpath1 + fusionfilename, 'r') as file:
-            # EDGE_ID;WKT
-            line = file.readline()
-            line = file.readline()
+                wkt = line.split(";")[1].strip()
+                track = tkl.TrackReader().parseWkt(wkt)
+                compare = False
+                dmin = float('inf')
+                for t in collection1:
+                    d = tkl.compare(t, track, tkl.MODE_COMPARISON_NN, p=2, verbose=False)
+                    if d < dmin:
+                        dmin = d
+                #print (dmin)
+                if line.split(";")[0] == '154' or line.split(";")[0] == '152':
+                    print (dmin)
+                if dmin > 1:
+                    collection1.addTrack(track)
+        
+        GEOMS = tkl.Topology.create_geoms_topology(collection1, 1)
+        network = tkl.NetworkReader.readNetworkFromListTuple(GEOMS)
 
-            wkt = line.split(";")[1].strip()
-            track = tkl.TrackReader().parseWkt(wkt)
-            compare = False
-            dmin = float('inf')
-            for t in collection1:
-                d = tkl.compare(t, track, tkl.MODE_COMPARISON_NN, p=2, verbose=False)
-                if d < dmin:
-                    dmin = d
-            #print (dmin)
-            if line.split(";")[0] == '154' or line.split(";")[0] == '152':
-                print (dmin)
-            if dmin > 1:
-                collection1.addTrack(track)
-    
-    GEOMS = tkl.Topology.create_geoms_topology(collection1, 1)
-    network = tkl.NetworkReader.readNetworkFromListTuple(GEOMS)
-    #network.plot('k-', 'ko')
+    elif pidx > 2:
+        # fusionpath1 = RESPATH + '/geometry/raccord' + str(pidx-1) + '/'
+        datasetname = 'reseau_mobilite_' + str(pidx-1) + '.csv'
+        fusionpath1 = RESPATH + '/merge_' + str(pidx-1) + '/' + datasetname
+        fusionpath2 = RESPATH + '/geometry/raccord' + str(pidx) + '/'
+
+        # On charge network1
+        fmt = tkl.NetworkFormat({
+                   "pos_edge_id": 0,
+                   "pos_source": 1,
+                   "pos_target": 2,
+                   "pos_wkt": 4,
+                   "srid": "ENU",
+                   "separator": ",",
+                   "header": 1})
+        network = tkl.NetworkReader.readFromFile(fusionpath1, fmt, verbose=False)
+
+    # network.plot('k-', 'ko')
     
     # On charge network2
     collection2 = tkl.TrackCollection()
