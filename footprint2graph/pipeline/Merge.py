@@ -369,6 +369,9 @@ def mergeNetwork(RESPATH, pipeline_idx = 2, PPV_SEUIL = 20,
                             point_inters = candidate['intersection']
                             extension = candidate['extension']
                             edge_to_split = candidate["edge_to_split"]
+            if point_inters is None:
+                print ('        Candidate edge ignored (no intersection)')
+                continue
         else:
             edge1 = network.EDGES[candidat["edge"]]
             side = candidat['side']
@@ -390,6 +393,7 @@ def mergeNetwork(RESPATH, pipeline_idx = 2, PPV_SEUIL = 20,
                 # print ('    ', idedge2)
                 edge2 = network.EDGES[idedge2]
                 (d, pos) = distance_point_track(point_inters, edge2.geom)
+                
                 '''
 # 
   File ~/7_LIB/footprint2graph/footprint2graph/algo/geometry.py:139 in distance_point_track
