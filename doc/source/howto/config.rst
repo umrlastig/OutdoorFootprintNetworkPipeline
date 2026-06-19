@@ -135,10 +135,6 @@ Chaque entrée correspond à un jeu de paramètres utilisé lors d’une exécut
      - SEUIL_DENSITE: 25
        SEUIL_SURFACE: 1000
 
-       CUT_FACTOR: 5
-       INTERP_DIST: 5
-       CLEAN_DIST: 0
-
        CURVE_HEIGHT: 25
        CURVE_WAVE_LENGTH: 5
 
@@ -156,18 +152,7 @@ Chaque entrée correspond à un jeu de paramètres utilisé lors d’une exécut
 
 
 
-4.2 Calcul de la centerline
-""""""""""""""""""""""""""""
-
-*CUT_FACTOR* : facteur de coupure dans le filtre de fourrier
-
-*INTERP_DIST* : interpolation distance (m)
-
-*CLEAN_DIST*  : cleaning distance (m)
-
-
-
-4.3 Construction de la topologie du squelette
+4.2 Construction de la topologie du squelette
 """""""""""""""""""""""""""""""""""""""""""""""
 
 *CURVE_HEIGHT* : longueur maximale pour qu'un arc du squelette soit considéré comme une arrête terminale d'un sommet de virage.
@@ -176,7 +161,7 @@ Chaque entrée correspond à un jeu de paramètres utilisé lors d’une exécut
 
 
 
-4.4 Recalage et Fusion
+4.3 Recalage et Fusion
 """"""""""""""""""""""""
 
 *SEARCH* : distance maximale autour du squelette dans laquelle les observations GNSS sont recherchées comme candidats afin d'être recalées sur le réseau.

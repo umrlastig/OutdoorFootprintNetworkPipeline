@@ -48,14 +48,14 @@ Le tableau suivant recense ces fichiers et précise, pour chacun d'eux, la briqu
 Exemple
 ^^^^^^^^^
 
-La fonction ``print_log`` permet la lecture d’un fichier de rapport de résultats. Elle prend en paramètre *RESPATH*, correspondant au répertoire de sortie défini dans le fichier de configuration.
+La fonction ``report_file`` permet la lecture d’un fichier de rapport de résultats. Elle prend en paramètre *RESPATH*, correspondant au répertoire de sortie défini dans le fichier de configuration.
 
 
 .. code-block:: Python
 
-   from footprint2graph import print_log
+   from footprint2graph import report_file
 
-   print_log(RESPATH, 'env.json')
+   report_file(RESPATH, 'env.json')
 
 
 
