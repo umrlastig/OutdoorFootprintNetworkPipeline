@@ -29,11 +29,12 @@ Specifically, the documentation includes end-to-end example:
 - **with a set of simulated trajectories generated from a network** : [quickstart example](https://footprint2graph.readthedocs.io/en/latest/examples/Simulated-Traj_Example.html)
 
 
-
-
 ## Acknowledgments
 
 This framework was developed as part of the [IntForOut research Project](https://www.umr-lastig.fr/intforout/) (Multisource spatial data INTegration FOR the Monitoring of Ecosystems under the pressure of OUTdoor recreation) and was supported by the ANR under grant agreement no. ANR-23-CE55-0003.  
+
+
+We acknowledge Filip Todić for the GitHub repository (https://github.com/fitodic/centerline), which provides an implementation of a Voronoi-based centerline extraction algorithm from road surface geometries.
 
 
 ## Development & Contributions
