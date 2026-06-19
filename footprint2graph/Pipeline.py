@@ -99,13 +99,13 @@ def run_iteration(pipeline_idx, config, collection=None):
     G2_SIZE       = config["graph_construction"]["G2_SIZE"]
     SEUIL_DENSITE = config["iterations"][pipeline_idx-1]["SEUIL_DENSITE"]
     SEUIL_SURFACE = config["iterations"][pipeline_idx-1]["SEUIL_SURFACE"]
-    cut_factor    = config["iterations"][pipeline_idx-1]["CUT_FACTOR"]
-    interp_dist   = config["iterations"][pipeline_idx-1]["INTERP_DIST"]
-    clean_dist    = config["iterations"][pipeline_idx-1]["CLEAN_DIST"]
+    #cut_factor    = config["iterations"][pipeline_idx-1]["CUT_FACTOR"]
+    #interp_dist   = config["iterations"][pipeline_idx-1]["INTERP_DIST"]
+    #clean_dist    = config["iterations"][pipeline_idx-1]["CLEAN_DIST"]
 
     density_polygonize(respath, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
-                       pipeline_idx,
-                       cut_factor=cut_factor, interp_dist=interp_dist, clean_dist=clean_dist)
+                       pipeline_idx)
+    # cut_factor=cut_factor, interp_dist=interp_dist, clean_dist=clean_dist)
 
     # -------------------------------------------------------------------------
     #    STEP 2 : TOPOLOGY
