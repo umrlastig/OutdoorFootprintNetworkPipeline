@@ -25,7 +25,7 @@ class TestZone1(unittest.TestCase):
     def setUp (self):
         resource_path = os.path.join(os.path.split(__file__)[0], "..")
 
-        config_path = os.path.join(resource_path, 'data/config_zone1.yml')
+        config_path = os.path.join(resource_path, 'data/config_quickstart.yml')
         self.config = read_config(config_path)
 
         self.RESPATH = os.path.join(resource_path, './test/result1/')
@@ -43,7 +43,7 @@ class TestZone1(unittest.TestCase):
         setupEnv(self.RESPATH, iteration_index)
 
         #  Import du réseau
-        netpath = os.path.join(self.RESPATH, '../../data/network2.csv')
+        netpath = os.path.join(self.RESPATH, '../../data/network_quickstart.csv')
         fmt = tkl.NetworkFormat({
                "pos_edge_id": 1,
                "pos_source": 2,
