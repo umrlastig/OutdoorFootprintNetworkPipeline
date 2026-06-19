@@ -34,7 +34,7 @@ Specifically, the documentation includes end-to-end example:
 This framework was developed as part of the [IntForOut research Project](https://www.umr-lastig.fr/intforout/) (Multisource spatial data INTegration FOR the Monitoring of Ecosystems under the pressure of OUTdoor recreation) and was supported by the ANR under grant agreement no. ANR-23-CE55-0003.  
 
 
-We acknowledge Filip Todić for the GitHub repository (https://github.com/fitodic/centerline), which provides an implementation of a Voronoi-based centerline extraction algorithm from road surface geometries.
+We acknowledge Filip Todić for the GitHub repository (https://github.com/fitodic/centerline), from which the code implementing a Voronoi-based centerline extraction algorithm has been used.
 
 
 ## Development & Contributions
