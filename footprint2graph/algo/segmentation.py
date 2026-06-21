@@ -169,7 +169,8 @@ def candidates_for_aggregate(track_segment, edge, BUFFER):
 
 
 
-def getcandidates(MM, network, collection, BUFFER=15, RESPATH=None, prefix=None):
+def getcandidates(MM, network, collection, BUFFER=15, RESPATH=None, prefix=None,
+                  log_level = 'ERROR'):
 
 
     # =========================================================================
@@ -180,8 +181,8 @@ def getcandidates(MM, network, collection, BUFFER=15, RESPATH=None, prefix=None)
     #  On enregistre le MM dans un fichier CSV
 
     # EDGE_ID;TRACK_ID;WKT
-
-    print ('Starting construction of candidate trajectory segments for each topology edge ...')
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ('    Starting construction of candidate trajectory segments for each topology edge ...')
 
     if RESPATH is not None:
         mmpath = RESPATH + 'mapmatch/resultmm_' + str(prefix) + '.csv'
@@ -297,7 +298,8 @@ def getcandidates(MM, network, collection, BUFFER=15, RESPATH=None, prefix=None)
                 f2.write(str(edgeid) + ";" + str(trackid) + ";" + tn.toWKT() + "\n")
 
         n = len(TRACES[edgeid])
-        print ('   ', n, ' candidates for edge', edgeid)
+        if log_level == 'DEBUG':
+            print ('   ', n, ' candidates for edge', edgeid)
         NBC += 1
         MIN = min([MIN,n])
         MAX = max([MAX,n])
@@ -309,30 +311,33 @@ def getcandidates(MM, network, collection, BUFFER=15, RESPATH=None, prefix=None)
         f2.close()
 
     try:
-        print ("    Number of processed edges: ", NBC)
-        print ("    Minimum number of candidate tracks per edge: ", MIN)
-        print ("    Maximum number of candidate traces per edge: ", MAX)
-        print ("    Average number of candidate tracks per edge: ", round(MOYC/NBC))
-
+        if log_level == 'INFO' or log_level == 'DEBUG':
+            print ("    Number of processed edges: ", NBC)
+            print ("    Minimum number of candidate tracks per edge: ", MIN)
+            print ("    Maximum number of candidate traces per edge: ", MAX)
+            print ("    Average number of candidate tracks per edge: ", round(MOYC/NBC))
+    
         log_event(RESPATH + "candidate" + str(prefix) + ".json", {
-            "Number of processed edges": NBC,
-            "Minimum number of candidate traces per edge": MIN,
-            "Maximum number of candidate traces per edge": MAX,
-            "Average number of candidate tracks per edge": round(MOYC/NBC),
-            "ts": time.time()
+                "Number of processed edges": NBC,
+                "Minimum number of candidate traces per edge": MIN,
+                "Maximum number of candidate traces per edge": MAX,
+                "Average number of candidate tracks per edge": round(MOYC/NBC),
+                "ts": time.time()
         })
     except Exception as e:
         print (e)
         print ('Error while writing candidate information to log.')
 
-    print ("    Segment construction completed.")
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ("    Segment construction completed.")
 
     return TRACES
 
 
 
 def prepareMapMatchResultForCreateCandidates(collection, network, SEARCH, NB_PTS = 5,
-                                             RESPATH=None, prefix=None):
+                                             RESPATH=None, prefix=None,
+                                             log_level = 'ERROR'):
 
     # On construit un dictionnaire qui va contenir l'ensemble des points MM
     #    avec  leurs séquences afin de reconstuire des traces candidates
@@ -494,9 +499,11 @@ def prepareMapMatchResultForCreateCandidates(collection, network, SEARCH, NB_PTS
             percentHP = 0
         else:
             percentMM = (nbmm / nbpt * 100)
-            print ('    Number of map-matched points = ' + str(nbmm) + ' (' + str(round(percentMM, 2)) + ' %)')
+            if log_level == 'DEBUG':
+                print ('    Number of map-matched points = ' + str(nbmm) + ' (' + str(round(percentMM, 2)) + ' %)')
             percentHP = (nbhp / nbpt * 100)
-        print ('    Map-matching results restructuring completed.')
+        if log_level == 'INFO' or log_level == 'DEBUG':
+            print ('    Map-matching results restructuring completed.')
 
         log_event(RESPATH + "mapmatch" + prefix + ".json", {
             "Search radius (m)": SEARCH,

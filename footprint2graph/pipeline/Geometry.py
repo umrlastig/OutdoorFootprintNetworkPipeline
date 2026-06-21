@@ -20,7 +20,9 @@ from footprint2graph import aggregate_track_segments_by_edge
 
 
 
-def createNetworkGeom (RESPATH, SEARCH, BUFFER, pipeline_idx = None):
+def createNetworkGeom (RESPATH, SEARCH, BUFFER,
+                       pipeline_idx = None,
+                       log_level = 'ERROR'):
 
 
     t0 = time.time()
@@ -43,7 +45,8 @@ def createNetworkGeom (RESPATH, SEARCH, BUFFER, pipeline_idx = None):
     # =========================================================================
     #    Lecture du réseau
     #
-    print ('    Loading network (' + prefix + ') ...')
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ('    Loading network (' + prefix + ') ...')
     fmt = tkl.NetworkFormat({
            "pos_edge_id": 0,
            "pos_source": 1,
@@ -55,16 +58,18 @@ def createNetworkGeom (RESPATH, SEARCH, BUFFER, pipeline_idx = None):
     
     networkpath = RESPATH + 'network/reseau_' + prefix + '.csv'
     network = tkl.NetworkReader.readFromFile(networkpath, fmt, verbose=False)
-    
-    print ('        Number of edges = ', len(network.EDGES))
-    print ('        Number of nodes = ', len(network.NODES))
-    print ('        Total segment length of the network = ', network.totalLength())
+
+    if log_level == 'DEBUG':
+        print ('        Number of edges = ', len(network.EDGES))
+        print ('        Number of nodes = ', len(network.NODES))
+        print ('        Total segment length of the network = ', network.totalLength())
 
     
     # =========================================================================
     #   Lecture des traces découpées et ré-échantillonnées.
     #
-    print ('    Loading collection of tracks ...')
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ('    Loading collection of tracks ...')
     fmt = tkl.TrackFormat({'ext': 'CSV',
                            'srid': 'ENU',
                            'id_E': 1,'id_N': 0, 'id_U': 3,'id_T': 2,
@@ -88,42 +93,49 @@ def createNetworkGeom (RESPATH, SEARCH, BUFFER, pipeline_idx = None):
         trace.tid = numofnp
         collection.addTrack(trace)
 
-
-    print ('        Number of tracks:', collection2.size())
+    if log_level == 'DEBUG':
+        print ('        Number of tracks:', collection2.size())
 
     t1 = time.time()
     total = t1-t0
-    print ("        Execution time (seconds):", total)
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ("        Execution time (seconds):", total)
     t0 = t1
 
 
     # =========================================================================
     #     Map-matching
     #
-    print ('    Starting map-matching ...')
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ('    Starting map-matching ...')
 
     si = tkl.SpatialIndex(network, verbose=False)
-    print ('        Index spatial : ', si)
+    if log_level == 'DEBUG':
+        print ('        Index spatial : ', si)
     network.spatial_index = si
 
     # Computes all distances between pairs of nodes
     network.prepare(verbose=False)
 
     # Map track on network
-    print ('        Parameter search_radius: ', SEARCH)
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ('        Parameter search_radius: ', SEARCH)
     tkl.mapOnNetwork(collection, network, search_radius=SEARCH, debug=False, verbose=False)
-    print ('        Map-matching ended.')
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ('        Map-matching ended.')
 
     t1 = time.time()
     total = t1-t0
-    print ("        Execution time (seconds):", total)
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ("        Execution time (seconds):", total)
     t0 = t1
 
 
     # =========================================================================
     #     1. Prepare map-matching results for candidate segment generation
     #
-    print ('        Prepare map-matching results for candidate segment generation')
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ('        Prepare map-matching results for candidate segment generation')
 
     NB_PTS = 5
     MM = prepareMapMatchResultForCreateCandidates(collection, network, SEARCH, NB_PTS, RESPATH, prefix)
@@ -136,15 +148,17 @@ def createNetworkGeom (RESPATH, SEARCH, BUFFER, pipeline_idx = None):
         tkl.TrackWriter.writeToFiles(collection, mmtracespath,
                                  id_E=1, id_N=0, id_U=3, id_T=2,
                                  h=1, separator=";", af_names=af_names)
-        print ('        Map-matching results exported.')
+        if log_level == 'INFO' or log_level == 'DEBUG':
+            print ('        Map-matching results exported.')
 
 
     # 2. Résultats Map-matching
     #
     getcandidates(MM, network, collection, BUFFER, RESPATH, prefix)
     t1 = time.time()
-    total = t1-t0
-    print ("        Execution time (seconds):", total)
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        total = t1-t0
+        print ("        Execution time (seconds):", total)
     t0 = t1
 
 
@@ -155,15 +169,17 @@ def createNetworkGeom (RESPATH, SEARCH, BUFFER, pipeline_idx = None):
     fusions = aggregate_track_segments_by_edge(network, SEARCH, RESPATH, prefix)
 
     t1 = time.time()
-    total = t1-t0
-    print ("        Execution time (seconds):", total)
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        total = t1-t0
+        print ("        Execution time (seconds):", total)
     t0 = t1
 
 
     # =========================================================================
     # Raccord
 
-    print ("    Starting conflation ...")
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ("    Starting conflation ...")
 
     threshold = 20 # 50
     h = 20
@@ -184,11 +200,13 @@ def createNetworkGeom (RESPATH, SEARCH, BUFFER, pipeline_idx = None):
             f.write(str(segment.tid) + ";" + segment.toWKT() + "\n")
             f.close()
 
-    print ("        Conflation process finished.")
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ("        Conflation process finished.")
 
     t1 = time.time()
-    total = t1-t0
-    print ("        Execution time (seconds):", total)
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        total = t1-t0
+        print ("        Execution time (seconds):", total)
     t0 = t1
 
 

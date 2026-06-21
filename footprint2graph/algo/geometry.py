@@ -22,7 +22,7 @@ import numpy as np
 """
 
 
-def snap_lines_to_connect(collection, tolerance=1):
+def snap_lines_to_connect(collection, tolerance=1, log_level='ERROR'):
     """
     Accroche 2 traces d'une même collection.
     """
@@ -60,7 +60,8 @@ def snap_lines_to_connect(collection, tolerance=1):
 
                     # On coupe la trace 1 si besoin
                     if idxi > 0 and idxi < track1.size()-1:
-                        print ('    on coupe la trace 1')
+                        if log_level == 'DEBUG':
+                            print ('    on coupe la trace 1')
                         # on crée 2 nouvelles traces
                         s1 = track1.extract(0, idxi)
                         s1.tid = cptTrack
@@ -78,7 +79,8 @@ def snap_lines_to_connect(collection, tolerance=1):
 
                     # On coupe la trace qui doit l'être
                     if idxj > 0 and idxj < track2.size()-1:
-                        print ('    on coupe la trace 2')
+                        if log_level == 'DEBUG':
+                            print ('    on coupe la trace 2')
                         # on en crée 2 nouveaux
                         s1 = track2.extract(0, idxj)
                         s1.tid = cptTrack

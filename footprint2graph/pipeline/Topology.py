@@ -21,7 +21,7 @@ from footprint2graph import log_event
 
 def addTopologyToNetwork(RESPATH, SEARCH, h=10,
                          NB_OBS_MIN = 10, RESAMPLE_SIZE_FUSION = 5,
-                         pipeline_idx = None):
+                         pipeline_idx = None, log_level='ERROR'):
 
     t0 = time.time()
     print("Starting topology creation for the network")
@@ -34,6 +34,10 @@ def addTopologyToNetwork(RESPATH, SEARCH, h=10,
 
     squelettepath = str(RESPATH) + 'network/squelette_' + str(idx) + '.shp'
 
+    if log_level == 'ERROR':
+        verbose = False
+    else:
+        verbose = True
 
 
     # =========================================================================
@@ -54,7 +58,7 @@ def addTopologyToNetwork(RESPATH, SEARCH, h=10,
                     cptTrack += 1
                     collection.addTrack(track)
             elif geom.geom_type == "LineString":
-                print (geom.geom_type)
+                # print (geom.geom_type)
                 track = tkl.TrackReader().parseWkt(geom.wkt)
                 if track.length() < tolerance/2:
                     continue
@@ -62,12 +66,14 @@ def addTopologyToNetwork(RESPATH, SEARCH, h=10,
                 cptTrack += 1
                 collection.addTrack(track)
             else:
-                print (geom.geom_type)
+                if log_level == 'DEBUG':
+                    print (geom.geom_type)
 
 
     NB_EDGES = collection.size()
-    print ('    Number of edges in the skeleton:', collection.size())
-    print ('    Finished loaded skeleton.')
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ('    Number of edges in the skeleton:', collection.size())
+        print ('    Finished loaded skeleton.')
 
     if collection.size() == 0:
         sys.exit("Fin du programme le squelette est vide.")
@@ -121,10 +127,10 @@ def addTopologyToNetwork(RESPATH, SEARCH, h=10,
     tolerance = 0
     for track in collection:
         track = tkl.simplify(track, tolerance, tkl.MODE_SIMPLIFY_REM_POS_DUP,
-                             verbose=False)
+                             verbose=verbose)
     print ('')
-
-    print ('    Finished removing hooked parts of the skeleton.')
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ('    Finished removing hooked parts of the skeleton.')
 
 
     # =========================================================================
@@ -142,8 +148,9 @@ def addTopologyToNetwork(RESPATH, SEARCH, h=10,
     tolerance = 3
     for track in collection:
         track = tkl.simplify(track, tolerance, tkl.MODE_SIMPLIFY_DOUGLAS_PEUCKER,
-                             verbose=False)
-    print ('    Finished simplification of the skeleton.')
+                             verbose=verbose)
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ('    Finished simplification of the skeleton.')
 
 
 
@@ -152,10 +159,11 @@ def addTopologyToNetwork(RESPATH, SEARCH, h=10,
     #
     tolerance = 1
     NB_START = collection.size()
-    collection = snap_lines_to_connect(collection, tolerance)
+    collection = snap_lines_to_connect(collection, tolerance, log_level=log_level)
     NB_END = collection.size()
-    print ('    Number of edges in the skeleton (after snapping):', collection.size())
-    print ('    Edge count difference after snapping : ', NB_END - NB_START)
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ('    Number of edges in the skeleton (after snapping):', collection.size())
+        print ('    Edge count difference after snapping : ', NB_END - NB_START)
 
 
 
@@ -181,9 +189,9 @@ def addTopologyToNetwork(RESPATH, SEARCH, h=10,
            "separator": ",",
            "header": 1})
     network = tkl.NetworkReader.readFromFile(output_file, fmt, verbose=False)
-
-    print ('    Number of edges in the simplified skeleton:', len(network.getIndexEdges()))
-    print ('    Number of nodes:', len(network.getIndexNodes()))
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ('    Number of edges in the simplified skeleton:', len(network.getIndexEdges()))
+        print ('    Number of nodes:', len(network.getIndexNodes()))
 
 
 
@@ -192,7 +200,8 @@ def addTopologyToNetwork(RESPATH, SEARCH, h=10,
     #          Suppression des petits arcs ISOLES
     #
     long_min = NB_OBS_MIN * RESAMPLE_SIZE_FUSION
-    print ('     Shortest edges limit : ', long_min)
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ('     Shortest edges limit : ', long_min)
 
     CPT_LEN_TOO_SHORT = 0
     for edge in network:
@@ -203,7 +212,8 @@ def addTopologyToNetwork(RESPATH, SEARCH, h=10,
             network.removeEdge(edge)
             # pas besoin de supprimer des noeuds puisque isolés
             CPT_LEN_TOO_SHORT += 1
-    print ('    Number of edges in the skeleton (after removing the shortest edges):', CPT_LEN_TOO_SHORT)
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ('    Number of edges in the skeleton (after removing the shortest edges):', CPT_LEN_TOO_SHORT)
 
 
     TE = list(map(int, network.getIndexEdges()))
@@ -234,12 +244,13 @@ def addTopologyToNetwork(RESPATH, SEARCH, h=10,
         nid = nodes_deg3[0]
         # print ('Noeud en cours :', nid)
 
-        r = conflateTurnOnTerminalEdge(network, nid, SEARCH, h)
+        r = conflateTurnOnTerminalEdge(network, nid, SEARCH, h, log_level=log_level)
         if r is None:
             HC.append(nid)
 
     # network.simplify(0, tkl.MODE_SIMPLIFY_REM_POS_DUP)
-    print ('    Edge count after conflation:', len(network.getIndexEdges()))
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ('    Edge count after conflation:', len(network.getIndexEdges()))
 
 
     # =========================================================================

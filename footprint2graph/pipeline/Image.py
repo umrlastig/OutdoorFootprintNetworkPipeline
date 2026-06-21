@@ -39,7 +39,7 @@ Ce module
 def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
                        pipeline_idx = None,
                        cut_factor=5, interp_dist=5, clean_dist=0,
-                       verbose=False):
+                       log_level = 'ERROR'):
 
     idx = int (pipeline_idx)
 
@@ -54,6 +54,10 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
         rep = 'points_not_mm_' + prefix
 
 
+    if log_level == 'ERROR':
+        verbose = False
+    else:
+        verbose = True
 
 
     # =============================================================================
@@ -61,7 +65,8 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
     #  Ici elles sont mises dans un fichier CSV dont la géométrie de la trace est
     #  dans le format WKT
 
-    print ('    Loading tracks from : ', rep)
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ('    Loading tracks from : ', rep)
     t0 = time.time()
 
     fmt = tkl.TrackFormat({'ext': 'CSV',
@@ -72,15 +77,17 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
                            'read_all': True})
     
     resampledtracespath = RESPATH + rep + '/'
-    tracks = tkl.TrackReader.readFromFile(resampledtracespath, fmt, verbose=False)
+    tracks = tkl.TrackReader.readFromFile(resampledtracespath, fmt, verbose=verbose)
     total = len(tracks)
-    print ('    Number of tracks to load: ', total)
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ('    Number of tracks to load: ', total)
 
 
     # =========================================================================
     #      On construit G1
 
-    print ('    Building high-resolution geometry density grid G1 : ', G1_SIZE, 'm ...')
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ('    Building high-resolution geometry density grid G1 : ', G1_SIZE, 'm ...')
 
     bbox = tracks.bbox()
 
@@ -105,8 +112,8 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
 
     # =========================================================================
     #      On construit G2
-
-    print ('    Building low-resolution contextual density grid G2 : ', G2_SIZE, 'm ...')
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ('    Building low-resolution contextual density grid G2 : ', G2_SIZE, 'm ...')
 
     resolutionG2 = (G1_SIZE, G1_SIZE)
 
@@ -123,13 +130,13 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
 
     # =========================================================================
     #      On alimente les deux grilles avec les traces
-
-    print ('    Assigning track points to the G1 and G2 grids')
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ('    Assigning track points to the G1 and G2 grids')
 
     cpt = 1
     for trace in tracks:
 
-        if cpt%500 == 0:
+        if cpt%1000 == 0 and (log_level == 'INFO' or log_level == 'DEBUG'):
             print ('        ', cpt, '/', total)
         cpt += 1
 
@@ -148,10 +155,12 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
 
 
     # compute aggregate
-    print ("    Computing G1 ...")
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ("    Computing G1 ...")
     rasterG1.computeAggregates()
 
-    print ("    Computing G2 ...")
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ("    Computing G2 ...")
     # rasterG2.computeAggregates()
     createG2(rasterG2, G1_SIZE, G2_SIZE)
 
@@ -171,8 +180,8 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
 
 
     # =============================================================================
-
-    print ('    Building contrast grid : ', G1_SIZE, 'm')
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ('    Building contrast grid : ', G1_SIZE, 'm')
 
     # Combien de cellules de chaque côté pour la petite résolution ?
     #nb = math.floor(G2_SIZE / G1_SIZE)
@@ -244,8 +253,9 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
 
     t1 = time.time()
     total = t1-t0
-    print ("    Execution time (seconds):", total)
-    print ("    Finished heatmap computation.")
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ("    Execution time (seconds):", total)
+        print ("    Finished heatmap computation.")
     t0 = t1
 
     # =========================================================================
@@ -271,8 +281,8 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
 
     # =========================================================================
     #   Dilatation + Erosion
-
-    print ("    Starting morphological closing image ...")
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ("    Starting morphological closing image ...")
     mask = np.array([
                 [0,1,0],
                 [1,1,1],
@@ -305,8 +315,9 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
 
     t1 = time.time()
     total = t1-t0
-    print ("    Execution time (seconds):", total)
-    print ("    Finished morphological opening.")
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ("    Execution time (seconds):", total)
+        print ("    Finished morphological opening.")
     t0 = t1
 
 
@@ -314,7 +325,8 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
     # =========================================================================
     #   Vectorisation dans le layer surface
 
-    print ("Vectorizing cleaned image ...")
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ("    Vectorizing cleaned image ...")
 
     shpDriver = ogr.GetDriverByName("ESRI Shapefile")
     dsSurface = shpDriver.CreateDataSource(surfpath)
@@ -348,7 +360,8 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
     # =========================================================================
     # On "extrait" les roads vers RoadSurface
 
-    print ("Extracting road surface vector features ...")
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ("    Extracting road surface vector features ...")
 
     NB_GS = 0
     NB_PS = 0
@@ -358,7 +371,8 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
     dsSurface = ogr.Open(surfpath)
     layer = dsSurface.GetLayer(0)
     NB_TOT = layer.GetFeatureCount()
-    print("    Number of polygonize features: ", NB_TOT)
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print("        Number of polygonize features: ", NB_TOT)
 
     dsRoadSurface = shpDriver.CreateDataSource(roadsurfpath)
     layerRoadSurface = dsRoadSurface.CreateLayer("road_surface", srs=l93Ref)
@@ -401,7 +415,8 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
                         elongation = max(width, height) / min(width, height)
                         if elongation < 5 and geom.GetArea() < 250:
                             # on s'approche d'un carré
-                            print ('    Small geometry is approximately square.')
+                            if log_level == 'DEBUG':
+                                print ('    Small geometry is approximately square.')
                             continue
 
                         # print ('pas cadre')
@@ -421,8 +436,8 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
                     MOY_PS += area
 
 
-
-    print("    Number of polygonize features copied: ", cpt)
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print("            Number of polygonize features copied: ", cpt)
 
     # fermer proprement
     layerRoadSurface.SyncToDisk()
@@ -438,8 +453,9 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
     #
     t1 = time.time()
     total = t1-t0
-    print ("    Execution time (seconds):", total)
-    print ("    Vectorization completed.")
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ("    Execution time (seconds):", total)
+        print ("    Vectorization completed.")
     t0 = t1
 
 
@@ -447,28 +463,31 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
     # =========================================================================
     #   Lissage du polygone pour oublier le profil en escalier
 
-    print ('    Smoothing polygon to remove stair-step artifacts ...')
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ('    Smoothing polygon to remove stair-step artifacts ...')
 
     smoothingLayer(roadsurfpath, roadsurflissepath, shpDriver, G1_SIZE, cut_factor)
 
     t1 = time.time()
     total = t1-t0
-    print ("    Execution time (seconds):", total)
-    print ("    Road surface smoothing completed.")
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ("    Execution time (seconds):", total)
+        print ("    Road surface smoothing completed.")
     t0 = t1
 
 
     # =========================================================================
     #   Squeletisation : centerline
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ('    Starting centerline computation ...')
 
-    print ('    Starting centerline computation ...')
-
-    Shp2centerline(roadsurflissepath, squelettepath, interp_dist, clean_dist, verbose=False)
+    Shp2centerline(roadsurflissepath, squelettepath, interp_dist, clean_dist, verbose=verbose)
 
     t1 = time.time()
     total = t1-t0
-    print ("    Execution time (seconds):", total)
-    print ("    Centerline computed.")
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ("    Execution time (seconds):", total)
+        print ("    Centerline computed.")
 
 
     # =========================================================================
@@ -508,7 +527,7 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
 
 
 
-def createG2(rasterG2, G1_SIZE, G2_SIZE):
+def createG2(rasterG2, G1_SIZE, G2_SIZE, log_level = 'ERROR'):
     grid = []
     for i in range(rasterG2.nrow):
         grid.append(i)
@@ -525,7 +544,9 @@ def createG2(rasterG2, G1_SIZE, G2_SIZE):
 
     grilleG2 = rasterG2.getAFMap('uid#co_count_distinct')
     nb = math.floor(G2_SIZE / (G1_SIZE*2))
-    print ('    Number of neighboring cells to consider:', nb)
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ('    Number of neighboring cells to consider:', nb)
+
     for i in range(rasterG2.nrow):
         for j in range(rasterG2.ncol):
             unique_values = set()
@@ -551,8 +572,6 @@ def bbox_to_polygon(minx, maxx, miny, maxy):
     return poly
 
 
-
-# import matplotlib.pyplot as plt
 
 def smoothingLayer(roadsurfpath, roadsurflissepath, shpDriver, r, f):
 

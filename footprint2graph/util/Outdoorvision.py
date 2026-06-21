@@ -48,7 +48,7 @@ def load_raw_tracks_split(RESPATH, tracespathsource, fmt, X, Y):
     cutCollection = tkl.TrackCollection()
 
     for track in tracks:
-        if cpt%500 == 0:
+        if cpt%1000 == 0:
             print ('    ', cpt, '/', total)
 
         ID = 'OV_' + str(cpt)

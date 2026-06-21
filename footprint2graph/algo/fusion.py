@@ -25,7 +25,8 @@ MODE_FUSION = tkl.MODE_MATCHING_FDTW
 
 
 
-def aggregate_track_segments_by_edge(network, SEARCH, RESPATH, iteration_index):
+def aggregate_track_segments_by_edge(network, SEARCH, RESPATH, iteration_index,
+                                     log_level = 'ERROR'):
     '''
     Orchestrates track segment aggregation for each edge.
 
@@ -58,8 +59,9 @@ def aggregate_track_segments_by_edge(network, SEARCH, RESPATH, iteration_index):
     merged_tracks : tkl.TrackCollection
         Collection of median tracks per edge. 
     '''
-    
-    print ("    Starting track segment aggregation for all network edges ...")
+
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ("    Starting track segment aggregation for all network edges ...")
 
     NBAP30 = 0
     NBAM30 = 0
@@ -109,7 +111,7 @@ def aggregate_track_segments_by_edge(network, SEARCH, RESPATH, iteration_index):
 
                 elif len(TRACES) >= 1:
                     # print ("        Aggregation for arc number:", edgeprevious)
-                    central = aggregate_track_segments_on_edge(TRACES)
+                    central = aggregate_track_segments_on_edge(TRACES, log_level=log_level)
 
                     MIN = min([MIN, len(TRACES)])
                     MOY += len(TRACES)
@@ -163,7 +165,7 @@ def aggregate_track_segments_by_edge(network, SEARCH, RESPATH, iteration_index):
 
         else:
             # print ("        Aggregation for arc number:", edgeprevious)
-            central = aggregate_track_segments_on_edge(TRACES)
+            central = aggregate_track_segments_on_edge(TRACES, log_level=log_level)
             MIN = min([MIN, len(TRACES)])
             MOY += len(TRACES)
             if len(TRACES) > MAX_TRACKS_FOR_FUSION:
@@ -183,16 +185,18 @@ def aggregate_track_segments_by_edge(network, SEARCH, RESPATH, iteration_index):
                 f.close()
 
 
-    print ('        Number of aggregations:', fusions.size())
-    print ("        Number of aggregations with 30 traces:", NBAP30)
-    print ("        Number of aggregations with fewer than 30 traces:", NBAM30)
-    print ("        Minimum number of traces in aggregation:", MIN)
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ('        Number of aggregations:', fusions.size())
+        print ("        Number of aggregations with 30 traces:", NBAP30)
+        print ("        Number of aggregations with fewer than 30 traces:", NBAM30)
+        print ("        Minimum number of traces in aggregation:", MIN)
     if fusions.size() == 0:
         avg = 0
     else:
         avg = round(MOY/fusions.size())
-    print ("        Average number of traces in aggregation:", avg)
-    print ("        Aggregation process finished.")
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ("        Average number of traces in aggregation:", avg)
+        print ("        Aggregation process finished.")
 
     try:
         log_event(RESPATH + "aggregate" + str(iteration_index) + ".json", {
@@ -211,7 +215,7 @@ def aggregate_track_segments_by_edge(network, SEARCH, RESPATH, iteration_index):
     return fusions
 
 
-def aggregate_track_segments_on_edge (TRACKS):
+def aggregate_track_segments_on_edge (TRACKS, log_level = 'ERROR'):
     '''
     Computes the median track representation for a given edge using tracklib.
 
@@ -253,10 +257,10 @@ def aggregate_track_segments_on_edge (TRACKS):
     else:
         collection = candidats
 
-
-    # print ('        Number of candidates in the aggregation process:', collection.size())
-    print ('        Number of candidate tracks / number of sampled tracks',
-           NB, "/", collection.size())
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        # print ('        Number of candidates in the aggregation process:', collection.size())
+        print ('        Number of candidate tracks / number of sampled tracks',
+               NB, "/", collection.size())
 
     if collection.size() > 1:
         # print ('        Launching Aggregation ...')
@@ -275,7 +279,8 @@ def aggregate_track_segments_on_edge (TRACKS):
         # print ('        Aggregation ended.')
         return centralDTW
     elif candidats.size() == 1:
-        print ('    Only one trajectory available for aggregation: no processing required')
+        if log_level == 'DEBUG':
+            print ('    Only one trajectory available for aggregation: no processing required')
         centralDTW = candidats.getTrack(0)
         return centralDTW
 
