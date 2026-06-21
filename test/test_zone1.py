@@ -85,9 +85,6 @@ class TestZone1(unittest.TestCase):
         # =====================================================================
         #    Plots
 
-
-
-
         # =====================================================================
         # On teste quelques résultats intermédiaires
         '''
@@ -108,7 +105,10 @@ class TestZone1(unittest.TestCase):
 
         iteration_index = 2
         run_iteration(iteration_index, self.config, None)
-        
+
+
+
+        # =====================================================================
 
 
     def testParam(self):
