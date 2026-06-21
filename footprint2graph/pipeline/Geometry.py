@@ -107,7 +107,7 @@ def createNetworkGeom (RESPATH, SEARCH, BUFFER, pipeline_idx = None):
     network.spatial_index = si
 
     # Computes all distances between pairs of nodes
-    network.prepare()
+    network.prepare(verbose=False)
 
     # Map track on network
     print ('        Parameter search_radius: ', SEARCH)

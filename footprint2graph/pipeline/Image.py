@@ -447,7 +447,7 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
     # =========================================================================
     #   Lissage du polygone pour oublier le profil en escalier
 
-    print ('Smoothing polygon to remove stair-step artifacts ...')
+    print ('    Smoothing polygon to remove stair-step artifacts ...')
 
     smoothingLayer(roadsurfpath, roadsurflissepath, shpDriver, G1_SIZE, cut_factor)
 

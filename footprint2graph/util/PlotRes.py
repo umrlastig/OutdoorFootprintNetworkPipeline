@@ -299,7 +299,7 @@ def plotResultatFinal(pathres, idx):
         for j in range(edge.geom.size()):
             x1d.append(edge.geom.getX()[j])
             y1d.append(edge.geom.getY()[j])
-        ax.plot(x1d, y1d, 'r-', linewidth=1, label='Mobility Network')
+        ax.plot(x1d, y1d, 'r-', linewidth=3, label='Mobility Network')
 
 
     # Supprime les doublons dans la légende
