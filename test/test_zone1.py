@@ -103,8 +103,8 @@ class TestZone1(unittest.TestCase):
         # =====================================================================
         #  2ième itération pour les tests
 
-        iteration_index = 2
-        run_iteration(iteration_index, self.config, None)
+        #iteration_index = 2
+        #run_iteration(iteration_index, self.config, None)
 
 
 

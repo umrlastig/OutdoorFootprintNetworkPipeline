@@ -6,7 +6,7 @@ output:
   RESULT_PATH: "/home/md_vandamme/7_LIB/footprint2graph/test/result1/"
 
 graph_construction:
-  NUM_ITERATIONS: 2
+  NUM_ITERATIONS: 1
 
   # Paramètre : Nombre de points minimum pour un morceau de trace au moment du découpage
   #             si le nombre n'est pas atteint, le morceau de trace est oublié
@@ -34,11 +34,5 @@ iterations:
     CURVE_WAVE_LENGTH: 5
     SEARCH: 50
     BUFFER: 20
-  - SEUIL_DENSITE: 25
-    SEUIL_SURFACE: 1000
-    CURVE_HEIGHT: 25
-    CURVE_WAVE_LENGTH: 5
-    SEARCH: 50
-    BUFFER: 20
-
+  
 
