@@ -20,7 +20,7 @@ function that performs track segment merging using the tracklib library.
 """
 
 
-MAX_TRACKS_FOR_FUSION = 30
+MAX_TRACKS_FOR_FUSION = 100
 MODE_FUSION = tkl.MODE_MATCHING_FDTW
 
 

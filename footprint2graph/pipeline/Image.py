@@ -36,10 +36,9 @@ Ce module
 
 '''
 
-
 def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
                        pipeline_idx = None,
-                       cut_factor=2, interp_dist=5, clean_dist=0,
+                       cut_factor=5, interp_dist=5, clean_dist=0,
                        verbose=False):
 
     idx = int (pipeline_idx)
