@@ -25,7 +25,7 @@ class TestZone1(unittest.TestCase):
     def setUp (self):
         resource_path = os.path.join(os.path.split(__file__)[0], "..")
 
-        config_path = os.path.join(resource_path, 'data/config_quickstart.yml')
+        config_path = os.path.join(resource_path, 'test/config_test1.yml')
         self.config = read_config(config_path)
 
         self.RESPATH = os.path.join(resource_path, './test/result1/')
