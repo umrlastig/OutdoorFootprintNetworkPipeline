@@ -13,7 +13,7 @@ from footprint2graph import mergeNetwork
 
 
 
-def run_iteration(pipeline_idx, config, collection=None):
+def run_iteration(pipeline_idx, config, collection=None, log_level='ERROR'):
     '''
     En entrée une collection de traces avec un TID
 
@@ -91,7 +91,6 @@ def run_iteration(pipeline_idx, config, collection=None):
         second_round(respath, pipeline_idx, NB_OBS_MIN, DIST_MAX_2OBS, RESAMPLE_SIZE_GRID)
 
 
-
     # -------------------------------------------------------------------------
     #    STEP 1 : IMAGE
     #
@@ -105,7 +104,7 @@ def run_iteration(pipeline_idx, config, collection=None):
 
     density_polygonize(respath, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
                        pipeline_idx)
-    # cut_factor=cut_factor, interp_dist=interp_dist, clean_dist=clean_dist)
+
 
     # -------------------------------------------------------------------------
     #    STEP 2 : TOPOLOGY
@@ -136,7 +135,21 @@ def run_iteration(pipeline_idx, config, collection=None):
                      RESAMPLE_SIZE_FUSION)
 
 
+    
+def footprint2grap(config, collection, log_level='ERROR'):
+    '''
+    '''
+    NBITER = int(config['graph_construction']['NUM_ITERATIONS'])
+    for idx in range(0, NBITER):
+        iteration_index = int(idx) + 1
 
+        # run pipeline for the ith iteration
+        run_iteration(iteration_index, config, collection, log_level)
 
+    print ('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+    print ('`````````````````````````````````````````````````````````````````````')
+    print ('                           FIN                                       ')
+    print ('’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’')
+    print ('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
 
 

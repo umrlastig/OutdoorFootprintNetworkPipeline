@@ -228,8 +228,15 @@ example/merge_network.py
 example/plot_cartes.py
 example/qgis_index.py
 example/plot_resultat.py
+example/main_plan_de_l_aiguille.py
+example/main_plan_de_la_limace.py
+example/main_planpraz.py
+example/rapprochement.py
+example/zoom_fusion.py
 
 
+data/bdtopo_plan_de_l_aiguille.csv
+data/bdtopo_plan_de_l_aiguille.qmd
 
 
 
