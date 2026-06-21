@@ -8,7 +8,7 @@ output:
   RESULT_PATH: '/home/md_vandamme/4_RESEAU/ZTEMPZ2/'
 
 graph_construction:
-  NUM_ITERATIONS: 3
+  NUM_ITERATIONS: 2
 
   # Paramètre : Nombre de points minimum pour un morceau de trace au moment du découpage
   #             si le nombre n'est pas atteint, le morceau de trace est oublié
@@ -49,17 +49,5 @@ iterations:
     CURVE_WAVE_LENGTH: 10
     SEARCH: 25
     BUFFER: 10
-
-  - SEUIL_DENSITE: 20
-    SEUIL_SURFACE: 150
-    CUT_FACTOR: 5
-    INTERP_DIST: 5
-    CLEAN_DIST: 0
-    CURVE_HEIGHT: 25
-    CURVE_WAVE_LENGTH: 10
-    SEARCH: 25
-    BUFFER: 10
-
-
 
 

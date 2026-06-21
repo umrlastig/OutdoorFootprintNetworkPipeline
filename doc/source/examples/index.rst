@@ -32,10 +32,15 @@ Ces deux exemples contiennent le code source qui a permis de générer deux jeux
 Les données GNSS ont été produites et délivrées par la plateforme **Outdoorvision** (service fournissant des traces partagées volontairement par des utilisateurs lors de leurs activités de plein air), plateforme soutenue par le *Pôle Ressources National Sports de Nature* (**PRNSN**). Dans le cadre du projet de recherche IntForOut, les traces ont été extraites de la plateforme, après nettoyage, filtrage et anonymisation.
 
 
+Réseaux de mobilité pédestre
+""""""""""""""""""""""""""""""
+
 .. nbgallery::
     :name: intforout-gallery
     :glob:
 
     PedestrianGraphPlanDeLaLimace
+    PedestrianGraphPlanpraz
+    PedestrianGraphPlanDeLAiguille
 
 
