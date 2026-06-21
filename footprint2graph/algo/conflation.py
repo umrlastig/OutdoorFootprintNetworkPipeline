@@ -97,7 +97,7 @@ def conflateOnNetwork(geom, network, threshold=1e300, h=30,
 
 
 
-def conflateTurnOnTerminalEdge(network, nid, SEARCH, h = 10):
+def conflateTurnOnTerminalEdge(network, nid, SEARCH, h = 10, log_level='ERROR'):
     '''
     conflate point of maximum curvature with the summit of a terminal edge
 
@@ -126,6 +126,9 @@ def conflateTurnOnTerminalEdge(network, nid, SEARCH, h = 10):
     EID1 = edges[1]
     EID2 = edges[2]
     # print (EID0, EID1, EID2)
+    if EID1 == EID2:
+        # cas des arcs en boucle
+        return
 
     node = network.NODES[nid]
 
@@ -153,9 +156,10 @@ def conflateTurnOnTerminalEdge(network, nid, SEARCH, h = 10):
             d = l3
 
     if idx == -1:
-        print ('    Conflation cannot be performed for node ', nid,
-               '; the three incident edges are too long:', round(l1),
-               round(l2), round(l3))
+        if log_level == 'DEBUG':
+            print ('    Conflation cannot be performed for node ', nid,
+                   '; the three incident edges are too long:', round(l1),
+                   round(l2), round(l3))
         return
 
     # print (idx, idx1, idx2, node)
@@ -166,8 +170,9 @@ def conflateTurnOnTerminalEdge(network, nid, SEARCH, h = 10):
     nb3 = len(network.getIncidentEdges(getAutreNoeud(network, idx2, node)[0].id))
     # print (nid, nb1, nb2, nb3)
     if nb1 > 1 and nb2 > 1 and nb3 > 1:
-        print ('    Conflation cannot be performed for node ', nid,
-               '; the three incident edges are not leaves')
+        if log_level == 'DEBUG':
+            print ('    Conflation cannot be performed for node ', nid,
+                   '; the three incident edges are not leaves')
         return
 
     # il faut d'abord trouver les trois noeuds
@@ -252,7 +257,7 @@ def conflateTurnOnTerminalEdge(network, nid, SEARCH, h = 10):
 
     edge = tkl.Edge(str(tkl.NetworkReader.counter), s)
     tkl.NetworkReader.counter += 1
-    #print (edges[0], edges[1], edges[2])
+    # print (edges[0], edges[1], edges[2])
 
     n = getAutreNoeud(network, idx1, node)[0]
     noeudIni = tkl.Node(n.id, s.getFirstObs().position.copy())
