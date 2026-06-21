@@ -134,7 +134,7 @@ class TestZone1(unittest.TestCase):
            "separator": ",",
            "header": 1})
 
-        networkpath = self.RESPATH + 'network/reseau_1.csv'
+        networkpath = self.RESPATH + 'network/reseau_quickstart.csv'
         squelette = tkl.NetworkReader.readFromFile(networkpath, fmt, verbose=False)
 
         # ---------------------------------------------------------------------

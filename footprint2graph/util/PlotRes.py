@@ -276,9 +276,40 @@ def plotSqueletteTopo(pathres, ax):
 
 
 
-def plotResultatFinal(pathres):
+def plotResultatFinal(pathres, idx):
     fig, ax = plt.subplots(figsize=(20, 16))
-    cmap = 'turbo'
+    
+    fmt = tkl.NetworkFormat({
+               "pos_edge_id": 0,
+               "pos_source": 1,
+               "pos_target": 2,
+               "pos_wkt": 4,
+               "srid": "ENU",
+               "separator": ",",
+               "header": 1})
+    networkpath = pathres + 'merge_' + str(idx) + '/reseau_mobilite_' + str(idx) + '.csv'
+    squelette = tkl.NetworkReader.readFromFile(networkpath, fmt, verbose=False)
+
+
+    L = list(squelette.EDGES.items())
+    for i in range(len(L)):
+        x1d = []
+        y1d = []
+        edge = L[i][1]
+        for j in range(edge.geom.size()):
+            x1d.append(edge.geom.getX()[j])
+            y1d.append(edge.geom.getY()[j])
+        ax.plot(x1d, y1d, 'r-', linewidth=1, label='Mobility Network')
+
+
+    # Supprime les doublons dans la légende
+    handles, labels = ax.get_legend_handles_labels()
+    by_label = dict(zip(labels, handles))
+    ax.legend(by_label.values(), by_label.keys())
+
+
+    '''
+    #cmap = 'turbo'
     vmin = 0
 
 
@@ -319,38 +350,5 @@ def plotResultatFinal(pathres):
     cax = divider.append_axes('right', size='5%', pad=0.1)
     if fig != None:
         fig.colorbar(im, cax=cax, orientation='vertical', fraction=0.046)
-
-
-    # ==========================================================
-
-    fmt = tkl.NetworkFormat({
-               "pos_edge_id": 0,
-               "pos_source": 1,
-               "pos_target": 2,
-               "pos_wkt": 4,
-               "srid": "ENU",
-               "separator": ",",
-               "header": 1})
-    networkpath = pathres + 'merge_2/reseau_mobilite_2.csv'
-    squelette = tkl.NetworkReader.readFromFile(networkpath, fmt, verbose=False)
-
-
-    L = list(squelette.EDGES.items())
-    for i in range(len(L)):
-        x1d = []
-        y1d = []
-        edge = L[i][1]
-        for j in range(edge.geom.size()):
-            x1d.append(edge.geom.getX()[j])
-            y1d.append(edge.geom.getY()[j])
-        ax.plot(x1d, y1d, 'r-', linewidth=1, label='Mobility Network')
-
-
-    # Supprime les doublons dans la légende
-    handles, labels = ax.get_legend_handles_labels()
-    by_label = dict(zip(labels, handles))
-    ax.legend(by_label.values(), by_label.keys())
-
-
-
+    '''
 
