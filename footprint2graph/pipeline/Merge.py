@@ -287,7 +287,7 @@ def mergeNetwork(RESPATH, pipeline_idx = 2, PPV_SEUIL = 20,
     #     Raccordement des arcs "seuls" et proches
     
     
-    index = tkl.SpatialIndex(network, verbose=False)
+    index = tkl.SpatialIndex(network, margin=0.1, verbose=False)
     network.spatial_index = index
     
     #print (network.getIndexEdges())
@@ -500,7 +500,7 @@ AttributeError: 'NoneType' object has no attribute 'distanceTo'
             network.spatial_index.removeFeature(idx)
             network.spatial_index.addFeature(edge1.geom, idx)
     
-        index = tkl.SpatialIndex(network, verbose=False)
+        index = tkl.SpatialIndex(network, margin=0.1, verbose=False)
         network.spatial_index = index
 
         # ---------------------------------------------------
