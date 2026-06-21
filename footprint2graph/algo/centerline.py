@@ -11,7 +11,7 @@ import datetime
 import progressbar
 import numpy as np
 
-from rtree import index
+# from rtree import index
 from scipy.spatial import Voronoi
 
 try:
