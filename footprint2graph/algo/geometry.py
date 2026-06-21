@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import math
+import progressbar
+# from rtree import index
 import tracklib as tkl
+
+from scipy.spatial import cKDTree
+import numpy as np
 
 
 """
@@ -319,4 +324,104 @@ def find_connection_candidate(network, edge, extension, side):
 
 
 
+def pull_point_to_other_tracks(cutCollection, buffer_size = 10, alpha = 0.6):
+
+    # Create a 2D index
+    print ('        Attract points toward the centroid of neighboring trajectory points')
+    #p = index.Property()
+    #p.dimension = 2
+    #idx2d = index.Index(properties=p)
+
+    print ("        Create index and index all observations not map-matched")
+    num = 1
+    boucle = progressbar.progressbar(range(cutCollection.size()))
+
+    points = []
+    coords = {}
+
+    for i in boucle:
+        track = cutCollection.getTrack(i)
+        for j in range(track.size()):
+            o = track.getObs(j)
+            x = o.position.getX()
+            y = o.position.getY()
+
+            coords[len(points)] = (i, j)
+            points.append((x, y))
+
+    points = np.asarray(points)
+    tree = cKDTree(points)
+
+    '''
+    for i in boucle:
+        track = cutCollection.getTrack(i)
+        for j in range(track.size()):
+            o = track.getObs(j)
+            x = o.position.getX()
+            y = o.position.getY()
+            idx2d.insert(
+                num,
+                (x, y, x, y),
+                obj=(i, j)
+            )
+            num += 1
+    '''
+
+    print ('\n        Pull points toward the centroid of neighboring trajectory points')
+    boucle = progressbar.progressbar(range(cutCollection.size()))
+
+    for i in boucle:
+        track = cutCollection.getTrack(i)
+        for j in range(track.size()):
+            o = track.getObs(j)
+
+            cluster = tkl.Track()
+    
+            x, y = o.position.getX(), o.position.getY()
+            idxs = tree.query_ball_point([x, y], r=(buffer_size+1))
+
+            for idx in idxs:
+                ia, ja = coords[idx]
+                if ia == i:
+                    continue
+                voisin = cutCollection[ia].getObs(ja)
+                if voisin.distance2DTo(o) <= buffer_size:
+                    cluster.addObs(voisin)
+
+            if cluster.size() > 0:
+                centre = cluster.getCentroid()
+                x_new = o.position.getX() + alpha * (centre.getX() - o.position.getX())
+                y_new = o.position.getY() + alpha * (centre.getY() - o.position.getY())
+                o.position = tkl.ENUCoords(x_new, y_new)
+
+
+    '''
+    for i in boucle:
+        track = cutCollection.getTrack(i)
+        for j in range(track.size()):
+            o = track.getObs(j)
+
+            cluster = tkl.Track()
+    
+            x, y = o.position.getX(), o.position.getY()
+            # 1m de marge au cas où
+            bbox = (x - buffer_size-1, y - buffer_size-1,
+                    x + buffer_size+1, y + buffer_size+1)
+    
+            # Identifiants candidats
+            candidates = idx2d.intersection(bbox, objects=True)
+            for item in candidates:
+                (ia, ja) = item.object
+                if ia == i:
+                    continue
+                voisin = cutCollection[ia].getObs(ja)
+                if voisin.distance2DTo(o) <= buffer_size:
+                    cluster.addObs(voisin)
+
+            if cluster.size() > 0:
+                centre = cluster.getCentroid()
+                x_new = o.position.getX() + alpha * (centre.getX() - o.position.getX())
+                y_new = o.position.getY() + alpha * (centre.getY() - o.position.getY())
+                o.position = tkl.ENUCoords(x_new, y_new)
+    '''
 

@@ -8,7 +8,9 @@ import csv
 csv.field_size_limit(sys.maxsize)
 
 import tracklib as tkl
+
 from footprint2graph import log_event
+from footprint2graph import pull_point_to_other_tracks
 
 '''
 Ce module contient 2 fonctions qui permettent de constituer une collection
@@ -226,20 +228,31 @@ def second_round(RESPATH, pipeline_idx, NB_OBS_MIN = 10, DIST_MAX_2OBS = 50, RES
     - Quand c'est fait, ils sont enregistrés dans la destination : rep
     - Les résultats du MM sont dans la source pathtmm
     - Un post-traitement : resample 
+
+    Bonus. Essayer de rapprocher les trajectoires entre elles (remplacer chaque point 
+           par le centre de gravité des points des trajectoires voisines) 
+           entre l'itération In et l'itération In+1, pour voir 
+           si cela améliore la qualité du résultat de In+1. 
     '''
 
+
+    print ('Starting new dataset for the next iteration.')
     # buffer_size = 5
     # k = 0.6
 
     OPT_PLUS_PTS = True
 
-    NB_PTS_N = 5
-    NB_PTS_O = 1
-
     pidx = str(pipeline_idx-1)
     mmtrackpath = RESPATH + 'mapmatch/tmm' + pidx + '/'
     pidx = str(pipeline_idx)
     newtrackspath = RESPATH + 'points_not_mm_' + pidx + '/'
+
+    if pipeline_idx == 2:
+        NB_PTS_N = 5
+        NB_PTS_O = 1
+    else:
+        NB_PTS_N = 3
+        NB_PTS_O = 1
 
     # =========================================================================
     #   Lecture des traces appariées.
@@ -258,7 +271,7 @@ def second_round(RESPATH, pipeline_idx, NB_OBS_MIN = 10, DIST_MAX_2OBS = 50, RES
                                'read_all': True})
         trace = tkl.TrackReader.readFromFile(mmtrackpath + mmfilename, fmt)
         collection.addTrack(trace)
-    print ('Number of tracks map matched :', collection.size())
+    print ('        Number of tracks map matched :', collection.size())
 
 
 
@@ -294,11 +307,6 @@ def second_round(RESPATH, pipeline_idx, NB_OBS_MIN = 10, DIST_MAX_2OBS = 50, RES
                 #morceau.addObs(tkl.Obs(tkl.ENUCoords(obs.position.getX(), obs.position.getY()),
                 #                        tkl.ObsTime()))
                 #pos = morceau.size() - 1
-
-                # On modifie un petit peu la position
-                # POINTS = index.neighborhood(obs.position, None, buffer_size)
-                # TODO : il faudrait trouver le barycentre et faire le kième de la distance encore
-                # print (len(POINTS))
 
                 # je prends les 4 points précédents s'ils sont recalés sinon j'arrête
                 # (il est déjà pris)
@@ -419,7 +427,18 @@ def second_round(RESPATH, pipeline_idx, NB_OBS_MIN = 10, DIST_MAX_2OBS = 50, RES
                 cutCollection.addTrack(newtrack)
                 idxSelect += 1
 
-    print (cutCollection.size())
+    print ('')
+    print ('        Number of reconstructed tracks :', cutCollection.size())
+
+    ## ========================================================================
+    #    remplacer chaque point
+    #       par le centre de gravité des points des trajectoires voisines
+
+    pull_point_to_other_tracks(cutCollection)
+
+
+
+    ## ========================================================================
 
     # On enregistre
     af_names = ['TID', 'MID']
@@ -428,5 +447,5 @@ def second_round(RESPATH, pipeline_idx, NB_OBS_MIN = 10, DIST_MAX_2OBS = 50, RES
                                  id_E=1, id_N=0, id_U=3, id_T=2,
                                  h=1, separator=";", af_names=af_names)
 
-
+    print ('New dataset created.')
 
