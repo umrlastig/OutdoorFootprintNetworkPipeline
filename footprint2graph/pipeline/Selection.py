@@ -36,7 +36,8 @@ Les traces ré-échantillonnées sont dans les répertoires:
 
 def segmentation_resample(RESPATH, collection, fmt,
                     NB_OBS_MIN = 10, DIST_MAX_2OBS = 50,
-                    resampleSizeGrid = 1, resampleSizeFusion = 5):
+                    resampleSizeGrid = 1, resampleSizeFusion = 5,
+                    log_level = 'ERROR'):
 
     print ("Starting segmentation and resampling...")
 
@@ -58,8 +59,9 @@ def segmentation_resample(RESPATH, collection, fmt,
     NB_TRACKS_CUT = 0
 
     for track in collection:
-        if cpt%500 == 0:
-            print ('    ', cpt, '/', total)
+        if cpt%1000 == 0:
+            if log_level == 'INFO' or log_level == 'DEBUG':
+                print ('    ', cpt, '/', total)
         cpt += 1
 
         num = str(track.getObsAnalyticalFeature('TID', 0))
@@ -96,7 +98,8 @@ def segmentation_resample(RESPATH, collection, fmt,
             if decoup:
                 NB_TRACKS_CUT += 1
 
-    print ('    Number of tracks after segmentation: ' + str(cutCollection.size()))
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ('    Number of tracks after segmentation: ' + str(cutCollection.size()))
 
 
     """ ======================================================================= """
@@ -110,14 +113,16 @@ def segmentation_resample(RESPATH, collection, fmt,
                                  id_E=1, id_N=0, id_U=3, id_T=2,
                                  h=1, separator=";", af_names=af_names)
 
-    print ("Finished saving segmented tracks.")
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ("Finished saving segmented tracks.")
 
 
     # =========================================================================
     #         Resampling spatial
     #
 
-    print ('Starting resampling ...')
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ('Starting resampling ...')
 
     collectionGrid = tkl.TrackCollection()
     collectionFusion = tkl.TrackCollection()
@@ -157,9 +162,9 @@ def segmentation_resample(RESPATH, collection, fmt,
         MOY_DIST += track.length()
         MOY_NBPTS += track.size()
 
-
-    print ('    Number of tracks after resampling:', str(collectionGrid.size()))
-    print ('    Number of tracks after resampling:', str(collectionFusion.size()))
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ('    Number of tracks after resampling:', str(collectionGrid.size()))
+        print ('    Number of tracks after resampling:', str(collectionFusion.size()))
 
 
 
@@ -180,7 +185,8 @@ def segmentation_resample(RESPATH, collection, fmt,
                                  id_E=1, id_N=0, id_U=3, id_T=2,
                                  h=1, separator=";", af_names=af_names)
 
-    print ("Finished saving resampled tracks.")
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ("Finished saving resampled tracks.")
 
 
 
@@ -220,7 +226,8 @@ def segmentation_resample(RESPATH, collection, fmt,
 
 
 
-def second_round(RESPATH, pipeline_idx, NB_OBS_MIN = 10, DIST_MAX_2OBS = 50, RESAMPLE_SIZE_GRID = 1):
+def second_round(RESPATH, pipeline_idx, NB_OBS_MIN = 10, DIST_MAX_2OBS = 50,
+                 RESAMPLE_SIZE_GRID = 1, log_level = 'ERROR'):
     '''
     Doit créer un nouveau jeu de traces à partir des points non matchés.
     On prend aussi les points map-matchés au noeud.
@@ -271,7 +278,8 @@ def second_round(RESPATH, pipeline_idx, NB_OBS_MIN = 10, DIST_MAX_2OBS = 50, RES
                                'read_all': True})
         trace = tkl.TrackReader.readFromFile(mmtrackpath + mmfilename, fmt)
         collection.addTrack(trace)
-    print ('        Number of tracks map matched :', collection.size())
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ('        Number of tracks map matched :', collection.size())
 
 
 
