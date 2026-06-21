@@ -25,6 +25,8 @@ def run_iteration(pipeline_idx, config, collection=None, log_level='ERROR'):
         DESCRIPTION.
     collection : TYPE
         DESCRIPTION.
+    log_level : str
+        Level of log : ERROR, INFO, DEBUG
 
     Returns
     -------
@@ -88,7 +90,8 @@ def run_iteration(pipeline_idx, config, collection=None, log_level='ERROR'):
     #  uniquement pour les itérations 2 et plus
     #
     if pipeline_idx > 1:
-        second_round(respath, pipeline_idx, NB_OBS_MIN, DIST_MAX_2OBS, RESAMPLE_SIZE_GRID)
+        second_round(respath, pipeline_idx, NB_OBS_MIN, DIST_MAX_2OBS, 
+                     RESAMPLE_SIZE_GRID)
 
 
     # -------------------------------------------------------------------------
@@ -103,7 +106,7 @@ def run_iteration(pipeline_idx, config, collection=None, log_level='ERROR'):
     #clean_dist    = config["iterations"][pipeline_idx-1]["CLEAN_DIST"]
 
     density_polygonize(respath, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
-                       pipeline_idx)
+                       pipeline_idx, log_level=log_level)
 
 
     # -------------------------------------------------------------------------
@@ -112,8 +115,9 @@ def run_iteration(pipeline_idx, config, collection=None, log_level='ERROR'):
     RESAMPLE_SIZE_FUSION = config['graph_construction']['RESAMPLE_SIZE_FUSION']
     SEARCH = config["iterations"][pipeline_idx-1]["CURVE_HEIGHT"]
     h      = config["iterations"][pipeline_idx-1]["CURVE_WAVE_LENGTH"]
-    
-    addTopologyToNetwork(respath, SEARCH, h, NB_OBS_MIN, RESAMPLE_SIZE_FUSION, pipeline_idx)
+
+    addTopologyToNetwork(respath, SEARCH, h, NB_OBS_MIN, RESAMPLE_SIZE_FUSION,
+                         pipeline_idx, log_level=log_level)
 
     # -------------------------------------------------------------------------
     #    STEP 3 : GEOMETRY
@@ -121,18 +125,19 @@ def run_iteration(pipeline_idx, config, collection=None, log_level='ERROR'):
     SEARCH = config["iterations"][pipeline_idx-1]["SEARCH"]
     BUFFER = config["iterations"][pipeline_idx-1]["BUFFER"]
 
-    createNetworkGeom(respath, SEARCH, BUFFER, pipeline_idx)
-
+    createNetworkGeom(respath, SEARCH, BUFFER, pipeline_idx, log_level)
+    
     # -------------------------------------------------------------------------
     #    STEP 4 :  FUSION RESULTS
     #
+
     PPV_SEUIL = 20
     ELASTIC_COV_DISTANCE = 20
     EXTENSION = 50
 
     if pipeline_idx > 1:
         mergeNetwork(respath, pipeline_idx, PPV_SEUIL, ELASTIC_COV_DISTANCE, EXTENSION,
-                     RESAMPLE_SIZE_FUSION)
+                     RESAMPLE_SIZE_FUSION, log_level=log_level)
 
 
     

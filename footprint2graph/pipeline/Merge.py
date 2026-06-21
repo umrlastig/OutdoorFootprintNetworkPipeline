@@ -15,7 +15,8 @@ from footprint2graph import find_connection_candidate
 
 def mergeNetwork(RESPATH, pipeline_idx = 2, PPV_SEUIL = 20,
                  ELASTIC_COV_DISTANCE = 20, EXTENSION = 50,
-                 RESAMPLE_SIZE_FUSION = 5):
+                 RESAMPLE_SIZE_FUSION = 5,
+                 log_level = 'ERROR'):
     '''
     
 
@@ -42,6 +43,13 @@ def mergeNetwork(RESPATH, pipeline_idx = 2, PPV_SEUIL = 20,
 
     print("Merging the mobility network with the result of iteration " + str(pipeline_idx) + ".")
 
+    if log_level == 'ERROR':
+        verbose = False
+    else:
+        verbose = True
+
+    # =========================================================================
+
     if pidx == 2:
         fusionpath1 = RESPATH + '/geometry/raccord' + str(pidx-1) + '/'
         fusionpath2 = RESPATH + '/geometry/raccord' + str(pidx) + '/'
@@ -63,8 +71,8 @@ def mergeNetwork(RESPATH, pipeline_idx = 2, PPV_SEUIL = 20,
                     if d < dmin:
                         dmin = d
                 #print (dmin)
-                if line.split(";")[0] == '154' or line.split(";")[0] == '152':
-                    print (dmin)
+                #if line.split(";")[0] == '154' or line.split(";")[0] == '152':
+                #    print (dmin)
                 if dmin > 1:
                     collection1.addTrack(track)
         
@@ -101,9 +109,10 @@ def mergeNetwork(RESPATH, pipeline_idx = 2, PPV_SEUIL = 20,
             track = tkl.TrackReader().parseWkt(wkt)
             track.createAnalyticalFeature('EDGE_ID', line.split(";")[0])
             collection2.addTrack(track)
-    
-    print ('Size of collection In  : ', network.size())
-    print ('Size of collection In+1: ', collection2.size())
+
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ('Size of collection In  : ', network.size())
+        print ('Size of collection In+1: ', collection2.size())
     
     
     values = [int(x) for x in network.getIndexEdges()]
@@ -194,7 +203,8 @@ def mergeNetwork(RESPATH, pipeline_idx = 2, PPV_SEUIL = 20,
     # print (netwokpath)
     tkl.NetworkWriter.writeToCsv(network, netwokpath)
 
-    print ('Size of collection In+In+1: ', network.size())
+    if log_level == 'INFO' or log_level == 'DEBUG':
+        print ('Size of collection In+In+1: ', network.size())
     
     # -----------------------------------------------------------------
     #     On détecte les intersections des arcs
@@ -272,7 +282,9 @@ def mergeNetwork(RESPATH, pipeline_idx = 2, PPV_SEUIL = 20,
     # print (netwokpath)
     tkl.NetworkWriter.writeToCsv(network, netwokpath)
     # print ('')
-    print ('Size of collection In+In+1 avec intersection: ', network.size())
+
+    if log_level == 'DEBUG':
+        print ('Size of collection In+In+1 avec intersection: ', network.size())
     
     
     # -----------------------------------------------------------------
@@ -306,7 +318,8 @@ def mergeNetwork(RESPATH, pipeline_idx = 2, PPV_SEUIL = 20,
             # Son extrémité est une extrémité isolée
     
             # On allonge l'arc du côté "final"
-            extension = extend_extremity(edge1.geom, EXTENSION, side)
+            extension = extend_extremity(edge1.geom, EXTENSION, side,
+                                         verbose=verbose)
             if extension is None:
                 continue
     
@@ -370,7 +383,8 @@ def mergeNetwork(RESPATH, pipeline_idx = 2, PPV_SEUIL = 20,
                             extension = candidate['extension']
                             edge_to_split = candidate["edge_to_split"]
             if point_inters is None:
-                print ('        Candidate edge ignored (no intersection)')
+                if log_level == 'DEBUG':
+                    print ('        Candidate edge ignored (no intersection)')
                 continue
         else:
             edge1 = network.EDGES[candidat["edge"]]
@@ -513,7 +527,8 @@ AttributeError: 'NoneType' object has no attribute 'distanceTo'
     netwokpath = RESPATH + 'merge_' + str(pidx) + '/merge_extension.csv'
     #print (netwokpath)
     tkl.NetworkWriter.writeToCsv(network, netwokpath)
-    print ('Size of collection In+In+1 avec intersection et raccordement: ', network.size())
+    if log_level == 'DEBUG':
+        print ('Size of collection In+In+1 avec intersection et raccordement: ', network.size())
     
     # -----------------------------------------------------------------------------
     #     Fusion des arcs similaires
@@ -540,10 +555,12 @@ AttributeError: 'NoneType' object has no attribute 'distanceTo'
 
 
     GEOMS = tkl.Topology.create_geoms_topology(network.getAllEdgeGeoms(), 0.5)
-    print ('Nombre de géométries : ', len(GEOMS))
+    if log_level == 'DEBUG':
+        print ('Nombre de géométries : ', len(GEOMS))
     network = tkl.NetworkReader.readNetworkFromListTuple(GEOMS)
 
-    print ('Size of reseau de mobilité: ', network.size())
+    if log_level == 'DEBUG':
+        print ('Size of reseau de mobilité: ', network.size())
 
     name = 'reseau_mobilite_' + str(pidx) + '.csv'
     netwokpath = RESPATH + 'merge_' + str(pidx) + '/' + name
@@ -551,4 +568,4 @@ AttributeError: 'NoneType' object has no attribute 'distanceTo'
 
 
     print("End building the mobility network.")
-    print ('==================================================================')
+
