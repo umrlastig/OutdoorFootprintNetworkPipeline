@@ -18,7 +18,9 @@
 [![PyPI Downloads](https://static.pepy.tech/personalized-badge/footprint2graph?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/footprint2graph)
 
 
-Footprint2graph is an open-source Python processing pipeline (MIT license) for generating outdoor recreation activity footprint graphs from GNSS trajectories, representing, for example, hikers’ or runners’ footprints within a defined spatial and temporal extent. The pipeline includes several components, such as GNSS point map-matching onto a network and trajectory aggregation, both implemented using the Tracklib Python library.
+Footprint2graph is an open-source Python processing pipeline (MIT license) for generating mobility networks from GNSS trajectories recorded during outdoor recreational activities. The output dataset representing, for example, hikers’ or runners’ network within a defined spatial and temporal extent.
+
+The pipeline consists of several components, including GNSS point map-matching onto a network, trajectory merging and grid-based processing, all implemented using the Tracklib Python library.
 
 
 ## Documentation
