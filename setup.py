@@ -17,7 +17,7 @@ setup (
     description="footprint2graph is an open-source Python processing pipeline for generating mobility networks from GNSS trajectories collected during outdoor recreational activities. It produces datasets representing, for example, hikers’ or runners’ movement networks within a defined spatial and temporal extent.",
     long_description="See https://footprint2graph.readthedocs.io",
     url="https://github.com/umrlastig/footprint2graph",
-    download_url= 'https://github.com/umrlastig/footprint2graph/archive/refs/tags/v1.1.zip',
+    download_url= 'https://github.com/umrlastig/footprint2graph/archive/refs/tags/v1.1.1.zip',
     author="Marie-Dominique Van Damme, Yann Méneroux",
     author_email="todo@ign.fr",
     keywords=[],
