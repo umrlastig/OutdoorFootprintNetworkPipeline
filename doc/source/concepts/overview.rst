@@ -20,6 +20,16 @@ Première itération & Principe
 .. Première itération : principe de fonctionnement
 
 
+The pipeline consists of several components.
+
+(1) First, GNSS trajectories are segmented and resampled to obtain homogeneous trajectories with respect to spatial and temporal resolution.
+(2) Next, a synthetic representation of trajectories is generated through a grid-based processing approach, producing a heat map that highlights both major routes and secondary paths.
+(3) This raster representation is then transformed into a vector skeleton, i.e., a graph whose edges represent the central axes of the identified movement corridors, using skeletonization operations.
+(4) For each edge of the skeleton, the associated GNSS points are identified through map-matching operations. These points are subsequently grouped into trajectory segments, providing for each edge a set of individual traces to be compared and merged.
+(5) The segments associated with a given edge are then merged in order to reconstruct as accurately as possible the common path followed by the different individual trajectories.
+(6) Finally, a geometric adjustment step ensures the continuity of the reconstructed segments while preserving the topology of the skeleton, thereby producing the final mobility network.
+
+
 .. figure:: ../img/workflow.png
   :width: 1000
   :align: center
