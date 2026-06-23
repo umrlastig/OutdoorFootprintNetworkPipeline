@@ -19,23 +19,17 @@ Footprint2graph’s documentation
 
 .
 
-**Footprint2Graph Pipeline for Outdoor Recreation** (*Footprint2graph-pipeline*) is an open-source Python
-processing pipeline (MIT license) for generating outdoor activity footprint graphs
-from GNSS trajectories, representing, for example, hikers’ or runners’ footprints within
-a defined spatial and temporal extent. The pipeline consists of several components,
-including GNSS point map-matching onto a network and trajectory merging,
-both implemented using the Tracklib Python library.
+**footprint2graph** is an open-source Python processing pipeline designed to transform  GNSS trajectories recorded during outdoor recreational activities into mobility networks. It builds a graph of commonly used paths, derived from sets of observed traces collected. The resulting dataset models, for example, the mobility networks of hikers or runners within a defined area and timeframe. In the graph, edge geometries correspond to path segments reconstructed from the input trajectories.
+
+The pipeline consists of several components, including GNSS point map-matching onto a network, trajectory merging and grid-based processing, all implemented using the Tracklib Python library.
 
 
-.. image:: img/Footprint2graph.png
+.. figure:: img/Footprint2graph.png
   :width: 400
   :align: center
 
 
-A hikers’ footprint (in red) is derived from heatmaps (number of GNSS trajectories),
-forming a new topology. This highlights that hikers do not always follow the official trail
-network (BDTOPO trails in white). The challenge lies in representing only the paths
-effectively used by practitioners.
+  **Figure 1.** A hikers’ footprint (in red) is derived from heatmaps (number of GNSS trajectories), forming a new topology. This highlights that hikers do not always follow the official trail network (BDTOPO trails in white). The challenge lies in representing only the paths effectively used by practitioners.
 
 
 
@@ -55,8 +49,10 @@ and was supported by the ANR under grant agreement no. ANR-23-CE55-0003.
 maintaining *Tracklib*. It is designed to be used within the IntForOut project (2024-2027)
 to generate different graphs for various activities across diverse spatial and temporal scales.
 
+We acknowledge Filip Todić for the GitHub repository `centerline <https://github.com/fitodic/centerline>`_, from which the code implementing a Voronoi-based centerline extraction algorithm has been used.
 
-How to Cite Footprint2graph-pipeline
+
+How to Cite Footprint2graph
 -------------------------------------
 
 To be completed
