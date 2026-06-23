@@ -1,8 +1,8 @@
 .. currentmodule:: algo.fusion
 
 
-Track Segment Aggregation
-===========================
+Trajectory Segment Aggregation
+===============================
 
 **algo.fusion module**
 

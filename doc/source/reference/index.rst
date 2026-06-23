@@ -15,8 +15,21 @@ footprint2graph
   
 
 
-.. toctree::
-   :maxdepth: 4
+Subpackages
+-----------
 
-   footprint2graph
+.. toctree::
+   :maxdepth: 2
+
+   algo
+   pipeline
+
+
+Submodules
+-----------
+
+.. toctree::
+   :maxdepth: 1
+
+   pipeline_module
 

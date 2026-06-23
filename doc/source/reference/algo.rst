@@ -1,7 +1,7 @@
 
 
-footprint2graph.algo Package
------------------------------
+"algo" Package
+----------------
 
 .. toctree::
    :maxdepth: 1

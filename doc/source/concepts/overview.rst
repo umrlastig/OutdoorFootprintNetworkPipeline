@@ -52,16 +52,19 @@ The pipeline consists of several components.
 
 
   
-*Préparation des traces brutes*
-"""""""""""""""""""""""""""""""""
+*Raw Trace Preparation*
+""""""""""""""""""""""""
 
-Ce script prend en entrée des traces brutes en entrée du pipeline. A la fin du script un nouveau jeu de traces est produit, extraites, découpées et sélectionnées si elle traverse une figure géométrique, résolues spatialement à 1 mètre.
+GNSS trajectories are segmented and resampled to obtain homogeneous trajectories with respect to spatial and temporal resolution.
 
-=> produit un jeu de traces, résolues spatialement à 1 mètre, 
+
+.. Ce script prend en entrée des traces brutes en entrée du pipeline. A la fin du script un nouveau jeu de traces est produit, extraites, découpées et sélectionnées si elle traverse une figure géométrique, résolues spatialement à 1 mètre.
+
+..=> produit un jeu de traces, résolues spatialement à 1 mètre, 
                     extraites (peut-être découpées) suivant une figure géométrique
 
 
-Découpage et ré-échantillonnage des traces brutes
+.. Découpage et ré-échantillonnage des traces brutes
 
 
 

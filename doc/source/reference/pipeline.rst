@@ -1,7 +1,7 @@
 
 
-footprint2graph.pipeline package
-================================
+"workflow" Package
+===================
 
 
 .. toctree::
