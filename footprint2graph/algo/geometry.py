@@ -280,9 +280,10 @@ def get_final_edges(edge_id, splits):
 
 
 def find_connection_candidate(network, edge, extension, side):
-    """
-    Search for the closest intersection between an extension and a neighboring edge.
-    """
+    '''
+    Search for the closest intersection between the extension and an edge.
+    '''
+
 
     if side == "START":
         ref_pos = edge.geom.getFirstObs().position
@@ -326,7 +327,28 @@ def find_connection_candidate(network, edge, extension, side):
 
 
 
+
 def pull_point_to_other_tracks(cutCollection, buffer_size = 10, alpha = 0.6):
+    '''
+    Approcher les trajectoires entre elles. On remplace chaque point par le 
+    centre de gravité des points des trajectoires voisines) entre l'itération 
+    In et l'itération In+1, et voir si cela améliore plus de détection dans 
+    le résultat de In+1.
+
+    Parameters
+    ----------
+    cutCollection : TYPE
+        DESCRIPTION.
+    buffer_size : TYPE, optional
+        DESCRIPTION. The default is 10.
+    alpha : TYPE, optional
+        DESCRIPTION. The default is 0.6.
+
+    Returns
+    -------
+    None.
+
+    '''
 
     # Create a 2D index
     print ('        Attract points toward the centroid of neighboring trajectory points')
