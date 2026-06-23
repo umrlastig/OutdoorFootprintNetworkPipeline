@@ -13,17 +13,15 @@ TODO
 
 
 
-Première itération & Principe
-------------------------------
-
-.. Déroulement d'une itération du pipeline
-.. Première itération : principe de fonctionnement
-
+First Iteration: Principle and Workflow
+-----------------------------------------
 
 The pipeline consists of several components.
 
-(1) First, GNSS trajectories are segmented and resampled to obtain homogeneous trajectories with respect to spatial and temporal resolution.
-(2) Next, a synthetic representation of trajectories is generated through a grid-based processing approach, producing a heat map that highlights both major routes and secondary paths.
+**(1)** First, GNSS trajectories are segmented and resampled to obtain homogeneous trajectories with respect to spatial and temporal resolution.
+
+**(2)** Next, a synthetic representation of trajectories is generated through a grid-based processing approach, producing a heat map that highlights both major routes and secondary paths.
+
 (3) This raster representation is then transformed into a vector skeleton, i.e., a graph whose edges represent the central axes of the identified movement corridors, using skeletonization operations.
 (4) For each edge of the skeleton, the associated GNSS points are identified through map-matching operations. These points are subsequently grouped into trajectory segments, providing for each edge a set of individual traces to be compared and merged.
 (5) The segments associated with a given edge are then merged in order to reconstruct as accurately as possible the common path followed by the different individual trajectories.
@@ -34,17 +32,19 @@ The pipeline consists of several components.
   :width: 1000
   :align: center
 
-  **Figure 1.** À partir des traces GNSS brutes, une carte de densité est construite afin d'extraire un squelette central servant de référence topologique. Les traces sont ensuite découpées en segments candidats à la fusion, regroupés pour calculer des trajectoires médianes, puis assemblées pour produire le réseau de mobilité final.
+  **Figure 1.** Processing steps of the first pipeline iteration
 
 
-Les différentes étapes de l'algorithme, décrites après, peuvent être résumées ainsi:
+.. À partir des traces GNSS brutes, une carte de densité est construite afin d'extraire un squelette central servant de référence topologique. Les traces sont ensuite découpées en segments candidats à la fusion, regroupés pour calculer des trajectoires médianes, puis assemblées pour produire le réseau de mobilité final.
+.. Les différentes étapes de l'algorithme, décrites après, peuvent être résumées ainsi:
 
-0. Préparation des traces brutes
-1. Calcul de cartes de densité à partir des traces GNSS
-2. De la vectorisation, on extrait une ligne centrée ≡ arc de la topologie.
-3. Attributione des points des traces brutes à chaque arc de la topologie
-4. Construction de bons morceaux de traces candidats pour chaque arc de la topologie puis agrégation des morceaux de traces
-5. Conflation des traces fusionnées afin d’obtenir un réseau de mobilit
+
+.. 0. Préparation des traces brutes
+.. 1. Calcul de cartes de densité à partir des traces GNSS
+.. 2. De la vectorisation, on extrait une ligne centrée ≡ arc de la topologie.
+.. 3. Attributione des points des traces brutes à chaque arc de la topologie
+.. 4. Construction de bons morceaux de traces candidats pour chaque arc de la topologie puis agrégation des morceaux de traces
+.. 5. Conflation des traces fusionnées afin d’obtenir un réseau de mobilit
 
 
 
