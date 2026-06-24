@@ -135,6 +135,8 @@ def segmentation_resample(RESPATH, collection, fmt,
 
     MOY_DIST = 0
     MOY_NBPTS = 0
+    NB_TRACKS_2 = 0
+    bbox = None
 
     for track in tracks:
         num1 = str(track.getObsAnalyticalFeature('TID', 0))
@@ -169,13 +171,16 @@ def segmentation_resample(RESPATH, collection, fmt,
 
         MOY_DIST += track.length()
         MOY_NBPTS += track.size()
+        if NB_TRACKS_2 == 0:
+            bbox = track.bbox()
+        else:
+            bbox = bbox + track.bbox()
+        NB_TRACKS_2 += 1
+
+
 
     if log_level == 'INFO' or log_level == 'DEBUG':
-        print ('    Number of tracks after resampling:', str(collectionGrid.size()))
-        print ('    Number of tracks after resampling:', str(collectionFusion.size()))
-
-
-
+        print ('    Number of tracks after resampling:', str(NB_TRACKS_2))
 
     if log_level == 'INFO' or log_level == 'DEBUG':
         print ("Finished saving resampled tracks.")
@@ -185,7 +190,7 @@ def segmentation_resample(RESPATH, collection, fmt,
     # =========================================================================
     #    Journalisation des résultats
 
-    bbox = collectionGrid.bbox().asTuple()
+    bbox = bbox.asTuple()
     xmin = bbox[0]
     xmax = bbox[1]
     ymin = bbox[2]
