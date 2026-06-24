@@ -103,7 +103,7 @@ def segmentation_resample(RESPATH, collection, fmt,
 
 
     """ ======================================================================= """
-    """         Enregistrement des "bonnes" traces                              """
+    """         Enregistrement des traces "valides"                             """
     """                                                                         """
 
     af_names = ['TID', 'MID']
@@ -124,8 +124,9 @@ def segmentation_resample(RESPATH, collection, fmt,
     if log_level == 'INFO' or log_level == 'DEBUG':
         print ('Starting resampling ...')
 
-    collectionGrid = tkl.TrackCollection()
-    collectionFusion = tkl.TrackCollection()
+    af_names = ['TID', 'MID']
+    resampledtracespath1 = RESPATH + 'resample_grid/'
+    resampledtracespath2 = RESPATH + 'resample_fusion/'
 
     tracks = tkl.TrackSource(tracespath, fmt)
     total = len(tracks)
@@ -149,7 +150,10 @@ def segmentation_resample(RESPATH, collection, fmt,
         trackG.tid = num1
         trackG.createAnalyticalFeature('TID', num1)
         trackG.createAnalyticalFeature('MID', num2)
-        collectionGrid.addTrack(trackG)
+        name = resampledtracespath1 + str(num2) + ".csv"
+        tkl.TrackWriter.writeToFile(trackG, name,
+                                     id_E=1, id_N=0, id_U=3, id_T=2,
+                                     h=1, separator=";", af_names=af_names)
 
         trackF = track.copy()
         trackF.resample(RESAMPLE_SIZE_FUSION, mode=tkl.MODE_SPATIAL)
@@ -157,7 +161,11 @@ def segmentation_resample(RESPATH, collection, fmt,
         trackF.tid = num1
         trackF.createAnalyticalFeature('TID', num1)
         trackF.createAnalyticalFeature('MID', num2)
-        collectionFusion.addTrack(trackF)
+        name = resampledtracespath2 + str(num2) + ".csv"
+        tkl.TrackWriter.writeToFile(trackF, name,
+                                    id_E=1, id_N=0, id_U=3, id_T=2,
+                                    separator=";", h=1, af_names=af_names)
+
 
         MOY_DIST += track.length()
         MOY_NBPTS += track.size()
@@ -168,22 +176,6 @@ def segmentation_resample(RESPATH, collection, fmt,
 
 
 
-
-    # =========================================================================
-    #        Enregistrement
-    #
-
-    af_names = ['TID', 'MID']
-    
-    resampledtracespath = RESPATH + 'resample_grid/'
-    tkl.TrackWriter.writeToFiles(collectionGrid, resampledtracespath,
-                                 id_E=1, id_N=0, id_U=3, id_T=2,
-                                 h=1, separator=";", af_names=af_names)
-
-    resampledtracespath = RESPATH + 'resample_fusion/'
-    tkl.TrackWriter.writeToFiles(collectionFusion, resampledtracespath,
-                                 id_E=1, id_N=0, id_U=3, id_T=2,
-                                 h=1, separator=";", af_names=af_names)
 
     if log_level == 'INFO' or log_level == 'DEBUG':
         print ("Finished saving resampled tracks.")
