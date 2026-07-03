@@ -28,7 +28,7 @@ The pipeline consists of several components, including GNSS point map-matching o
 The online documentation is available at **[ReadTheDocs](https://footprint2graph.readthedocs.io)**
 
 Specifically, the documentation includes end-to-end example:
-- **with a set of simulated trajectories generated from a network** : [quickstart example](https://footprint2graph.readthedocs.io/en/latest/examples/Simulated-Traj_Example.html)
+- **with a set of simulated trajectories generated from a network** : [quickstart example](https://footprint2graph.readthedocs.io/en/latest/examples/index.html)
 
 
 ## Acknowledgments

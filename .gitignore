@@ -212,6 +212,7 @@ old/
 
 doc/source/__pycache__/
 /doc/public/
+doc/source/img/footprint2graph_01.png
 
 footprint2graph/test/
 test/result1/
@@ -233,6 +234,7 @@ example/main_plan_de_la_limace.py
 example/main_planpraz.py
 example/rapprochement.py
 example/zoom_fusion.py
+example/Heatmap.py
 
 
 data/bdtopo_plan_de_l_aiguille.csv
@@ -242,6 +244,6 @@ data/bdtopo_plan_de_l_aiguille.qmd
 doc/source/img/workflow_01.png
 
 
-
+usecase/*
 
 
