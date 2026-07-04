@@ -10,12 +10,13 @@ requirements = (
     "shapely",
     "psutil",
     "scipy",
-    "scikit-image"
+    "scikit-image",
+    "rasterio"
 )
 
 setup (
     name="footprint2graph",
-    version="1.1.2",
+    version="1.1.3",
     description="footprint2graph is an open-source Python processing pipeline for generating mobility networks from GNSS trajectories collected during outdoor recreational activities. It produces datasets representing, for example, hikers’ or runners’ movement networks within a defined spatial and temporal extent.",
     long_description="See https://footprint2graph.readthedocs.io",
     url="https://github.com/umrlastig/footprint2graph",
