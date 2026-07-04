@@ -9,7 +9,8 @@ requirements = (
     "fiona",
     "shapely",
     "psutil",
-    "scipy"
+    "scipy",
+    "skimage"
 )
 
 setup (

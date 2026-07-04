@@ -4,3 +4,4 @@ shapely
 psutil
 pyyaml
 scipy
+skimage
