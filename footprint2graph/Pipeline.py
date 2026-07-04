@@ -13,7 +13,7 @@ from footprint2graph import mergeNetwork
 
 
 
-def run_iteration(pipeline_idx, config, collection=None, log_level='ERROR'):
+def run_iteration(pipeline_idx, config, collection=None, log_level='DEBUG'):
     '''
     En entrée une collection de traces avec un TID
 

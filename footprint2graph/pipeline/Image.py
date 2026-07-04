@@ -77,10 +77,27 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
                            'read_all': True})
     
     resampledtracespath = RESPATH + rep + '/'
-    tracks = tkl.TrackReader.readFromFile(resampledtracespath, fmt, verbose=verbose)
+    # tracks = tkl.TrackReader.readFromFile(resampledtracespath, fmt, verbose=verbose)
+    tracks = tkl.TrackSource(resampledtracespath, fmt)
+
     total = len(tracks)
     if log_level == 'INFO' or log_level == 'DEBUG':
         print ('    Number of tracks to load: ', total)
+
+
+    #  On calcule la bbox
+    bbox = None
+    cpt = 1
+    for track in tracks:
+
+        if cpt%1000 == 0 and (log_level == 'INFO' or log_level == 'DEBUG'):
+            print ('        ', cpt, '/', total)
+        cpt += 1
+
+        if bbox is None:
+            bbox = track.bbox()
+        else:
+            bbox = bbox + track.bbox()
 
 
     # =========================================================================
@@ -89,25 +106,16 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
     if log_level == 'INFO' or log_level == 'DEBUG':
         print ('    Building high-resolution geometry density grid G1 : ', G1_SIZE, 'm ...')
 
-    bbox = tracks.bbox()
 
-    af_algos = ['uid']
-    cell_operators = [tkl.co_count_distinct]
-
-    marge = 0
+    margin = 0
     resolutionG1 = (G1_SIZE, G1_SIZE)
 
-    rasterG1 = tkl.Raster(bbox=bbox, resolution=resolutionG1, margin=marge,
+    rasterG1 = tkl.Raster(bbox=bbox, resolution=resolutionG1, margin=margin,
                     align=tkl.BBOX_ALIGN_LL,
                     novalue=tkl.NO_DATA_VALUE)
 
-
-    # Pour chaque algo-agg on crée une grille vide
-    for idx, af_algo in enumerate(af_algos):
-        aggregate = cell_operators[idx]
-        cle = tkl.AFMap.getMeasureName(af_algo, aggregate)
-        rasterG1.addAFMap(cle)
-
+    uidMap = rasterG1.addAFMap("uid")
+    uidMap.addCountDistinct()
 
 
     # =========================================================================
@@ -117,15 +125,12 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
 
     resolutionG2 = (G1_SIZE, G1_SIZE)
 
-    rasterG2 = tkl.Raster(bbox=bbox, resolution=resolutionG2, margin=marge,
+    rasterG2 = tkl.Raster(bbox=bbox, resolution=resolutionG2, margin=margin,
                     align=tkl.BBOX_ALIGN_LL,
                     novalue=tkl.NO_DATA_VALUE)
 
-    # Pour chaque algo-agg on crée une grille vide
-    for idx, af_algo in enumerate(af_algos):
-        aggregate = cell_operators[idx]
-        cle = tkl.AFMap.getMeasureName(af_algo, aggregate)
-        rasterG2.addAFMap(cle)
+    uidMap = rasterG2.addAFMap("uid")
+    uidMap.addCountDistinct()
 
 
     # =========================================================================
@@ -134,57 +139,61 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
         print ('    Assigning track points to the G1 and G2 grids')
 
     cpt = 1
-    for trace in tracks:
+    tracks = tkl.TrackSource(resampledtracespath, fmt)
+    for track in tracks:
 
         if cpt%1000 == 0 and (log_level == 'INFO' or log_level == 'DEBUG'):
             print ('        ', cpt, '/', total)
         cpt += 1
 
-        tid = trace.getObsAnalyticalFeature('TID', 0)
-        mid = trace.getObsAnalyticalFeature('MID', 0)
-        trace.uid = tid
-        trace.tid = mid
+        tid = track.getObsAnalyticalFeature('TID', 0)
+        mid = track.getObsAnalyticalFeature('MID', 0)
+        track.uid = tid
+        track.tid = mid
 
-        rasterG1.addCollectionToRaster(tkl.TrackCollection([trace]))
-        rasterG2.addCollectionToRaster(tkl.TrackCollection([trace]))
+        rasterG1.accumulate(tkl.TrackCollection([track]))
+        rasterG2.accumulate(tkl.TrackCollection([track]))
 
 
-
-    # =============================================================================
+    # =========================================================================
     #       Calcul des densités des traces GPS
-
 
     # compute aggregate
     if log_level == 'INFO' or log_level == 'DEBUG':
         print ("    Computing G1 ...")
-    rasterG1.computeAggregates()
+    rasterG1.compute()
 
+    # Plus la densité
+    uidmap = rasterG1.getAFMap("uid")
+    bandG1 = uidmap["count_distinct"]
+    bandG1.setGrid(bandG1.getGrid().values / (G1_SIZE*G1_SIZE))
+
+    # -------------------------------------------------------------------------
+
+    # compute aggregate
     if log_level == 'INFO' or log_level == 'DEBUG':
         print ("    Computing G2 ...")
-    # rasterG2.computeAggregates()
-    createG2(rasterG2, G1_SIZE, G2_SIZE)
+    createG2(rasterG2, G1_SIZE, G2_SIZE, log_level)
 
 
-    grilleG1 = rasterG1.getAFMap('uid#co_count_distinct')
-    grilleG1.grid = grilleG1.grid / (G1_SIZE*G1_SIZE)
+    # Plus la densité
+    bandG2 = rasterG2.getAFMap("uid")["count_distinct"]
+    #bandG2.setGrid(bandG2.getGrid().values / (G2_SIZE*G2_SIZE))
+
+
+    # -------------------------------------------------------------------------
+    # On enregistre les résultats
     pathG1 = respath + 'G1_' + prefix + '.asc'
-    tkl.RasterWriter.writeMapToAscFile(pathG1, grilleG1)
+    rasterG1.writeToAscFile(bandG1, pathG1)
 
-
-    grilleG2 = rasterG2.getAFMap('uid#co_count_distinct')
-    grilleG2.grid = grilleG2.grid / (G2_SIZE*G2_SIZE)
+    # On enregistre les résultats
     pathG2 = respath + 'G2_' + prefix + '.asc'
-    tkl.RasterWriter.writeMapToAscFile(pathG2, grilleG2)
-
-
+    rasterG2.writeToAscFile(bandG2, pathG2)
 
 
     # =============================================================================
     if log_level == 'INFO' or log_level == 'DEBUG':
         print ('    Building contrast grid : ', G1_SIZE, 'm')
-
-    # Combien de cellules de chaque côté pour la petite résolution ?
-    #nb = math.floor(G2_SIZE / G1_SIZE)
 
     epsilon = 0.001
     
@@ -195,8 +204,13 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
     margin = 0
     align = tkl.BBOX_ALIGN_CENTER
     rasterK = tkl.Raster(bbox=box, resolution=res, margin=margin, align=align)
-    rasterK.addAFMap('K')
+    mapK = rasterK.addAFMap('K')
+    mapK.addValues()
 
+    grilleG1 = bandG1.getGrid().values
+    grilleG2 = bandG2.getGrid().values
+
+    bandK = rasterK.getAFMap('K')['values']
 
     for i in range(rasterK.nrow):
         for j in range(rasterK.ncol):
@@ -204,10 +218,10 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
             y = rasterK.ymin - (i - rasterK.nrow + 1) * res[1] + 1
 
             (column1, line1) = rasterG1.getCell(tkl.ENUCoords(x, y))
-            g1 = grilleG1.grid[line1][column1]
+            g1 = grilleG1[line1][column1]
 
             (column2, line2) = rasterG2.getCell(tkl.ENUCoords(x, y))
-            g2 = grilleG2.grid[line2][column2]
+            g2 = grilleG2[line2][column2]
     
             #g2 = G2[line][column] / (nb * G1_SIZE * nb * G1_SIZE)
             #g2 = grilleG2[line][column] / (G2_SIZE * G2_SIZE)
@@ -220,13 +234,12 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
     
             k = g1 / g2
     
-            rasterK.getAFMap(0).grid[i][j] = k
+            bandK.getGrid().values[i][j] = k
     
-    grilleK = rasterK.getAFMap(0)
+    # bandK = rasterK.getAFMap('K')['values']
     
     pathK = respath + 'K_' + prefix + '.asc'
-    tkl.RasterWriter.writeMapToAscFile(pathK, grilleK)
-
+    rasterK.writeToAscFile(bandK, pathK)
 
 
     # =============================================================================
@@ -237,19 +250,22 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
     res = rasterK.resolution
     margin = 0
     align = tkl.BBOX_ALIGN_CENTER
-    raster = tkl.Raster(bbox=box, resolution=res, margin=margin, align=align)
-    raster.addAFMap('B')
+    rasterB = tkl.Raster(bbox=box, resolution=res, margin=margin, align=align)
+    mapB = rasterB.addAFMap('B')
+    mapB.addValues()
+
+    bandB = rasterB.getAFMap('B')['values']
     
-    for i in range(raster.nrow):
-        for j in range(raster.ncol):
-            v = grilleK.grid[i][j]
+    for i in range(rasterB.nrow):
+        for j in range(rasterB.ncol):
+            v = bandK.getGrid().values[i][j]
             if v >= SEUIL_DENSITE:
-                raster.getAFMap(0).grid[i][j] = 1
+                bandB.getGrid().values[i][j] = 1
             else:
-                raster.getAFMap(0).grid[i][j] = 0
+                bandB.getGrid().values[i][j] = 0
     
     pathB = respath + 'B_' + prefix + '.asc'
-    tkl.RasterWriter.writeMapToAscFile(pathB, raster.getAFMap(0))
+    rasterB.writeToAscFile(bandB, pathB)
 
     t1 = time.time()
     total = t1-t0
@@ -275,7 +291,7 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
     # =========================================================================
     #   On charge le binaire
 
-    rasterB = tkl.RasterReader.readFromAscFile(pathB, name='B', separator='\t')
+    rasterB = tkl.RasterReader.readFromAscFile(pathB, af_name='B', separator="\t")
     mapBinaire = rasterB.getAFMap('B')
 
 
@@ -289,29 +305,29 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
                 [0,1,0]])
 
     # Dilatation
-    mapBinaire.filter(mask, np.max)
-    tkl.RasterWriter.writeMapToAscFile(pathdilatation, mapBinaire)
+    mapBinaire.filter(mask=mask, aggregation=np.max)
+    tkl.RasterWriter.writeMapToAscFile(pathdilatation, rasterB, mapBinaire[0])
 
     # Erosion
-    mapBinaire.filter(np.array([[1]]), lambda x : 1-x)     # Dual de la carte
-    mapBinaire.filter(mask, np.max)                        # Dilatation
-    mapBinaire.filter(np.array([[1]]), lambda x : 1-x)     # Dual de la carte
+    mapBinaire.filter(mask=np.array([[1]]), aggregation=lambda x : 1-x)     # Dual de la carte
+    mapBinaire.filter(mask=mask, aggregation=np.max)                        # Dilatation
+    mapBinaire.filter(mask=np.array([[1]]), aggregation=lambda x : 1-x)     # Dual de la carte
 
-    tkl.RasterWriter.writeMapToAscFile(patherosion, mapBinaire)
+    tkl.RasterWriter.writeMapToAscFile(patherosion, rasterB, mapBinaire[0])
 
 
     # Nettoyage : remplissage des trous et suppression des toutes petites zones
     asize = G1_SIZE * G1_SIZE * G1_SIZE * G1_SIZE + 1
 
-    clean = remove_small_holes(mapBinaire.grid.astype(bool), area_threshold=asize,
+    clean = remove_small_holes(mapBinaire[0].getGrid().values.astype(bool), area_threshold=asize,
                                      connectivity=1)
     clean = remove_small_objects(clean, min_size=asize,
                                      connectivity=1)
     clean_uint8 = clean.astype(np.uint8)
-    mapBinaire.grid = clean_uint8
+    mapBinaire[0].setGrid(clean_uint8)
 
     # print(np.unique(clean_uint8))
-    tkl.RasterWriter.writeMapToAscFile(pathimageclean, mapBinaire)
+    tkl.RasterWriter.writeMapToAscFile(pathimageclean, rasterB, mapBinaire[0])
 
     t1 = time.time()
     total = t1-t0
@@ -526,7 +542,6 @@ def density_polygonize(RESPATH, G1_SIZE, G2_SIZE, SEUIL_DENSITE, SEUIL_SURFACE,
 
 
 
-
 def createG2(rasterG2, G1_SIZE, G2_SIZE, log_level = 'ERROR'):
     grid = []
     for i in range(rasterG2.nrow):
@@ -537,26 +552,35 @@ def createG2(rasterG2, G1_SIZE, G2_SIZE, log_level = 'ERROR'):
             grid[i][j] = []
 
 
-    for (i, j), tarray in rasterG2.collectionValuesGrid['uid'].items():
-        for s in tarray:
-            grid[i][j].append(s)
+    #for cell, ids in self._cells.items():
+    #    self._grid2d.values[cell[0]][cell[1]] = len(ids)
+    #rasterG2.getAFMap('uid')['count_distinct'].finalize()
+    #for (i, j), tarray in rasterG2.collectionValuesGrid['uid'].items():
+    #    for s in tarray:
+    #        grid[i][j].append(s)
 
 
-    grilleG2 = rasterG2.getAFMap('uid#co_count_distinct')
+    grilleG2 = rasterG2.getAFMap('uid')
     nb = math.floor(G2_SIZE / (G1_SIZE*2))
     if log_level == 'INFO' or log_level == 'DEBUG':
         print ('    Number of neighboring cells to consider:', nb)
 
+    bandCountDistinct = grilleG2['count_distinct']
     for i in range(rasterG2.nrow):
         for j in range(rasterG2.ncol):
             unique_values = set()
             for s in range(max(0,i-nb), min(i+nb+1, rasterG2.nrow)):
                 for t in range(max(0,j-nb), min(j+nb+1, rasterG2.ncol)):
-                    all_values = grid[s][t]
+                    # all_values = grid[s][t]
+                    tab = bandCountDistinct.getCellUniqueValue()
+                    all_values = tab[(s, t)]
                     for st in all_values:
                         unique_values.add(st)
-            grilleG2.grid[i][j] = len(unique_values)
+            grilleG2["count_distinct"].getGrid().values[i][j] = len(unique_values)
 
+    # Plus la densité
+    bandG2 = rasterG2.getAFMap("uid")["count_distinct"]
+    bandG2.setGrid(bandG2.getGrid().values / (G2_SIZE*G2_SIZE))
 
 
 def bbox_to_polygon(minx, maxx, miny, maxy):
