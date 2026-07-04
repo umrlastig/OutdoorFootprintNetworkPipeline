@@ -3,3 +3,4 @@ fiona
 shapely
 psutil
 pyyaml
+scipy
