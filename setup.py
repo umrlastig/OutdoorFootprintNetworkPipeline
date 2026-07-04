@@ -8,7 +8,8 @@ requirements = (
     "tracklib",
     "fiona",
     "shapely",
-    "psutil"
+    "psutil",
+    "scipy"
 )
 
 setup (
