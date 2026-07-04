@@ -10,7 +10,7 @@ requirements = (
     "shapely",
     "psutil",
     "scipy",
-    "skimage"
+    "scikit-image"
 )
 
 setup (
