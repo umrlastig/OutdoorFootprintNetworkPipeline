@@ -1,7 +1,7 @@
 
 
-"workflow" Package
-===================
+Workflow Components Package
+============================
 
 
 .. toctree::
