@@ -55,47 +55,6 @@ def matPlotShapefile(pathres, filename, append):
 
 
 
-def plotAFMap(afmap, append=False,
-                color1 = (0, 0, 0), color2 = (255, 255, 255),
-                novaluecolor='white', cmap=None, vmin=None):
-
-    if isinstance(append, bool):
-        if append:
-            ax1 = plt.gca()
-            fig = ax1.get_figure()
-        else:
-            fig, ax1 = plt.subplots(figsize=(8, 8))
-            ax1.set_aspect('equal')
-    elif isinstance(append, Axes):
-        ax1 = append
-        fig = ax1.get_figure()
-    else:
-        fig, ax1 = plt.subplots(figsize=(8, 8))
-
-    matrice = np.full((afmap.raster.nrow, afmap.raster.ncol),
-                      afmap.raster.getNoDataValue(), dtype=np.float32)
-    for i in range(afmap.raster.nrow):
-        for j in range(afmap.raster.ncol):
-            val = float(afmap.grid[i][j])
-            if val != afmap.raster.getNoDataValue():
-                matrice[i][j] = val
-    if afmap.raster.getNoDataValue() != None:
-        matrice[matrice == afmap.raster.getNoDataValue()] = np.nan
-
-    if cmap is None:
-        cmap = getOffsetColorMap(color1, color2, 0)
-        cmap.set_bad(color=novaluecolor)
-
-    if vmin is not None:
-        im = ax1.imshow(matrice, cmap=cmap, vmin=vmin)
-    else:
-        im = ax1.imshow(matrice, cmap=cmap)
-    ax1.set_title(afmap.getName())
-
-    divider = make_axes_locatable(ax1)
-    cax = divider.append_axes('right', size='5%', pad=0.1)
-    if fig != None:
-        fig.colorbar(im, cax=cax, orientation='vertical', fraction=0.046)
 
 
 def plotMM(pathres, squelette = None):

@@ -28,7 +28,14 @@ Install standard release
 
 Users can install footprint2graph from PyPI using the pip package manager (`PyPI <https://pypi.org/project/footprint2graph/>`_). To install the latest stable release, run:
 
+
+**Sous Ubuntu :**
+
 .. code-block:: bash
+
+   sudo apt install gdal-bin libgdal-dev
+
+   pip install GDAL==$(gdal-config --version)
 
    pip install footprint2graph
 
