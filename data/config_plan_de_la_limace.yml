@@ -32,9 +32,6 @@ graph_construction:
 iterations:
   - SEUIL_DENSITE: 25 # 40, 30, 25
     SEUIL_SURFACE: 1000
-    CUT_FACTOR: 5
-    INTERP_DIST: 5
-    CLEAN_DIST: 0
     CURVE_HEIGHT: 50
     CURVE_WAVE_LENGTH: 10
     SEARCH: 25
@@ -42,9 +39,6 @@ iterations:
 
   - SEUIL_DENSITE: 25   # 20
     SEUIL_SURFACE: 300  # 150
-    CUT_FACTOR: 5
-    INTERP_DIST: 5
-    CLEAN_DIST: 0
     CURVE_HEIGHT: 25
     CURVE_WAVE_LENGTH: 10
     SEARCH: 25
