@@ -86,6 +86,8 @@ avec Filtre morphologique, Vectorisation, Squeletisation
 *Calcul de la topologie du réseau*
 """"""""""""""""""""""""""""""""""""
 
+(3). Cette étape en profite aussi pour un nettoyage géométrique, avant la construction du graphe. Dans le graphe, suite à un effet en T pour les sommets des virages, on va déformé de façon contrôlée ces arcs (voir la rubrique "points d'attention"). 
+
 
 
 *Calcul de la géométrie des arcs du réseau*

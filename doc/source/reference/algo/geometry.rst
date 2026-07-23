@@ -4,26 +4,26 @@
 Trajectory Geometry Processing
 ================================
 
-**algo.geometry module**
+**algo.geometry Module**
 
-This module provides functions aimed at 
+This module provides functions aimed at manage geometry of edges of the network.
 
 
+.. decoupe_trace
+.. extend_extremity
 
 
 .. autosummary::
    :nosignatures:
 
    snap_lines_to_connect
-   decoupe_trace
-   extend_extremity
    find_connection_candidate
    pull_point_to_other_tracks
 
 
 
 snap_lines_to_connect
--------------------------------------------------------
+-----------------------
 
 .. currentmodule:: algo.geometry
 
