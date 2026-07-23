@@ -31,6 +31,37 @@ Specifically, the documentation includes end-to-end example:
 - **with a set of simulated trajectories generated from a network** : [quickstart example](https://footprint2graph.readthedocs.io/en/latest/examples/index.html)
 
 
+## Citation
+
+If you use footprint2Graph, please cite the following references:
+
+<div style="background-color:rgba(200, 200, 200, 0.0470588); text-align:left; vertical-align: middle; padding:10px;">
+Marie-Dominique van Damme, Yann Méneroux. footprint2graph: An Open-Source Python Pipeline for Generating Mobility Networks from GNSS Trajectories. 2026. [HAL Id](https://hal.science/hal-05665743v1)
+</div>
+
+
+```bibtex
+@softwareversion{vandamme:hal-05665743v1,
+  TITLE = {{footprint2graph: An Open-Source Python Pipeline for Generating Mobility Networks from GNSS Trajectories}},
+  AUTHOR = {van Damme, Marie-Dominique and M{\'e}neroux, Yann},
+  URL = {https://hal.science/hal-05665743},
+  NOTE = {},
+  PUBLISHER = {{Zenodo}},
+  INSTITUTION = {{Institut National de l'Information G{\'e}ographique et Foresti{\`e}re}},
+  YEAR = {2026},
+  MONTH = Jun,
+  DOI = {10.5281/zenodo.20800149},
+  VERSION = {v1.1.1},
+  REPOSITORY = {https://github.com/umrlastig/footprint2graph},
+  LICENSE = {MIT License},
+  KEYWORDS = {Spatial graph ; Trajectory ; GNSS ; human mobility},
+  FILE = {https://hal.science/hal-05665743v1/file/footprint2graph-1.1.1.tar.gz},
+  HAL_ID = {hal-05665743},
+  HAL_VERSION = {v1},
+}
+```
+
+
 ## Acknowledgments
 
 This framework was developed as part of the [IntForOut research Project](https://www.umr-lastig.fr/intforout/) (Multisource spatial data INTegration FOR the Monitoring of Ecosystems under the pressure of OUTdoor recreation) and was supported by the ANR under grant agreement no. ANR-23-CE55-0003.  
